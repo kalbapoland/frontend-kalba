@@ -14,14 +14,23 @@ export default function AppLayout() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size="large" color="#4F46E5" />
+      <View className="flex-1 items-center justify-center bg-canvas">
+        <ActivityIndicator size="large" color="#7C8B72" />
       </View>
     );
   }
 
   return (
-    <Stack>
+    <Stack
+      screenOptions={{
+        headerStyle: { backgroundColor: "#F5F2ED" },
+        headerShadowVisible: false,
+        headerTintColor: "#6B6B66",
+        headerTitleStyle: {
+          fontWeight: "300",
+        },
+      }}
+    >
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen
         name="create-workshop"
@@ -29,7 +38,7 @@ export default function AppLayout() {
       />
       <Stack.Screen
         name="workshop/[id]"
-        options={{ title: "Workshop Details" }}
+        options={{ title: "" }}
       />
     </Stack>
   );

@@ -7,10 +7,18 @@ import {
   RefreshControl,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useWorkshops } from "@/hooks/useWorkshops";
 import { useAuthStore } from "@/store/auth";
 import type { Workshop } from "@/types/api";
+
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
 
 function WorkshopCard({ workshop }: { workshop: Workshop }) {
   const router = useRouter();
@@ -19,40 +27,40 @@ function WorkshopCard({ workshop }: { workshop: Workshop }) {
   return (
     <Pressable
       onPress={() => router.push(`/(app)/workshop/${workshop.id}`)}
-      className="mb-3 rounded-xl bg-white p-4 shadow-sm"
-      style={{
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-        elevation: 2,
-      }}
+      className="mb-4 rounded-2xl bg-surface px-6 py-6"
     >
-      <Text className="text-lg font-semibold text-gray-900">
+      <Text className="text-lg font-normal tracking-wide text-ink">
         {workshop.title}
       </Text>
-      {workshop.description ? (
-        <Text className="mt-1 text-sm text-gray-500" numberOfLines={2}>
-          {workshop.description}
-        </Text>
-      ) : null}
-      <View className="mt-3 flex-row items-center justify-between">
-        <Text className="text-sm text-gray-600">
-          {date.toLocaleDateString()} at {date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+
+      <View className="mt-4 flex-row items-center justify-between">
+        <Text className="text-sm text-ink-faint">
+          {date.toLocaleDateString(undefined, {
+            weekday: "short",
+            month: "short",
+            day: "numeric",
+          })}{" "}
+          · {date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
         </Text>
         <Text className="text-sm font-medium text-primary">
           {Number(workshop.price) > 0 ? `$${workshop.price}` : "Free"}
         </Text>
       </View>
-      <View className="mt-1 flex-row items-center justify-between">
-        <Text className="text-xs text-gray-400">
-          {workshop.duration_minutes} min
-        </Text>
-        <Text className="text-xs text-gray-400">
-          Max {workshop.max_participants} participants
-        </Text>
-      </View>
     </Pressable>
+  );
+}
+
+function ListHeader({ name }: { name?: string }) {
+  const firstName = name?.split(" ")[0];
+
+  return (
+    <View className="mb-6 px-1">
+      <Text className="text-2xl font-light tracking-wide text-ink">
+        {getGreeting()}
+        {firstName ? `, ${firstName}` : ""}
+      </Text>
+      <Text className="mt-2 text-sm text-muted">Upcoming workshops</Text>
+    </View>
   );
 }
 
@@ -60,46 +68,62 @@ export default function WorkshopListScreen() {
   const { data, isLoading, error, refetch, isRefetching } = useWorkshops();
   const user = useAuthStore((s) => s.user);
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const isTrainer = user?.role === "trainer";
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-gray-50">
-        <ActivityIndicator size="large" color="#4F46E5" />
+      <View className="flex-1 items-center justify-center bg-canvas">
+        <ActivityIndicator size="large" color="#7C8B72" />
       </View>
     );
   }
 
   if (error) {
     return (
-      <View className="flex-1 items-center justify-center bg-gray-50 px-8">
-        <Text className="mb-4 text-center text-red-500">
-          Failed to load workshops.
+      <View className="flex-1 items-center justify-center bg-canvas px-12">
+        <Text className="text-lg font-light text-ink-light">
+          Unable to load workshops
+        </Text>
+        <Text className="mt-3 text-center text-sm text-muted">
+          Check your connection and try again
         </Text>
         <Pressable
           onPress={() => refetch()}
-          className="rounded-lg bg-primary px-6 py-3"
+          className="mt-8 rounded-2xl bg-primary px-8 py-4"
         >
-          <Text className="font-semibold text-white">Retry</Text>
+          <Text className="font-medium tracking-wide text-surface">Retry</Text>
         </Pressable>
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <View className="flex-1 bg-canvas">
       <FlatList
         data={data}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <WorkshopCard workshop={item} />}
-        contentContainerStyle={{ padding: 16 }}
+        contentContainerStyle={{
+          paddingHorizontal: 24,
+          paddingTop: insets.top + 20,
+          paddingBottom: 40,
+        }}
+        ListHeaderComponent={<ListHeader name={user?.full_name} />}
         refreshControl={
-          <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={refetch}
+            tintColor="#7C8B72"
+          />
         }
         ListEmptyComponent={
-          <View className="items-center py-20">
-            <Text className="text-lg text-gray-400">
-              No upcoming workshops
+          <View className="items-center py-24">
+            <Text className="text-lg font-light text-ink-light">
+              Nothing scheduled yet
+            </Text>
+            <Text className="mt-2 text-sm text-muted">
+              Check back soon for new workshops
             </Text>
           </View>
         }
@@ -107,10 +131,16 @@ export default function WorkshopListScreen() {
       {isTrainer && (
         <Pressable
           onPress={() => router.push("/(app)/create-workshop")}
-          className="absolute bottom-6 right-6 h-14 w-14 items-center justify-center rounded-full bg-primary shadow-lg"
-          style={{ elevation: 4 }}
+          className="absolute bottom-8 right-8 h-14 w-14 items-center justify-center rounded-full bg-primary"
+          style={{
+            shadowColor: "#3D3D3D",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 4,
+          }}
         >
-          <Text className="text-2xl text-white">+</Text>
+          <Text className="text-2xl font-light text-surface">+</Text>
         </Pressable>
       )}
     </View>

@@ -29,8 +29,8 @@ export default function CreateWorkshopScreen() {
 
   if (user?.role !== "trainer") {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <Text className="text-lg text-gray-400">
+      <View className="flex-1 items-center justify-center bg-canvas">
+        <Text className="text-base text-muted">
           Only trainers can create workshops
         </Text>
       </View>
@@ -91,30 +91,45 @@ export default function CreateWorkshopScreen() {
 
   return (
     <ScrollView
-      className="flex-1 bg-white"
-      contentContainerStyle={{ padding: 24 }}
+      className="flex-1 bg-canvas"
+      contentContainerStyle={{ padding: 28, paddingBottom: 48 }}
       keyboardShouldPersistTaps="handled"
     >
-      <FormField label="Title" value={title} onChangeText={setTitle} placeholder="Workshop title" />
+      <FormField
+        label="Title"
+        value={title}
+        onChangeText={setTitle}
+        placeholder="Workshop title"
+      />
       <FormField
         label="Description"
         value={description}
         onChangeText={setDescription}
-        placeholder="Optional description"
+        placeholder="What will participants experience?"
         multiline
       />
-      <FormField
-        label="Date"
-        value={date}
-        onChangeText={setDate}
-        placeholder="YYYY-MM-DD"
-      />
-      <FormField
-        label="Time"
-        value={time}
-        onChangeText={setTime}
-        placeholder="HH:MM"
-      />
+
+      <Text className="mb-4 mt-4 text-xs font-medium tracking-wider text-muted">
+        SCHEDULE
+      </Text>
+      <View className="flex-row gap-4">
+        <View className="flex-1">
+          <FormField
+            label="Date"
+            value={date}
+            onChangeText={setDate}
+            placeholder="YYYY-MM-DD"
+          />
+        </View>
+        <View className="flex-1">
+          <FormField
+            label="Time"
+            value={time}
+            onChangeText={setTime}
+            placeholder="HH:MM"
+          />
+        </View>
+      </View>
       <FormField
         label="Duration (minutes)"
         value={duration}
@@ -122,30 +137,40 @@ export default function CreateWorkshopScreen() {
         placeholder="60"
         keyboardType="numeric"
       />
-      <FormField
-        label="Price"
-        value={price}
-        onChangeText={setPrice}
-        placeholder="0.00"
-        keyboardType="decimal-pad"
-      />
-      <FormField
-        label="Max Participants"
-        value={maxParticipants}
-        onChangeText={setMaxParticipants}
-        placeholder="20"
-        keyboardType="numeric"
-      />
+
+      <Text className="mb-4 mt-4 text-xs font-medium tracking-wider text-muted">
+        DETAILS
+      </Text>
+      <View className="flex-row gap-4">
+        <View className="flex-1">
+          <FormField
+            label="Price"
+            value={price}
+            onChangeText={setPrice}
+            placeholder="0.00"
+            keyboardType="decimal-pad"
+          />
+        </View>
+        <View className="flex-1">
+          <FormField
+            label="Max Participants"
+            value={maxParticipants}
+            onChangeText={setMaxParticipants}
+            placeholder="20"
+            keyboardType="numeric"
+          />
+        </View>
+      </View>
 
       <Pressable
         onPress={handleSubmit}
         disabled={isPending}
-        className="mt-6 items-center rounded-xl bg-primary py-4"
+        className="mt-10 items-center rounded-2xl bg-primary py-5"
       >
         {isPending ? (
-          <ActivityIndicator color="#fff" />
+          <ActivityIndicator color="#FAFAF7" />
         ) : (
-          <Text className="text-lg font-semibold text-white">
+          <Text className="text-base font-medium tracking-wide text-surface">
             Create Workshop
           </Text>
         )}
@@ -170,17 +195,19 @@ function FormField({
   keyboardType?: "default" | "numeric" | "decimal-pad";
 }) {
   return (
-    <View className="mb-4">
-      <Text className="mb-1 text-sm font-medium text-gray-700">{label}</Text>
+    <View className="mb-5">
+      <Text className="mb-2 text-xs font-medium tracking-wider text-ink-faint">
+        {label}
+      </Text>
       <TextInput
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
         multiline={multiline}
         keyboardType={keyboardType}
-        className="rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
-        style={multiline ? { minHeight: 80, textAlignVertical: "top" } : undefined}
-        placeholderTextColor="#9CA3AF"
+        className="rounded-xl border border-subtle bg-surface px-5 py-4 text-base text-ink"
+        style={multiline ? { minHeight: 100, textAlignVertical: "top" } : undefined}
+        placeholderTextColor="#B0AEA6"
       />
     </View>
   );

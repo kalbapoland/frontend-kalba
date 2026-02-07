@@ -15,7 +15,14 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.kalba.app"
+      "bundleIdentifier": "com.kalba.app",
+      "bundleURLTypes": [
+        {
+          "CFBundleURLSchemes": [
+            "com.googleusercontent.apps.294519048023-gss6vgnkonpesvb1clkbsuij2517u4m7"
+          ]
+        }
+      ]
     },
     "android": {
       "adaptiveIcon": {

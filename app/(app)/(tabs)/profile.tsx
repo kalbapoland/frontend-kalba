@@ -1,5 +1,6 @@
 import { View, Text, Pressable } from "react-native";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuthStore } from "@/store/auth";
 
@@ -7,6 +8,7 @@ export default function ProfileScreen() {
   const user = useAuthStore((s) => s.user);
   const signOut = useAuthStore((s) => s.signOut);
   const queryClient = useQueryClient();
+  const insets = useSafeAreaInsets();
 
   const handleSignOut = async () => {
     queryClient.clear();
@@ -16,31 +18,36 @@ export default function ProfileScreen() {
   if (!user) return null;
 
   return (
-    <View className="flex-1 bg-gray-50 px-6 pt-10">
-      <View className="items-center rounded-2xl bg-white p-6 shadow-sm">
-        <View className="mb-4 h-20 w-20 items-center justify-center rounded-full bg-primary">
-          <Text className="text-3xl text-white">
+    <View
+      className="flex-1 bg-canvas px-8"
+      style={{ paddingTop: insets.top + 24 }}
+    >
+      <View className="items-center rounded-3xl bg-surface px-8 py-10">
+        <View className="mb-6 h-24 w-24 items-center justify-center rounded-full bg-primary/15">
+          <Text className="text-4xl font-light text-primary">
             {user.full_name?.[0]?.toUpperCase() ?? "?"}
           </Text>
         </View>
 
-        <Text className="text-xl font-bold text-gray-900">
+        <Text className="text-2xl font-light tracking-wide text-ink">
           {user.full_name}
         </Text>
-        <Text className="mt-1 text-sm text-gray-500">{user.email}</Text>
+        <Text className="mt-3 text-sm text-muted">{user.email}</Text>
 
-        <View className="mt-3 rounded-full bg-secondary/10 px-4 py-1">
-          <Text className="text-sm font-medium capitalize text-secondary">
+        <View className="mt-5 rounded-full bg-secondary/10 px-5 py-1.5">
+          <Text className="text-xs font-medium capitalize tracking-wider text-secondary">
             {user.role}
           </Text>
         </View>
       </View>
 
+      <View className="flex-1" />
+
       <Pressable
         onPress={handleSignOut}
-        className="mt-8 items-center rounded-xl border border-red-200 bg-white py-4"
+        className="mb-8 items-center py-4"
       >
-        <Text className="font-semibold text-red-500">Sign Out</Text>
+        <Text className="text-sm tracking-wide text-muted">Sign Out</Text>
       </Pressable>
     </View>
   );

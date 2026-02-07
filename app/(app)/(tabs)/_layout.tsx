@@ -5,8 +5,21 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "#4F46E5",
-        headerShown: true,
+        tabBarActiveTintColor: "#7C8B72",
+        tabBarInactiveTintColor: "#B0AEA6",
+        tabBarStyle: {
+          backgroundColor: "#FAFAF7",
+          borderTopColor: "#E8E4DE",
+          borderTopWidth: 0.5,
+          paddingTop: 6,
+          height: 56,
+        },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          letterSpacing: 0.3,
+          fontWeight: "500",
+        },
+        headerShown: false,
       }}
     >
       <Tabs.Screen
@@ -14,7 +27,7 @@ export default function TabLayout() {
         options={{
           title: "Workshops",
           tabBarIcon: ({ color }) => (
-            <Text style={{ color, fontSize: 20 }}>&#128218;</Text>
+            <Text style={{ color, fontSize: 18 }}>&#9702;</Text>
           ),
         }}
       />
@@ -23,7 +36,7 @@ export default function TabLayout() {
         options={{
           title: "Profile",
           tabBarIcon: ({ color }) => (
-            <Text style={{ color, fontSize: 20 }}>&#128100;</Text>
+            <Text style={{ color, fontSize: 18 }}>&#9675;</Text>
           ),
         }}
       />

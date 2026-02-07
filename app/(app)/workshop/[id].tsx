@@ -9,16 +9,18 @@ export default function WorkshopDetailScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size="large" color="#4F46E5" />
+      <View className="flex-1 items-center justify-center bg-canvas">
+        <ActivityIndicator size="large" color="#7C8B72" />
       </View>
     );
   }
 
   if (!workshop) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <Text className="text-lg text-gray-400">Workshop not found</Text>
+      <View className="flex-1 items-center justify-center bg-canvas">
+        <Text className="text-lg font-light text-ink-light">
+          Workshop not found
+        </Text>
       </View>
     );
   }
@@ -26,19 +28,29 @@ export default function WorkshopDetailScreen() {
   const date = new Date(workshop.start_time);
 
   return (
-    <ScrollView className="flex-1 bg-white" contentContainerStyle={{ padding: 24 }}>
-      <Text className="text-2xl font-bold text-gray-900">
+    <ScrollView
+      className="flex-1 bg-canvas"
+      contentContainerStyle={{ padding: 28, paddingBottom: 48 }}
+    >
+      <Text className="text-3xl font-light tracking-wide text-ink">
         {workshop.title}
       </Text>
 
       {workshop.description ? (
-        <Text className="mt-4 text-base leading-6 text-gray-600">
+        <Text className="mt-6 text-base leading-7 text-ink-light">
           {workshop.description}
         </Text>
       ) : null}
 
-      <View className="mt-6 rounded-xl bg-gray-50 p-4">
-        <DetailRow label="Date" value={date.toLocaleDateString()} />
+      <View className="mt-10 rounded-2xl bg-surface px-6 py-1">
+        <DetailRow
+          label="Date"
+          value={date.toLocaleDateString(undefined, {
+            weekday: "long",
+            month: "long",
+            day: "numeric",
+          })}
+        />
         <DetailRow
           label="Time"
           value={date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
@@ -49,8 +61,8 @@ export default function WorkshopDetailScreen() {
           value={Number(workshop.price) > 0 ? `$${workshop.price}` : "Free"}
         />
         <DetailRow
-          label="Max Participants"
-          value={String(workshop.max_participants)}
+          label="Spots"
+          value={`${workshop.max_participants} max`}
           last
         />
       </View>
@@ -69,12 +81,12 @@ function DetailRow({
 }) {
   return (
     <View
-      className={`flex-row items-center justify-between py-3 ${
-        last ? "" : "border-b border-gray-200"
+      className={`flex-row items-center justify-between py-5 ${
+        last ? "" : "border-b border-subtle"
       }`}
     >
-      <Text className="text-sm text-gray-500">{label}</Text>
-      <Text className="text-sm font-medium text-gray-900">{value}</Text>
+      <Text className="text-sm text-muted">{label}</Text>
+      <Text className="text-sm font-medium text-ink">{value}</Text>
     </View>
   );
 }
