@@ -1,0 +1,21 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "start-expo-web",
+      "type": "shell",
+      "command": "npx expo start --web",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "typescript",
+        "fileLocation": "relative",
+        "pattern": { "regexp": "^.*" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Starting dev tools",
+          "endsPattern": "Web is waiting on"
+        }
+      }
+    }
+  ]
+}
