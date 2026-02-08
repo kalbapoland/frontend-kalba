@@ -1,6 +1,7 @@
 import { apiClient } from "./client";
 import type {
   AuthResponse,
+  JoinWorkshopResponse,
   User,
   Workshop,
   WorkshopCreatePayload,
@@ -27,5 +28,14 @@ export async function createWorkshop(
   payload: WorkshopCreatePayload,
 ): Promise<Workshop> {
   const { data } = await apiClient.post<Workshop>("/workshops/", payload);
+  return data;
+}
+
+export async function joinWorkshop(
+  workshopId: string,
+): Promise<JoinWorkshopResponse> {
+  const { data } = await apiClient.post<JoinWorkshopResponse>(
+    `/video/workshops/${workshopId}/join`,
+  );
   return data;
 }

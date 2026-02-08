@@ -43,6 +43,14 @@ export default function AppLayout() {
         name="workshop/[id]"
         options={{ title: "Workshop" }}
       />
+      <Stack.Screen
+        name="workshop/call"
+        options={{
+          headerShown: false,
+          gestureEnabled: false,
+          animation: "fade",
+        }}
+      />
     </Stack>
   );
 }

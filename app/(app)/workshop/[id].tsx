@@ -4,11 +4,14 @@ import {
   ScrollView,
   Pressable,
   ActivityIndicator,
+  Alert,
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import type { AxiosError } from "axios";
 
 import { useWorkshopDetail } from "@/hooks/useWorkshopDetail";
+import { useJoinWorkshop } from "@/hooks/useJoinWorkshop";
 
 function formatPrice(price: string | number): string {
   const n = Number(price);
@@ -20,6 +23,30 @@ export default function WorkshopDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: workshop, isLoading } = useWorkshopDetail(id!);
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const joinMutation = useJoinWorkshop();
+
+  const handleJoin = () => {
+    joinMutation.mutate(id!, {
+      onSuccess: (data) => {
+        router.push({
+          pathname: "/(app)/workshop/call",
+          params: {
+            token: data.token,
+            roomUrl: data.room_url,
+            role: data.role,
+            rules: JSON.stringify(data.rules),
+          },
+        });
+      },
+      onError: (error) => {
+        const axiosErr = error as AxiosError<{ detail?: string }>;
+        const msg =
+          axiosErr.response?.data?.detail ?? "Could not join workshop";
+        Alert.alert("Unable to Join", msg);
+      },
+    });
+  };
 
   if (isLoading) {
     return (
@@ -119,9 +146,11 @@ export default function WorkshopDetailScreen() {
         <Pressable
           className="items-center rounded-2xl bg-primary py-4"
           style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}
+          onPress={handleJoin}
+          disabled={joinMutation.isPending}
         >
           <Text className="text-base font-semibold text-surface">
-            Join Workshop
+            {joinMutation.isPending ? "Joining..." : "Join Workshop"}
           </Text>
         </Pressable>
       </View>
