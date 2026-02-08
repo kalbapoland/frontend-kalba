@@ -1,11 +1,25 @@
-import { View, Text, ScrollView, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  ActivityIndicator,
+} from "react-native";
 import { useLocalSearchParams } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useWorkshopDetail } from "@/hooks/useWorkshopDetail";
+
+function formatPrice(price: string | number): string {
+  const n = Number(price);
+  if (n === 0) return "Free";
+  return `$${n % 1 === 0 ? n : n.toFixed(2)}`;
+}
 
 export default function WorkshopDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: workshop, isLoading } = useWorkshopDetail(id!);
+  const insets = useSafeAreaInsets();
 
   if (isLoading) {
     return (
@@ -26,67 +40,124 @@ export default function WorkshopDetailScreen() {
   }
 
   const date = new Date(workshop.start_time);
+  const weekday = date.toLocaleDateString(undefined, { weekday: "long" });
+  const monthDay = date.toLocaleDateString(undefined, {
+    month: "long",
+    day: "numeric",
+  });
+  const time = date.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
   return (
-    <ScrollView
-      className="flex-1 bg-canvas"
-      contentContainerStyle={{ padding: 28, paddingBottom: 48 }}
-    >
-      <Text className="text-3xl font-light tracking-wide text-ink">
-        {workshop.title}
-      </Text>
+    <View className="flex-1 bg-canvas">
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: 120 }}
+      >
+        {/* Header */}
+        <View className="px-6 pb-6 pt-4">
+          <Text className="text-2xl font-bold text-ink">{workshop.title}</Text>
+          <Text className="mt-3 text-base text-ink-light">
+            {weekday}, {monthDay} · {time}
+          </Text>
+        </View>
 
-      {workshop.description ? (
-        <Text className="mt-6 text-base leading-7 text-ink-light">
-          {workshop.description}
-        </Text>
-      ) : null}
+        {/* About Section */}
+        {workshop.description ? (
+          <View className="px-6 pb-6">
+            <Text className="mb-3 text-sm font-semibold uppercase tracking-wider text-ink-faint">
+              About
+            </Text>
+            <Text className="text-base leading-7 text-ink-light">
+              {workshop.description}
+            </Text>
+          </View>
+        ) : null}
 
-      <View className="mt-10 rounded-2xl bg-surface px-6 py-1">
-        <DetailRow
-          label="Date"
-          value={date.toLocaleDateString(undefined, {
-            weekday: "long",
-            month: "long",
-            day: "numeric",
-          })}
-        />
-        <DetailRow
-          label="Time"
-          value={date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-        />
-        <DetailRow label="Duration" value={`${workshop.duration_minutes} min`} />
-        <DetailRow
-          label="Price"
-          value={Number(workshop.price) > 0 ? `$${workshop.price}` : "Free"}
-        />
-        <DetailRow
-          label="Spots"
-          value={`${workshop.max_participants} max`}
-          last
-        />
+        {/* Details Section */}
+        <View className="px-6 pb-6">
+          <Text className="mb-3 text-sm font-semibold uppercase tracking-wider text-ink-faint">
+            Details
+          </Text>
+          <View
+            className="rounded-2xl bg-surface px-5"
+            style={{
+              shadowColor: "#3D3D3D",
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.04,
+              shadowRadius: 8,
+              elevation: 1,
+            }}
+          >
+            <DetailRow
+              icon="clock"
+              label="Duration"
+              value={`${workshop.duration_minutes} min`}
+            />
+            <DetailRow
+              icon="people"
+              label="Spots"
+              value={`${workshop.max_participants} max`}
+            />
+            <DetailRow
+              icon="price"
+              label="Price"
+              value={formatPrice(workshop.price)}
+              last
+            />
+          </View>
+        </View>
+      </ScrollView>
+
+      {/* Sticky CTA */}
+      <View
+        className="border-t border-subtle bg-canvas px-6 pt-4"
+        style={{ paddingBottom: Math.max(insets.bottom, 16) }}
+      >
+        <Pressable
+          className="items-center rounded-2xl bg-primary py-4"
+          style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}
+        >
+          <Text className="text-base font-semibold text-surface">
+            Join Workshop
+          </Text>
+        </Pressable>
       </View>
-    </ScrollView>
+    </View>
   );
 }
 
+function DetailIcon({ type }: { type: string }) {
+  const symbols: Record<string, string> = {
+    clock: "⏱",
+    people: "👥",
+    price: "💲",
+  };
+  return <Text style={{ fontSize: 16 }}>{symbols[type] ?? "·"}</Text>;
+}
+
 function DetailRow({
+  icon,
   label,
   value,
   last = false,
 }: {
+  icon: string;
   label: string;
   value: string;
   last?: boolean;
 }) {
   return (
     <View
-      className={`flex-row items-center justify-between py-5 ${
+      className={`flex-row items-center py-4 ${
         last ? "" : "border-b border-subtle"
       }`}
     >
-      <Text className="text-sm text-muted">{label}</Text>
-      <Text className="text-sm font-medium text-ink">{value}</Text>
+      <DetailIcon type={icon} />
+      <Text className="ml-3 flex-1 text-sm text-ink-faint">{label}</Text>
+      <Text className="text-sm font-semibold text-ink">{value}</Text>
     </View>
   );
 }

@@ -21,51 +21,34 @@ export default function SignInScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
+  const [, response, promptAsync] = Google.useIdTokenAuthRequest({
     iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
     webClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
   });
 
-  console.log("[AUTH] request ready:", !!request);
-  console.log("[AUTH] redirectUri:", request?.redirectUri);
-
   useEffect(() => {
-    console.log("[AUTH] response changed:", JSON.stringify(response, null, 2));
     if (!response) return;
     if (response.type === "success" && response.params.id_token) {
-      console.log("[AUTH] got id_token, exchanging with backend...");
       setLoading(true);
       exchangeGoogleToken(response.params.id_token)
-        .then((authResponse) => {
-          console.log("[AUTH] backend exchange success");
-          return signIn(authResponse.access_token);
-        })
-        .catch((e) => {
-          console.error("[AUTH] backend exchange failed:", e);
-          setError("Something went wrong. Please try again.");
-        })
+        .then((authResponse) => signIn(authResponse.access_token))
+        .catch(() => setError("Something went wrong. Please try again."))
         .finally(() => setLoading(false));
     } else if (response.type === "error") {
-      console.error("[AUTH] Google error:", response.error);
       setError("Google sign-in failed. Please try again.");
       setLoading(false);
     } else {
-      console.log("[AUTH] response type:", response.type);
       setLoading(false);
     }
   }, [response, signIn]);
 
   const handleSignIn = useCallback(() => {
-    console.log("[AUTH] promptAsync triggered");
     setError(null);
     setLoading(true);
-    promptAsync()
-      .then((result) => console.log("[AUTH] promptAsync resolved:", result?.type))
-      .catch((e) => {
-        console.error("[AUTH] promptAsync error:", e);
-        setError("Something went wrong. Please try again.");
-        setLoading(false);
-      });
+    promptAsync().catch(() => {
+      setError("Something went wrong. Please try again.");
+      setLoading(false);
+    });
   }, [promptAsync]);
 
   if (token) {

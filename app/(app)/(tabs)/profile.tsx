@@ -1,8 +1,27 @@
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, Alert, Platform } from "react-native";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuthStore } from "@/store/auth";
+
+function SettingsRow({
+  label,
+  last = false,
+}: {
+  label: string;
+  last?: boolean;
+}) {
+  return (
+    <Pressable
+      className={`flex-row items-center justify-between py-4 ${
+        last ? "" : "border-b border-subtle"
+      }`}
+    >
+      <Text className="text-base text-ink">{label}</Text>
+      <Text className="text-sm text-ink-faint">›</Text>
+    </Pressable>
+  );
+}
 
 export default function ProfileScreen() {
   const user = useAuthStore((s) => s.user);
@@ -10,44 +29,73 @@ export default function ProfileScreen() {
   const queryClient = useQueryClient();
   const insets = useSafeAreaInsets();
 
-  const handleSignOut = async () => {
-    queryClient.clear();
-    await signOut();
+  const handleSignOut = () => {
+    const doSignOut = async () => {
+      queryClient.clear();
+      await signOut();
+    };
+
+    if (Platform.OS === "web") {
+      if (window.confirm("Are you sure you want to sign out?")) {
+        doSignOut();
+      }
+    } else {
+      Alert.alert("Sign Out", "Are you sure you want to sign out?", [
+        { text: "Cancel", style: "cancel" },
+        { text: "Sign Out", style: "destructive", onPress: doSignOut },
+      ]);
+    }
   };
 
   if (!user) return null;
 
   return (
     <View
-      className="flex-1 bg-canvas px-8"
+      className="flex-1 bg-canvas px-6"
       style={{ paddingTop: insets.top + 24 }}
     >
-      <View className="items-center rounded-3xl bg-surface px-8 py-10">
-        <View className="mb-6 h-24 w-24 items-center justify-center rounded-full bg-primary/15">
-          <Text className="text-4xl font-light text-primary">
+      {/* Profile Header Card */}
+      <View
+        className="items-center rounded-3xl bg-surface px-8 py-10"
+        style={{
+          shadowColor: "#3D3D3D",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.05,
+          shadowRadius: 12,
+          elevation: 2,
+        }}
+      >
+        <View className="mb-5 h-20 w-20 items-center justify-center rounded-full bg-canvas">
+          <Text className="text-3xl font-semibold text-primary">
             {user.full_name?.[0]?.toUpperCase() ?? "?"}
           </Text>
         </View>
 
-        <Text className="text-2xl font-light tracking-wide text-ink">
-          {user.full_name}
-        </Text>
-        <Text className="mt-3 text-sm text-muted">{user.email}</Text>
+        <Text className="text-xl font-semibold text-ink">{user.full_name}</Text>
+        <Text className="mt-2 text-sm text-ink-faint">{user.email}</Text>
 
-        <View className="mt-5 rounded-full bg-secondary/10 px-5 py-1.5">
-          <Text className="text-xs font-medium capitalize tracking-wider text-secondary">
+        <View className="mt-4 rounded-full bg-canvas px-4 py-1.5">
+          <Text className="text-xs font-medium capitalize tracking-wider text-ink-faint">
             {user.role}
           </Text>
         </View>
       </View>
 
+      {/* Settings List */}
+      <View className="mt-6 rounded-2xl bg-surface px-5">
+        <SettingsRow label="Account" />
+        <SettingsRow label="Preferences" last />
+      </View>
+
       <View className="flex-1" />
 
+      {/* Destructive Sign Out */}
       <Pressable
         onPress={handleSignOut}
-        className="mb-8 items-center py-4"
+        className="items-center rounded-2xl border border-danger-light bg-surface py-4"
+        style={{ marginBottom: Math.max(insets.bottom, 16) + 60 }}
       >
-        <Text className="text-sm tracking-wide text-muted">Sign Out</Text>
+        <Text className="text-sm font-medium text-danger">Sign Out</Text>
       </Pressable>
     </View>
   );

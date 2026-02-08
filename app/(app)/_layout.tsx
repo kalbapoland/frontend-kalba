@@ -25,10 +25,13 @@ export default function AppLayout() {
       screenOptions={{
         headerStyle: { backgroundColor: "#F5F2ED" },
         headerShadowVisible: false,
-        headerTintColor: "#6B6B66",
+        headerTintColor: "#7C8B72",
         headerTitleStyle: {
-          fontWeight: "300",
+          fontWeight: "600",
+          fontSize: 17,
+          color: "#3D3D3D",
         },
+        headerBackTitle: "Back",
       }}
     >
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -38,7 +41,7 @@ export default function AppLayout() {
       />
       <Stack.Screen
         name="workshop/[id]"
-        options={{ title: "" }}
+        options={{ title: "Workshop" }}
       />
     </Stack>
   );

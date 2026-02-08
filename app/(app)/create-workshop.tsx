@@ -92,7 +92,7 @@ export default function CreateWorkshopScreen() {
   return (
     <ScrollView
       className="flex-1 bg-canvas"
-      contentContainerStyle={{ padding: 28, paddingBottom: 48 }}
+      contentContainerStyle={{ padding: 24, paddingBottom: 48 }}
       keyboardShouldPersistTaps="handled"
     >
       <FormField
@@ -109,10 +109,8 @@ export default function CreateWorkshopScreen() {
         multiline
       />
 
-      <Text className="mb-4 mt-4 text-xs font-medium tracking-wider text-muted">
-        SCHEDULE
-      </Text>
-      <View className="flex-row gap-4">
+      <SectionLabel>Schedule</SectionLabel>
+      <View className="flex-row gap-3">
         <View className="flex-1">
           <FormField
             label="Date"
@@ -138,10 +136,8 @@ export default function CreateWorkshopScreen() {
         keyboardType="numeric"
       />
 
-      <Text className="mb-4 mt-4 text-xs font-medium tracking-wider text-muted">
-        DETAILS
-      </Text>
-      <View className="flex-row gap-4">
+      <SectionLabel>Details</SectionLabel>
+      <View className="flex-row gap-3">
         <View className="flex-1">
           <FormField
             label="Price"
@@ -153,7 +149,7 @@ export default function CreateWorkshopScreen() {
         </View>
         <View className="flex-1">
           <FormField
-            label="Max Participants"
+            label="Max participants"
             value={maxParticipants}
             onChangeText={setMaxParticipants}
             placeholder="20"
@@ -165,7 +161,7 @@ export default function CreateWorkshopScreen() {
       <Pressable
         onPress={handleSubmit}
         disabled={isPending}
-        className="mt-10 items-center rounded-2xl bg-primary py-5"
+        className="mt-8 items-center rounded-2xl bg-primary py-4"
       >
         {isPending ? (
           <ActivityIndicator color="#FAFAF7" />
@@ -176,6 +172,17 @@ export default function CreateWorkshopScreen() {
         )}
       </Pressable>
     </ScrollView>
+  );
+}
+
+function SectionLabel({ children }: { children: string }) {
+  return (
+    <View className="mb-4 mt-2 flex-row items-center">
+      <View className="mr-2 h-1.5 w-1.5 rounded-full bg-primary" />
+      <Text className="text-xs font-medium uppercase tracking-widest text-ink-faint">
+        {children}
+      </Text>
+    </View>
   );
 }
 
@@ -195,8 +202,8 @@ function FormField({
   keyboardType?: "default" | "numeric" | "decimal-pad";
 }) {
   return (
-    <View className="mb-5">
-      <Text className="mb-2 text-xs font-medium tracking-wider text-ink-faint">
+    <View className="mb-4">
+      <Text className="mb-1.5 text-xs font-medium tracking-wider text-ink-faint">
         {label}
       </Text>
       <TextInput
@@ -205,7 +212,7 @@ function FormField({
         placeholder={placeholder}
         multiline={multiline}
         keyboardType={keyboardType}
-        className="rounded-xl border border-subtle bg-surface px-5 py-4 text-base text-ink"
+        className="rounded-xl border border-subtle bg-surface px-4 py-3.5 text-base text-ink"
         style={multiline ? { minHeight: 100, textAlignVertical: "top" } : undefined}
         placeholderTextColor="#B0AEA6"
       />

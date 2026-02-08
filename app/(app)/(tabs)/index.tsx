@@ -20,31 +20,57 @@ function getGreeting(): string {
   return "Good evening";
 }
 
+function formatPrice(price: string | number): string {
+  const n = Number(price);
+  if (n === 0) return "Free";
+  return `$${n % 1 === 0 ? n : n.toFixed(2)}`;
+}
+
 function WorkshopCard({ workshop }: { workshop: Workshop }) {
   const router = useRouter();
   const date = new Date(workshop.start_time);
 
+  const weekday = date.toLocaleDateString(undefined, { weekday: "short" });
+  const day = date.getDate();
+  const month = date.toLocaleDateString(undefined, { month: "long" });
+  const time = date.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
   return (
     <Pressable
       onPress={() => router.push(`/(app)/workshop/${workshop.id}`)}
-      className="mb-4 rounded-2xl bg-surface px-6 py-6"
+      className="mb-4 rounded-2xl bg-surface px-5 py-5"
+      style={{
+        shadowColor: "#3D3D3D",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 12,
+        elevation: 2,
+      }}
     >
-      <Text className="text-lg font-normal tracking-wide text-ink">
-        {workshop.title}
+      <Text className="text-lg font-semibold text-ink">{workshop.title}</Text>
+      <Text className="mt-2 text-sm text-ink-light">
+        {weekday}, {day} {month} · {time}
       </Text>
 
-      <View className="mt-4 flex-row items-center justify-between">
-        <Text className="text-sm text-ink-faint">
-          {date.toLocaleDateString(undefined, {
-            weekday: "short",
-            month: "short",
-            day: "numeric",
-          })}{" "}
-          · {date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-        </Text>
-        <Text className="text-sm font-medium text-primary">
-          {Number(workshop.price) > 0 ? `$${workshop.price}` : "Free"}
-        </Text>
+      <View className="mt-4 flex-row items-center">
+        <View className="flex-row items-center rounded-lg bg-canvas px-3 py-1.5">
+          <Text className="text-xs font-medium text-primary">
+            {formatPrice(workshop.price)}
+          </Text>
+        </View>
+        <View className="ml-2 flex-row items-center rounded-lg bg-canvas px-3 py-1.5">
+          <Text className="text-xs text-ink-faint">
+            {workshop.duration_minutes} min
+          </Text>
+        </View>
+        <View className="ml-2 flex-row items-center rounded-lg bg-canvas px-3 py-1.5">
+          <Text className="text-xs text-ink-faint">
+            {workshop.max_participants} spots
+          </Text>
+        </View>
       </View>
     </Pressable>
   );
@@ -55,11 +81,20 @@ function ListHeader({ name }: { name?: string }) {
 
   return (
     <View className="mb-6 px-1">
-      <Text className="text-2xl font-light tracking-wide text-ink">
+      <Text className="text-base text-ink-light">
         {getGreeting()}
-        {firstName ? `, ${firstName}` : ""}
+        {firstName ? "," : ""}
       </Text>
-      <Text className="mt-2 text-sm text-muted">Upcoming workshops</Text>
+      {firstName && (
+        <Text className="mt-1 text-2xl font-semibold text-ink">
+          {firstName}
+        </Text>
+      )}
+
+      <Text className="mt-8 text-sm font-semibold uppercase tracking-wider text-ink-faint">
+        Upcoming
+      </Text>
+      <View className="mt-2 h-0.5 w-8 rounded-full bg-primary" />
     </View>
   );
 }
@@ -105,9 +140,9 @@ export default function WorkshopListScreen() {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <WorkshopCard workshop={item} />}
         contentContainerStyle={{
-          paddingHorizontal: 24,
-          paddingTop: insets.top + 20,
-          paddingBottom: 40,
+          paddingHorizontal: 20,
+          paddingTop: insets.top + 24,
+          paddingBottom: 100,
         }}
         ListHeaderComponent={<ListHeader name={user?.full_name} />}
         refreshControl={
@@ -131,12 +166,13 @@ export default function WorkshopListScreen() {
       {isTrainer && (
         <Pressable
           onPress={() => router.push("/(app)/create-workshop")}
-          className="absolute bottom-8 right-8 h-14 w-14 items-center justify-center rounded-full bg-primary"
+          className="absolute bottom-8 right-6 h-14 w-14 items-center justify-center rounded-full bg-primary"
           style={{
+            bottom: insets.bottom + 68,
             shadowColor: "#3D3D3D",
             shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 8,
+            shadowOpacity: 0.12,
+            shadowRadius: 10,
             elevation: 4,
           }}
         >
