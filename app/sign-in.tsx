@@ -48,6 +48,10 @@ export default function SignInScreen() {
     } else if (response.type === "error") {
       console.error("[AUTH] Google error:", response.error);
       setError("Google sign-in failed. Please try again.");
+      setLoading(false);
+    } else {
+      console.log("[AUTH] response type:", response.type);
+      setLoading(false);
     }
   }, [response, signIn]);
 
