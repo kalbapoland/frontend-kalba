@@ -5,7 +5,9 @@
       "Bash(npx tsc:*)",
       "Bash(lsof:*)",
       "Bash(xargs:*)",
-      "Bash(npx expo start --ios --clear)"
+      "Bash(npx expo start --ios --clear)",
+      "Bash(npx expo install:*)",
+      "Bash(npx expo start:*)"
     ]
   }
 }

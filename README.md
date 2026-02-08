@@ -6,7 +6,8 @@ React Native + Expo mobile app for discovering and booking workshops. Connects t
 
 - **Node.js 20+** (required by Expo SDK 54 — check with `node -v`)
 - **npm** (ships with Node)
-- **Expo Go** app on your phone ([iOS](https://apps.apple.com/app/expo-go/id982107779) / [Android](https://play.google.com/store/apps/details?id=host.exp.exponent)) — for testing on a physical device
+- **Xcode** (macOS, for iOS development builds)
+- **Android Studio** (for Android development builds)
 - The Kalba backend running locally on port 8000
 
 ## Setup
@@ -28,11 +29,12 @@ React Native + Expo mobile app for discovering and booking workshops. Connects t
 
    | Variable | Description |
    |----------|-------------|
-   | `EXPO_PUBLIC_API_URL` | Backend API base URL (default: `http://localhost:8000/api/v1`) |
-   | `EXPO_PUBLIC_GOOGLE_CLIENT_ID` | Your Google OAuth client ID from [Google Cloud Console](https://console.cloud.google.com/apis/credentials) |
+   | `EXPO_PUBLIC_API_URL_WEB` | Backend API base URL for web (default: `http://localhost:8000/api/v1`) |
+   | `EXPO_PUBLIC_API_URL_NATIVE` | Backend API base URL for mobile — use your machine's local IP (e.g. `http://192.168.1.42:8000/api/v1`) |
+   | `EXPO_PUBLIC_GOOGLE_CLIENT_ID` | Google OAuth **Web** client ID from [Google Cloud Console](https://console.cloud.google.com/apis/credentials) |
+   | `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` | Google OAuth **iOS** client ID (requires a separate iOS client in Google Cloud Console) |
 
-   For **Android emulator**, use `http://10.0.2.2:8000/api/v1` instead of `localhost`.
-   For a **physical device**, use your machine's local IP (e.g. `http://192.168.1.42:8000/api/v1`).
+   For **Android emulator**, use `http://10.0.2.2:8000/api/v1` as the native URL.
 
 3. **Start the backend**
 
@@ -45,26 +47,32 @@ React Native + Expo mobile app for discovering and booking workshops. Connects t
 
 ## Running the app
 
-### Development server (all platforms)
+### Web
 
 ```bash
-npm start
+npm run web
 ```
 
-This opens the Expo dev tools. From there:
+### Mobile (development build)
 
-- Press **`w`** to open in a web browser
-- Press **`i`** to open in iOS Simulator (macOS only, requires Xcode)
-- Press **`a`** to open in Android Emulator (requires Android Studio)
-- Scan the **QR code** with Expo Go on your phone
+Mobile requires a **development build** — Expo Go will not work. Google OAuth on iOS/Android needs custom URL schemes (the reverse client ID) registered in the native app binary. Expo Go doesn't register schemes from your `app.json`, so the OAuth redirect fails with `Error 400: invalid_request`.
 
-### Platform-specific shortcuts
+**First run** — build the native app:
 
 ```bash
-npm run web       # web browser only
-npm run ios       # iOS Simulator only
-npm run android   # Android Emulator only
+npx expo run:ios       # iOS (requires Xcode)
+npx expo run:android   # Android (requires Android Studio)
 ```
+
+This generates the native project, registers the OAuth URL scheme, and installs the dev client on your device/simulator. The first build takes a few minutes.
+
+**Subsequent runs** — start the dev server only:
+
+```bash
+npx expo start --dev-client
+```
+
+Then open the already-installed dev client app on your device. It will connect to the dev server automatically.
 
 ## Project structure
 

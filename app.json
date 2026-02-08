@@ -22,7 +22,12 @@
             "com.googleusercontent.apps.294519048023-gss6vgnkonpesvb1clkbsuij2517u4m7"
           ]
         }
-      ]
+      ],
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsLocalNetworking": true
+        }
+      }
     },
     "android": {
       "adaptiveIcon": {

@@ -8,7 +8,7 @@ import {
 import { Redirect } from "expo-router";
 import * as Google from "expo-auth-session/providers/google";
 import * as WebBrowser from "expo-web-browser";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { exchangeGoogleToken } from "@/api/endpoints";
 import { useAuthStore } from "@/store/auth";
@@ -26,23 +26,43 @@ export default function SignInScreen() {
     webClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
   });
 
-  const handleSignIn = useCallback(async () => {
+  console.log("[AUTH] request ready:", !!request);
+  console.log("[AUTH] redirectUri:", request?.redirectUri);
+
+  useEffect(() => {
+    console.log("[AUTH] response changed:", JSON.stringify(response, null, 2));
+    if (!response) return;
+    if (response.type === "success" && response.params.id_token) {
+      console.log("[AUTH] got id_token, exchanging with backend...");
+      setLoading(true);
+      exchangeGoogleToken(response.params.id_token)
+        .then((authResponse) => {
+          console.log("[AUTH] backend exchange success");
+          return signIn(authResponse.access_token);
+        })
+        .catch((e) => {
+          console.error("[AUTH] backend exchange failed:", e);
+          setError("Something went wrong. Please try again.");
+        })
+        .finally(() => setLoading(false));
+    } else if (response.type === "error") {
+      console.error("[AUTH] Google error:", response.error);
+      setError("Google sign-in failed. Please try again.");
+    }
+  }, [response, signIn]);
+
+  const handleSignIn = useCallback(() => {
+    console.log("[AUTH] promptAsync triggered");
     setError(null);
     setLoading(true);
-    try {
-      const result = await promptAsync();
-      if (result.type === "success" && result.params.id_token) {
-        const authResponse = await exchangeGoogleToken(result.params.id_token);
-        await signIn(authResponse.access_token);
-      } else if (result.type === "error") {
-        setError("Google sign-in failed. Please try again.");
-      }
-    } catch (e) {
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  }, [promptAsync, signIn]);
+    promptAsync()
+      .then((result) => console.log("[AUTH] promptAsync resolved:", result?.type))
+      .catch((e) => {
+        console.error("[AUTH] promptAsync error:", e);
+        setError("Something went wrong. Please try again.");
+        setLoading(false);
+      });
+  }, [promptAsync]);
 
   if (token) {
     return <Redirect href="/(app)/(tabs)" />;
