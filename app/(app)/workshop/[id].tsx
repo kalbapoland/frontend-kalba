@@ -12,6 +12,9 @@ import type { AxiosError } from "axios";
 
 import { useWorkshopDetail } from "@/hooks/useWorkshopDetail";
 import { useJoinWorkshop } from "@/hooks/useJoinWorkshop";
+import { useDeleteWorkshop } from "@/hooks/useDeleteWorkshop";
+import { useAuthStore } from "@/store/auth";
+import { formatWeekdayLong, formatMonthDay, formatTime } from "@/lib/date";
 
 function formatPrice(price: string | number): string {
   const n = Number(price);
@@ -25,6 +28,8 @@ export default function WorkshopDetailScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const joinMutation = useJoinWorkshop();
+  const deleteMutation = useDeleteWorkshop();
+  const user = useAuthStore((s) => s.user);
 
   const handleJoin = () => {
     joinMutation.mutate(id!, {
@@ -32,6 +37,7 @@ export default function WorkshopDetailScreen() {
         router.push({
           pathname: "/(app)/workshop/call",
           params: {
+            workshopId: id!,
             token: data.token,
             roomUrl: data.room_url,
             role: data.role,
@@ -46,6 +52,27 @@ export default function WorkshopDetailScreen() {
         Alert.alert("Unable to Join", msg);
       },
     });
+  };
+
+  const handleDelete = () => {
+    Alert.alert(
+      "Delete Workshop",
+      "Are you sure you want to delete this workshop? This cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => {
+            deleteMutation.mutate(id!, {
+              onSuccess: () => router.back(),
+              onError: () =>
+                Alert.alert("Error", "Failed to delete workshop"),
+            });
+          },
+        },
+      ],
+    );
   };
 
   if (isLoading) {
@@ -66,16 +93,10 @@ export default function WorkshopDetailScreen() {
     );
   }
 
-  const date = new Date(workshop.start_time);
-  const weekday = date.toLocaleDateString(undefined, { weekday: "long" });
-  const monthDay = date.toLocaleDateString(undefined, {
-    month: "long",
-    day: "numeric",
-  });
-  const time = date.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const isOwner = user?.id === workshop.trainer_id;
+  const weekday = formatWeekdayLong(workshop.start_time);
+  const monthDay = formatMonthDay(workshop.start_time);
+  const time = formatTime(workshop.start_time);
 
   return (
     <View className="flex-1 bg-canvas">
@@ -136,6 +157,41 @@ export default function WorkshopDetailScreen() {
             />
           </View>
         </View>
+
+        {/* Owner Actions */}
+        {isOwner && (
+          <View className="px-6 pb-6">
+            <Text className="mb-3 text-sm font-semibold uppercase tracking-wider text-ink-faint">
+              Manage
+            </Text>
+            <View className="flex-row gap-3">
+              <Pressable
+                className="flex-1 items-center rounded-2xl border border-primary bg-surface py-3.5"
+                style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
+                onPress={() =>
+                  router.push({
+                    pathname: "/(app)/workshop/edit",
+                    params: { id: id! },
+                  })
+                }
+              >
+                <Text className="text-sm font-semibold text-primary">
+                  Edit Workshop
+                </Text>
+              </Pressable>
+              <Pressable
+                className="flex-1 items-center rounded-2xl border border-danger bg-surface py-3.5"
+                style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
+                onPress={handleDelete}
+                disabled={deleteMutation.isPending}
+              >
+                <Text className="text-sm font-semibold text-danger">
+                  {deleteMutation.isPending ? "Deleting..." : "Delete"}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        )}
       </ScrollView>
 
       {/* Sticky CTA */}

@@ -44,6 +44,10 @@ export default function AppLayout() {
         options={{ title: "Workshop" }}
       />
       <Stack.Screen
+        name="workshop/edit"
+        options={{ presentation: "modal", title: "Edit Workshop" }}
+      />
+      <Stack.Screen
         name="workshop/call"
         options={{
           headerShown: false,

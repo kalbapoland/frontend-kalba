@@ -12,7 +12,8 @@
       "Bash(pod install)",
       "Bash(npm ls:*)",
       "Bash(node -e:*)",
-      "Bash(xcodebuild clean:*)"
+      "Bash(xcodebuild clean:*)",
+      "Bash(ls:*)"
     ]
   }
 }

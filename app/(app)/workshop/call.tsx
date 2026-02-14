@@ -1,5 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { View, Text, Pressable, Alert } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  Alert,
+  ScrollView,
+  Platform,
+  PermissionsAndroid,
+} from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Daily, { DailyMediaView } from "@daily-co/react-native-daily-js";
@@ -8,14 +16,37 @@ import type {
   DailyParticipant,
   DailyEventObjectParticipant,
   DailyEventObjectParticipantLeft,
+  DailyEventObjectAppMessage,
 } from "@daily-co/react-native-daily-js";
 
-import type { WorkshopRules } from "@/types/api";
+import type { HostActionType, WorkshopRules } from "@/types/api";
+import { useHostAction } from "@/hooks/useHostAction";
+
+async function requestMediaPermissions(): Promise<{
+  camera: boolean;
+  mic: boolean;
+}> {
+  if (Platform.OS !== "android") {
+    // iOS prompts automatically via WebRTC
+    return { camera: true, mic: true };
+  }
+
+  const result = await PermissionsAndroid.requestMultiple([
+    PermissionsAndroid.PERMISSIONS.CAMERA,
+    PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+  ]);
+
+  return {
+    camera: result["android.permission.CAMERA"] === "granted",
+    mic: result["android.permission.RECORD_AUDIO"] === "granted",
+  };
+}
 
 type CallState = "joining" | "joined" | "left";
 
-export default function VideoCallScreen() {
+export default function NativeCallScreen() {
   const params = useLocalSearchParams<{
+    workshopId: string;
     token: string;
     roomUrl: string;
     role: string;
@@ -34,6 +65,12 @@ export default function VideoCallScreen() {
   const [isMicOn, setIsMicOn] = useState(!rules.force_mic_muted_on_join);
   const [isCameraOn, setIsCameraOn] = useState(rules.force_camera_on);
   const [callState, setCallState] = useState<CallState>("joining");
+  const [allMuted, setAllMuted] = useState(rules.all_muted ?? false);
+  const [allCamerasOff, setAllCamerasOff] = useState(
+    rules.all_cameras_off ?? false,
+  );
+
+  const hostAction = useHostAction(params.workshopId!);
 
   const updateParticipants = useCallback(() => {
     if (!callRef.current) return;
@@ -76,25 +113,76 @@ export default function VideoCallScreen() {
     [router],
   );
 
+  const handleAppMessage = useCallback(
+    (event: DailyEventObjectAppMessage) => {
+      const msg = event.data;
+      if (msg?.type !== "host_control") return;
+
+      const action = msg.action as HostActionType;
+
+      if (isHost) {
+        // Host only updates UI state — does not mute themselves
+        if (action === "mute_all") setAllMuted(true);
+        else if (action === "unmute_all") setAllMuted(false);
+        else if (action === "cameras_off_all") setAllCamerasOff(true);
+        else if (action === "cameras_on_all") setAllCamerasOff(false);
+        return;
+      }
+
+      // Participant: enforce the control locally
+      if (action === "mute_all") {
+        callRef.current?.setLocalAudio(false);
+        setIsMicOn(false);
+        setAllMuted(true);
+      } else if (action === "unmute_all") {
+        setAllMuted(false);
+      } else if (action === "cameras_off_all") {
+        callRef.current?.setLocalVideo(false);
+        setIsCameraOn(false);
+        setAllCamerasOff(true);
+      } else if (action === "cameras_on_all") {
+        setAllCamerasOff(false);
+      }
+    },
+    [isHost],
+  );
+
   useEffect(() => {
-    const call = Daily.createCallObject();
-    callRef.current = call;
+    let call: DailyCall | null = null;
 
-    call.on("joined-meeting", handleJoined);
-    call.on("participant-joined", handleParticipantUpdate);
-    call.on("participant-updated", handleParticipantUpdate);
-    call.on("participant-left", handleParticipantLeft);
-    call.on("left-meeting", handleLeft);
-    call.on("error", handleError);
+    (async () => {
+      const perms = await requestMediaPermissions();
+      if (!perms.camera && !perms.mic) {
+        Alert.alert(
+          "Permissions Required",
+          "Camera and microphone access are needed for video workshops. Please enable them in Settings.",
+        );
+        router.back();
+        return;
+      }
 
-    call.join({
-      url: params.roomUrl!,
-      token: params.token!,
-    });
+      call = Daily.createCallObject();
+      callRef.current = call;
+
+      call.on("joined-meeting", handleJoined);
+      call.on("participant-joined", handleParticipantUpdate);
+      call.on("participant-updated", handleParticipantUpdate);
+      call.on("participant-left", handleParticipantLeft);
+      call.on("left-meeting", handleLeft);
+      call.on("error", handleError);
+      call.on("app-message", handleAppMessage);
+
+      call.join({
+        url: params.roomUrl!,
+        token: params.token!,
+      });
+    })();
 
     return () => {
-      call.leave().catch(() => {});
-      call.destroy();
+      if (call) {
+        call.leave().catch(() => {});
+        call.destroy();
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -107,15 +195,28 @@ export default function VideoCallScreen() {
   }, [isMicOn]);
 
   const toggleCamera = useCallback(() => {
-    if (!callRef.current || !rules.allow_camera_toggle) return;
+    if (!callRef.current) return;
+    // Host can always toggle; participants need allow_camera_toggle
+    if (!isHost && !rules.allow_camera_toggle) return;
     const newState = !isCameraOn;
     callRef.current.setLocalVideo(newState);
     setIsCameraOn(newState);
-  }, [isCameraOn, rules.allow_camera_toggle]);
+  }, [isCameraOn, isHost, rules.allow_camera_toggle]);
 
   const leaveCall = useCallback(() => {
     callRef.current?.leave();
   }, []);
+
+  const performHostAction = useCallback(
+    (action: HostActionType) => {
+      hostAction.mutate(action, {
+        onError: () => {
+          Alert.alert("Error", "Could not perform action. Please try again.");
+        },
+      });
+    },
+    [hostAction],
+  );
 
   // Separate local from remote participants
   const participantList = Object.values(participants);
@@ -193,6 +294,43 @@ export default function VideoCallScreen() {
         )}
       </View>
 
+      {/* Host Controls */}
+      {isHost && (
+        <View className="border-t border-surface/10 px-4 py-3">
+          <Text className="mb-2 text-center text-xs font-semibold uppercase tracking-wider text-surface/50">
+            Host Controls
+          </Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{
+              gap: 8,
+              justifyContent: "center",
+              flexGrow: 1,
+            }}
+          >
+            <HostControlButton
+              label={allMuted ? "Unmute All" : "Mute All"}
+              icon={allMuted ? "🔊" : "🔇"}
+              onPress={() =>
+                performHostAction(allMuted ? "unmute_all" : "mute_all")
+              }
+              loading={hostAction.isPending}
+            />
+            <HostControlButton
+              label={allCamerasOff ? "Cameras On All" : "Cameras Off All"}
+              icon={allCamerasOff ? "📹" : "📷"}
+              onPress={() =>
+                performHostAction(
+                  allCamerasOff ? "cameras_on_all" : "cameras_off_all",
+                )
+              }
+              loading={hostAction.isPending}
+            />
+          </ScrollView>
+        </View>
+      )}
+
       {/* Controls */}
       <View
         className="flex-row items-center justify-center gap-5 border-t border-surface/10 px-6 pt-4"
@@ -257,10 +395,16 @@ function ParticipantTile({
           </View>
         </View>
       )}
-      <View className="absolute bottom-2 left-2 rounded-lg bg-ink/60 px-2 py-1">
+      <View className="absolute bottom-2 left-2 flex-row items-center gap-1.5 rounded-lg bg-ink/60 px-2 py-1">
         <Text className="text-xs text-surface">
           {participant.local ? "You" : (participant.user_name ?? "Guest")}
         </Text>
+        {participant.tracks?.audio?.state !== "playable" && (
+          <Text style={{ fontSize: 10 }}>🔇</Text>
+        )}
+        {!isVideoPlayable && (
+          <Text style={{ fontSize: 10 }}>📷</Text>
+        )}
       </View>
     </View>
   );
@@ -297,6 +441,32 @@ function ControlButton({
     >
       <Text style={{ fontSize: 24 }}>{icon}</Text>
       <Text className="mt-1 text-[10px] text-surface/70">{label}</Text>
+    </Pressable>
+  );
+}
+
+function HostControlButton({
+  label,
+  icon,
+  onPress,
+  loading = false,
+}: {
+  label: string;
+  icon: string;
+  onPress: () => void;
+  loading?: boolean;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={loading}
+      className="flex-row items-center gap-2 rounded-xl bg-surface/15 px-4 py-2"
+      style={({ pressed }) => ({
+        opacity: pressed ? 0.7 : loading ? 0.5 : 1,
+      })}
+    >
+      <Text style={{ fontSize: 16 }}>{icon}</Text>
+      <Text className="text-xs font-semibold text-surface">{label}</Text>
     </Pressable>
   );
 }

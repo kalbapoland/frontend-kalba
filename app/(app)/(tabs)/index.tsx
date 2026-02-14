@@ -12,6 +12,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useWorkshops } from "@/hooks/useWorkshops";
 import { useAuthStore } from "@/store/auth";
 import type { Workshop } from "@/types/api";
+import {
+  formatWeekdayShort,
+  formatDay,
+  formatMonthLong,
+  formatTime,
+} from "@/lib/date";
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -28,15 +34,10 @@ function formatPrice(price: string | number): string {
 
 function WorkshopCard({ workshop }: { workshop: Workshop }) {
   const router = useRouter();
-  const date = new Date(workshop.start_time);
-
-  const weekday = date.toLocaleDateString(undefined, { weekday: "short" });
-  const day = date.getDate();
-  const month = date.toLocaleDateString(undefined, { month: "long" });
-  const time = date.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const weekday = formatWeekdayShort(workshop.start_time);
+  const day = formatDay(workshop.start_time);
+  const month = formatMonthLong(workshop.start_time);
+  const time = formatTime(workshop.start_time);
 
   return (
     <Pressable

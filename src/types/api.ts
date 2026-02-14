@@ -32,11 +32,22 @@ export interface WorkshopCreatePayload {
   max_participants: number;
 }
 
+export interface WorkshopUpdatePayload {
+  title?: string;
+  description?: string;
+  start_time?: string;
+  duration_minutes?: number;
+  price?: string;
+  max_participants?: number;
+}
+
 export interface WorkshopRules {
   force_camera_on: boolean;
   force_mic_muted_on_join: boolean;
   allow_unmute_after: number;
   allow_camera_toggle: boolean;
+  all_muted: boolean;
+  all_cameras_off: boolean;
 }
 
 export interface JoinWorkshopResponse {
@@ -44,4 +55,16 @@ export interface JoinWorkshopResponse {
   room_url: string;
   role: "host" | "participant";
   rules: WorkshopRules;
+}
+
+export type HostActionType =
+  | "mute_all"
+  | "unmute_all"
+  | "cameras_off_all"
+  | "cameras_on_all";
+
+export interface HostActionResponse {
+  status: string;
+  action: HostActionType;
+  broadcast_sent: boolean;
 }
