@@ -13,7 +13,6 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { useWorkshopDetail } from "@/hooks/useWorkshopDetail";
 import { useUpdateWorkshop } from "@/hooks/useUpdateWorkshop";
-import { formatTime } from "@/lib/date";
 
 function toWarsawDateStr(iso: string): string {
   return new Date(iso).toLocaleDateString("sv-SE", {
