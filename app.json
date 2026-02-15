@@ -28,7 +28,8 @@
           "NSAllowsLocalNetworking": true
         },
         "NSCameraUsageDescription": "Kalba needs camera access for video workshops",
-        "NSMicrophoneUsageDescription": "Kalba needs microphone access for video workshops"
+        "NSMicrophoneUsageDescription": "Kalba needs microphone access for video workshops",
+        "UIBackgroundModes": ["voip", "audio"]
       }
     },
     "android": {

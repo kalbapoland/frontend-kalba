@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
@@ -14,7 +14,6 @@ export default function WebCallScreen() {
     rules: string;
   }>();
   const router = useRouter();
-  const iframeRef = useRef<HTMLIFrameElement | null>(null);
 
   const roomUrl = params.roomUrl;
   const token = params.token;
@@ -25,10 +24,10 @@ export default function WebCallScreen() {
   const [allCamerasOff, setAllCamerasOff] = useState(
     rules.all_cameras_off ?? false,
   );
+  const [elapsed, setElapsed] = useState(0);
 
   const hostAction = useHostAction(params.workshopId!);
 
-  // Daily prebuilt embed URL with token
   const embedUrl = `${roomUrl}?t=${token}`;
 
   const leaveCall = useCallback(() => {
@@ -51,7 +50,6 @@ export default function WebCallScreen() {
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      // Daily prebuilt sends postMessage events when leaving
       if (event.data?.action === "left-meeting") {
         router.back();
       }
@@ -60,8 +58,20 @@ export default function WebCallScreen() {
     return () => window.removeEventListener("message", handleMessage);
   }, [router]);
 
+  // Elapsed time counter
+  useEffect(() => {
+    const interval = setInterval(() => setElapsed((s) => s + 1), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  };
+
   return (
-    <View style={{ flex: 1, backgroundColor: "#3D3D3D" }}>
+    <View style={{ flex: 1, backgroundColor: "#1a1a1a" }}>
       {/* Header bar */}
       <View
         style={{
@@ -69,13 +79,28 @@ export default function WebCallScreen() {
           alignItems: "center",
           justifyContent: "space-between",
           paddingHorizontal: 16,
-          paddingVertical: 8,
-          backgroundColor: "#2D2D2D",
+          paddingVertical: 10,
+          backgroundColor: "#222",
         }}
       >
-        <Text style={{ color: "#FAFAF7", fontSize: 14, fontWeight: "500" }}>
-          {isHost ? "Host" : "Participant"} — Workshop Call
-        </Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+          {/* Live indicator */}
+          <View
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: 4,
+              backgroundColor: "#22c55e",
+            }}
+          />
+          <Text style={{ color: "rgba(255,255,255,0.6)", fontSize: 14, fontWeight: "500" }}>
+            {formatTime(elapsed)}
+          </Text>
+          <Text style={{ color: "rgba(255,255,255,0.4)", fontSize: 13 }}>
+            {isHost ? "Host" : "Participant"}
+          </Text>
+        </View>
+
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
           {isHost && (
             <>
@@ -87,7 +112,7 @@ export default function WebCallScreen() {
                 loading={hostAction.isPending}
               />
               <HostWebButton
-                label={allCamerasOff ? "Cameras On All" : "Cameras Off All"}
+                label={allCamerasOff ? "Cameras On" : "Cameras Off"}
                 onPress={() =>
                   performHostAction(
                     allCamerasOff ? "cameras_on_all" : "cameras_off_all",
@@ -99,15 +124,16 @@ export default function WebCallScreen() {
           )}
           <Pressable
             onPress={leaveCall}
-            style={{
-              backgroundColor: "#D9534F",
-              paddingHorizontal: 16,
+            style={({ pressed }) => ({
+              backgroundColor: "#ef4444",
+              paddingHorizontal: 20,
               paddingVertical: 8,
-              borderRadius: 8,
-            }}
+              borderRadius: 20,
+              opacity: pressed ? 0.7 : 1,
+            })}
           >
             <Text
-              style={{ color: "#FAFAF7", fontWeight: "600", fontSize: 14 }}
+              style={{ color: "#fff", fontWeight: "600", fontSize: 13 }}
             >
               Leave
             </Text>
@@ -118,7 +144,6 @@ export default function WebCallScreen() {
       {/* Daily prebuilt iframe */}
       <View style={{ flex: 1 }}>
         <iframe
-          ref={iframeRef}
           src={embedUrl}
           allow="camera; microphone; fullscreen; display-capture; autoplay"
           style={{
@@ -146,14 +171,14 @@ function HostWebButton({
       onPress={onPress}
       disabled={loading}
       style={({ pressed }) => ({
-        backgroundColor: "#4A5A40",
-        paddingHorizontal: 12,
+        backgroundColor: "rgba(255,255,255,0.1)",
+        paddingHorizontal: 14,
         paddingVertical: 8,
-        borderRadius: 8,
+        borderRadius: 20,
         opacity: pressed ? 0.7 : loading ? 0.5 : 1,
       })}
     >
-      <Text style={{ color: "#FAFAF7", fontWeight: "600", fontSize: 12 }}>
+      <Text style={{ color: "#fff", fontWeight: "600", fontSize: 12 }}>
         {label}
       </Text>
     </Pressable>
