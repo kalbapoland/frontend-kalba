@@ -10,6 +10,7 @@ import {
   Platform,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 import { useWorkshopDetail } from "@/hooks/useWorkshopDetail";
 import { useUpdateWorkshop } from "@/hooks/useUpdateWorkshop";
@@ -116,7 +117,8 @@ export default function EditWorkshopScreen() {
   if (!workshop) {
     return (
       <View className="flex-1 items-center justify-center bg-canvas">
-        <Text className="text-lg font-light text-ink-light">
+        <Ionicons name="alert-circle-outline" size={40} color="#C5C3BC" />
+        <Text className="mt-4 text-lg font-light text-ink-light">
           Workshop not found
         </Text>
       </View>
@@ -143,7 +145,7 @@ export default function EditWorkshopScreen() {
         multiline
       />
 
-      <SectionLabel>Schedule</SectionLabel>
+      <SectionLabel icon="calendar-outline">Schedule</SectionLabel>
       <View className="flex-row gap-3">
         <View className="flex-1">
           <FormField
@@ -170,7 +172,7 @@ export default function EditWorkshopScreen() {
         keyboardType="numeric"
       />
 
-      <SectionLabel>Details</SectionLabel>
+      <SectionLabel icon="information-circle-outline">Details</SectionLabel>
       <View className="flex-row gap-3">
         <View className="flex-1">
           <FormField
@@ -195,24 +197,34 @@ export default function EditWorkshopScreen() {
       <Pressable
         onPress={handleSubmit}
         disabled={isPending}
-        className="mt-8 items-center rounded-2xl bg-primary py-4"
+        className="mt-8 flex-row items-center justify-center gap-2 rounded-2xl bg-primary py-4"
+        style={({ pressed }) => ({ opacity: pressed ? 0.9 : isPending ? 0.6 : 1 })}
       >
         {isPending ? (
           <ActivityIndicator color="#FAFAF7" />
         ) : (
-          <Text className="text-base font-medium tracking-wide text-surface">
-            Save Changes
-          </Text>
+          <>
+            <Ionicons name="checkmark-circle-outline" size={18} color="#FAFAF7" />
+            <Text className="text-base font-medium tracking-wide text-surface">
+              Save Changes
+            </Text>
+          </>
         )}
       </Pressable>
     </ScrollView>
   );
 }
 
-function SectionLabel({ children }: { children: string }) {
+function SectionLabel({
+  children,
+  icon,
+}: {
+  children: string;
+  icon: keyof typeof Ionicons.glyphMap;
+}) {
   return (
-    <View className="mb-4 mt-2 flex-row items-center">
-      <View className="mr-2 h-1.5 w-1.5 rounded-full bg-primary" />
+    <View className="mb-4 mt-2 flex-row items-center gap-2">
+      <Ionicons name={icon} size={14} color="#7C8B72" />
       <Text className="text-xs font-medium uppercase tracking-widest text-ink-faint">
         {children}
       </Text>

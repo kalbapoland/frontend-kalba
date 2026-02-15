@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 import { useWorkshops } from "@/hooks/useWorkshops";
 import { useAuthStore } from "@/store/auth";
@@ -42,36 +43,58 @@ function WorkshopCard({ workshop }: { workshop: Workshop }) {
   return (
     <Pressable
       onPress={() => router.push(`/(app)/workshop/${workshop.id}`)}
-      className="mb-4 rounded-2xl bg-surface px-5 py-5"
-      style={{
+      className="mb-4 flex-row overflow-hidden rounded-2xl bg-surface"
+      style={({ pressed }) => ({
+        opacity: pressed ? 0.95 : 1,
         shadowColor: "#3D3D3D",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.06,
         shadowRadius: 12,
         elevation: 2,
-      }}
+      })}
     >
-      <Text className="text-lg font-semibold text-ink">{workshop.title}</Text>
-      <Text className="mt-2 text-sm text-ink-light">
-        {weekday}, {day} {month} · {time}
-      </Text>
+      {/* Left accent strip */}
+      <View className="w-1 bg-primary" />
 
-      <View className="mt-4 flex-row items-center">
-        <View className="flex-row items-center rounded-lg bg-canvas px-3 py-1.5">
-          <Text className="text-xs font-medium text-primary">
-            {formatPrice(workshop.price)}
+      <View className="flex-1 px-5 py-5">
+        <Text className="text-lg font-semibold text-ink">
+          {workshop.title}
+        </Text>
+
+        <View className="mt-2.5 flex-row items-center">
+          <Ionicons name="calendar-outline" size={13} color="#8A8A85" />
+          <Text className="ml-1.5 text-sm text-ink-light">
+            {weekday}, {day} {month}
           </Text>
+          <Text className="mx-2 text-ink-faint">·</Text>
+          <Ionicons name="time-outline" size={13} color="#8A8A85" />
+          <Text className="ml-1 text-sm text-ink-light">{time}</Text>
         </View>
-        <View className="ml-2 flex-row items-center rounded-lg bg-canvas px-3 py-1.5">
-          <Text className="text-xs text-ink-faint">
-            {workshop.duration_minutes} min
-          </Text>
+
+        <View className="mt-3.5 flex-row items-center gap-2">
+          <View className="rounded-lg bg-primary/10 px-2.5 py-1">
+            <Text className="text-xs font-semibold text-primary">
+              {formatPrice(workshop.price)}
+            </Text>
+          </View>
+          <View className="flex-row items-center gap-1 rounded-lg bg-canvas px-2.5 py-1">
+            <Ionicons name="time-outline" size={11} color="#8A8A85" />
+            <Text className="text-xs text-ink-faint">
+              {workshop.duration_minutes} min
+            </Text>
+          </View>
+          <View className="flex-row items-center gap-1 rounded-lg bg-canvas px-2.5 py-1">
+            <Ionicons name="people-outline" size={11} color="#8A8A85" />
+            <Text className="text-xs text-ink-faint">
+              {workshop.max_participants} spots
+            </Text>
+          </View>
         </View>
-        <View className="ml-2 flex-row items-center rounded-lg bg-canvas px-3 py-1.5">
-          <Text className="text-xs text-ink-faint">
-            {workshop.max_participants} spots
-          </Text>
-        </View>
+      </View>
+
+      {/* Right chevron */}
+      <View className="items-center justify-center pr-4">
+        <Ionicons name="chevron-forward" size={16} color="#C5C3BC" />
       </View>
     </Pressable>
   );
@@ -118,10 +141,11 @@ export default function WorkshopListScreen() {
   if (error) {
     return (
       <View className="flex-1 items-center justify-center bg-canvas px-12">
-        <Text className="text-lg font-light text-ink-light">
+        <Ionicons name="cloud-offline-outline" size={40} color="#C5C3BC" />
+        <Text className="mt-4 text-lg font-light text-ink-light">
           Unable to load workshops
         </Text>
-        <Text className="mt-3 text-center text-sm text-muted">
+        <Text className="mt-2 text-center text-sm text-muted">
           Check your connection and try again
         </Text>
         <Pressable
@@ -155,7 +179,8 @@ export default function WorkshopListScreen() {
         }
         ListEmptyComponent={
           <View className="items-center py-24">
-            <Text className="text-lg font-light text-ink-light">
+            <Ionicons name="calendar-outline" size={40} color="#C5C3BC" />
+            <Text className="mt-4 text-lg font-light text-ink-light">
               Nothing scheduled yet
             </Text>
             <Text className="mt-2 text-sm text-muted">
@@ -167,17 +192,17 @@ export default function WorkshopListScreen() {
       {isTrainer && (
         <Pressable
           onPress={() => router.push("/(app)/create-workshop")}
-          className="absolute bottom-8 right-6 h-14 w-14 items-center justify-center rounded-full bg-primary"
+          className="absolute right-6 h-14 w-14 items-center justify-center rounded-full bg-primary"
           style={{
             bottom: insets.bottom + 68,
             shadowColor: "#3D3D3D",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.12,
-            shadowRadius: 10,
-            elevation: 4,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.15,
+            shadowRadius: 12,
+            elevation: 6,
           }}
         >
-          <Text className="text-2xl font-light text-surface">+</Text>
+          <Ionicons name="add" size={28} color="#FAFAF7" />
         </Pressable>
       )}
     </View>

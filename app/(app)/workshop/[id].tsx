@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import type { AxiosError } from "axios";
 
 import { useWorkshopDetail } from "@/hooks/useWorkshopDetail";
@@ -86,7 +87,8 @@ export default function WorkshopDetailScreen() {
   if (!workshop) {
     return (
       <View className="flex-1 items-center justify-center bg-canvas">
-        <Text className="text-lg font-light text-ink-light">
+        <Ionicons name="alert-circle-outline" size={40} color="#C5C3BC" />
+        <Text className="mt-4 text-lg font-light text-ink-light">
           Workshop not found
         </Text>
       </View>
@@ -107,12 +109,18 @@ export default function WorkshopDetailScreen() {
         {/* Header */}
         <View className="px-6 pb-6 pt-4">
           <Text className="text-2xl font-bold text-ink">{workshop.title}</Text>
-          <Text className="mt-3 text-base text-ink-light">
-            {weekday}, {monthDay} · {time}
-          </Text>
+          <View className="mt-3 flex-row items-center">
+            <Ionicons name="calendar-outline" size={15} color="#6B6B66" />
+            <Text className="ml-2 text-base text-ink-light">
+              {weekday}, {monthDay}
+            </Text>
+            <Text className="mx-2 text-ink-faint">·</Text>
+            <Ionicons name="time-outline" size={15} color="#6B6B66" />
+            <Text className="ml-1.5 text-base text-ink-light">{time}</Text>
+          </View>
         </View>
 
-        {/* About Section */}
+        {/* About */}
         {workshop.description ? (
           <View className="px-6 pb-6">
             <Text className="mb-3 text-sm font-semibold uppercase tracking-wider text-ink-faint">
@@ -124,7 +132,7 @@ export default function WorkshopDetailScreen() {
           </View>
         ) : null}
 
-        {/* Details Section */}
+        {/* Details */}
         <View className="px-6 pb-6">
           <Text className="mb-3 text-sm font-semibold uppercase tracking-wider text-ink-faint">
             Details
@@ -140,17 +148,17 @@ export default function WorkshopDetailScreen() {
             }}
           >
             <DetailRow
-              icon="clock"
+              icon="time-outline"
               label="Duration"
               value={`${workshop.duration_minutes} min`}
             />
             <DetailRow
-              icon="people"
+              icon="people-outline"
               label="Spots"
               value={`${workshop.max_participants} max`}
             />
             <DetailRow
-              icon="price"
+              icon="pricetag-outline"
               label="Price"
               value={formatPrice(workshop.price)}
               last
@@ -166,7 +174,7 @@ export default function WorkshopDetailScreen() {
             </Text>
             <View className="flex-row gap-3">
               <Pressable
-                className="flex-1 items-center rounded-2xl border border-primary bg-surface py-3.5"
+                className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl border border-primary/30 bg-surface py-3.5"
                 style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
                 onPress={() =>
                   router.push({
@@ -175,16 +183,16 @@ export default function WorkshopDetailScreen() {
                   })
                 }
               >
-                <Text className="text-sm font-semibold text-primary">
-                  Edit Workshop
-                </Text>
+                <Ionicons name="create-outline" size={16} color="#7C8B72" />
+                <Text className="text-sm font-semibold text-primary">Edit</Text>
               </Pressable>
               <Pressable
-                className="flex-1 items-center rounded-2xl border border-danger bg-surface py-3.5"
+                className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl border border-danger/30 bg-surface py-3.5"
                 style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
                 onPress={handleDelete}
                 disabled={deleteMutation.isPending}
               >
+                <Ionicons name="trash-outline" size={16} color="#C4836E" />
                 <Text className="text-sm font-semibold text-danger">
                   {deleteMutation.isPending ? "Deleting..." : "Delete"}
                 </Text>
@@ -194,33 +202,31 @@ export default function WorkshopDetailScreen() {
         )}
       </ScrollView>
 
-      {/* Sticky CTA */}
+      {/* Sticky Join Button */}
       <View
         className="border-t border-subtle bg-canvas px-6 pt-4"
         style={{ paddingBottom: Math.max(insets.bottom, 16) }}
       >
         <Pressable
-          className="items-center rounded-2xl bg-primary py-4"
+          className="flex-row items-center justify-center gap-2 rounded-2xl bg-primary py-4"
           style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}
           onPress={handleJoin}
           disabled={joinMutation.isPending}
         >
-          <Text className="text-base font-semibold text-surface">
-            {joinMutation.isPending ? "Joining..." : "Join Workshop"}
-          </Text>
+          {joinMutation.isPending ? (
+            <ActivityIndicator color="#FAFAF7" />
+          ) : (
+            <>
+              <Ionicons name="videocam" size={18} color="#FAFAF7" />
+              <Text className="text-base font-semibold text-surface">
+                Join Workshop
+              </Text>
+            </>
+          )}
         </Pressable>
       </View>
     </View>
   );
-}
-
-function DetailIcon({ type }: { type: string }) {
-  const symbols: Record<string, string> = {
-    clock: "⏱",
-    people: "👥",
-    price: "💲",
-  };
-  return <Text style={{ fontSize: 16 }}>{symbols[type] ?? "·"}</Text>;
 }
 
 function DetailRow({
@@ -229,7 +235,7 @@ function DetailRow({
   value,
   last = false,
 }: {
-  icon: string;
+  icon: keyof typeof Ionicons.glyphMap;
   label: string;
   value: string;
   last?: boolean;
@@ -240,7 +246,7 @@ function DetailRow({
         last ? "" : "border-b border-subtle"
       }`}
     >
-      <DetailIcon type={icon} />
+      <Ionicons name={icon} size={18} color="#8A8A85" />
       <Text className="ml-3 flex-1 text-sm text-ink-faint">{label}</Text>
       <Text className="text-sm font-semibold text-ink">{value}</Text>
     </View>

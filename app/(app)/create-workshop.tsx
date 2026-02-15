@@ -10,6 +10,7 @@ import {
   Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 import { useCreateWorkshop } from "@/hooks/useCreateWorkshop";
 import { useAuthStore } from "@/store/auth";
@@ -30,7 +31,8 @@ export default function CreateWorkshopScreen() {
   if (user?.role !== "trainer") {
     return (
       <View className="flex-1 items-center justify-center bg-canvas">
-        <Text className="text-base text-muted">
+        <Ionicons name="lock-closed-outline" size={40} color="#C5C3BC" />
+        <Text className="mt-4 text-base text-muted">
           Only trainers can create workshops
         </Text>
       </View>
@@ -99,7 +101,7 @@ export default function CreateWorkshopScreen() {
         label="Title"
         value={title}
         onChangeText={setTitle}
-        placeholder="Workshop title"
+        placeholder="e.g. Morning Yoga Flow"
       />
       <FormField
         label="Description"
@@ -109,7 +111,7 @@ export default function CreateWorkshopScreen() {
         multiline
       />
 
-      <SectionLabel>Schedule</SectionLabel>
+      <SectionLabel icon="calendar-outline">Schedule</SectionLabel>
       <View className="flex-row gap-3">
         <View className="flex-1">
           <FormField
@@ -136,7 +138,7 @@ export default function CreateWorkshopScreen() {
         keyboardType="numeric"
       />
 
-      <SectionLabel>Details</SectionLabel>
+      <SectionLabel icon="information-circle-outline">Details</SectionLabel>
       <View className="flex-row gap-3">
         <View className="flex-1">
           <FormField
@@ -161,24 +163,34 @@ export default function CreateWorkshopScreen() {
       <Pressable
         onPress={handleSubmit}
         disabled={isPending}
-        className="mt-8 items-center rounded-2xl bg-primary py-4"
+        className="mt-8 flex-row items-center justify-center gap-2 rounded-2xl bg-primary py-4"
+        style={({ pressed }) => ({ opacity: pressed ? 0.9 : isPending ? 0.6 : 1 })}
       >
         {isPending ? (
           <ActivityIndicator color="#FAFAF7" />
         ) : (
-          <Text className="text-base font-medium tracking-wide text-surface">
-            Create Workshop
-          </Text>
+          <>
+            <Ionicons name="add-circle-outline" size={18} color="#FAFAF7" />
+            <Text className="text-base font-medium tracking-wide text-surface">
+              Create Workshop
+            </Text>
+          </>
         )}
       </Pressable>
     </ScrollView>
   );
 }
 
-function SectionLabel({ children }: { children: string }) {
+function SectionLabel({
+  children,
+  icon,
+}: {
+  children: string;
+  icon: keyof typeof Ionicons.glyphMap;
+}) {
   return (
-    <View className="mb-4 mt-2 flex-row items-center">
-      <View className="mr-2 h-1.5 w-1.5 rounded-full bg-primary" />
+    <View className="mb-4 mt-2 flex-row items-center gap-2">
+      <Ionicons name={icon} size={14} color="#7C8B72" />
       <Text className="text-xs font-medium uppercase tracking-widest text-ink-faint">
         {children}
       </Text>

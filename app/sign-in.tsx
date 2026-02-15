@@ -9,6 +9,7 @@ import { Redirect } from "expo-router";
 import * as Google from "expo-auth-session/providers/google";
 import * as WebBrowser from "expo-web-browser";
 import { useCallback, useEffect, useState } from "react";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 import { exchangeGoogleToken } from "@/api/endpoints";
 import { useAuthStore } from "@/store/auth";
@@ -57,24 +58,39 @@ export default function SignInScreen() {
 
   return (
     <View style={s.container}>
-      <Text style={s.title}>Kalba</Text>
-      <Text style={s.tagline}>Mindful workshops, simply found</Text>
+      <View style={s.hero}>
+        <Text style={s.title}>Kalba</Text>
+        <Text style={s.tagline}>Mindful workshops, simply found</Text>
+      </View>
 
       <View style={s.divider} />
 
-      <Pressable
-        onPress={handleSignIn}
-        disabled={loading}
-        style={s.button}
-      >
-        {loading ? (
-          <ActivityIndicator color="#FAFAF7" />
-        ) : (
-          <Text style={s.buttonText}>Sign in with Google</Text>
-        )}
-      </Pressable>
+      <View style={s.actions}>
+        <Pressable
+          onPress={handleSignIn}
+          disabled={loading}
+          style={({ pressed }) => [
+            s.button,
+            { opacity: pressed ? 0.9 : loading ? 0.7 : 1 },
+          ]}
+        >
+          {loading ? (
+            <ActivityIndicator color="#FAFAF7" />
+          ) : (
+            <View style={s.buttonInner}>
+              <Ionicons name="logo-google" size={18} color="#FAFAF7" />
+              <Text style={s.buttonText}>Continue with Google</Text>
+            </View>
+          )}
+        </Pressable>
 
-      {error && <Text style={s.error}>{error}</Text>}
+        {error && (
+          <View style={s.errorRow}>
+            <Ionicons name="alert-circle-outline" size={14} color="#C4836E" />
+            <Text style={s.error}>{error}</Text>
+          </View>
+        )}
+      </View>
     </View>
   );
 }
@@ -85,8 +101,10 @@ const s = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#F5F2ED",
-    paddingHorizontal: 48,
-    paddingBottom: 80,
+    paddingHorizontal: 40,
+  },
+  hero: {
+    alignItems: "center",
   },
   title: {
     fontSize: 48,
@@ -95,16 +113,20 @@ const s = StyleSheet.create({
     color: "#3D3D3D",
   },
   tagline: {
-    marginTop: 16,
-    fontSize: 16,
+    marginTop: 12,
+    fontSize: 15,
     letterSpacing: 0.5,
     color: "#B0AEA6",
   },
   divider: {
-    marginVertical: 64,
+    marginVertical: 48,
     height: 1,
-    width: 48,
+    width: 40,
     backgroundColor: "#E8E4DE",
+  },
+  actions: {
+    width: "100%",
+    alignItems: "center",
   },
   button: {
     width: "100%",
@@ -114,18 +136,27 @@ const s = StyleSheet.create({
     backgroundColor: "#7C8B72",
     borderRadius: 16,
     paddingHorizontal: 24,
-    paddingVertical: 20,
+    paddingVertical: 18,
+  },
+  buttonInner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
   },
   buttonText: {
     fontSize: 16,
     fontWeight: "500",
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
     color: "#FAFAF7",
   },
+  errorRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 24,
+  },
   error: {
-    marginTop: 32,
-    textAlign: "center",
-    fontSize: 14,
+    fontSize: 13,
     color: "#C4836E",
   },
 });

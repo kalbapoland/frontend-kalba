@@ -1,27 +1,9 @@
 import { View, Text, Pressable, Alert, Platform } from "react-native";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 import { useAuthStore } from "@/store/auth";
-
-function SettingsRow({
-  label,
-  last = false,
-}: {
-  label: string;
-  last?: boolean;
-}) {
-  return (
-    <Pressable
-      className={`flex-row items-center justify-between py-4 ${
-        last ? "" : "border-b border-subtle"
-      }`}
-    >
-      <Text className="text-base text-ink">{label}</Text>
-      <Text className="text-sm text-ink-faint">›</Text>
-    </Pressable>
-  );
-}
 
 export default function ProfileScreen() {
   const user = useAuthStore((s) => s.user);
@@ -49,12 +31,19 @@ export default function ProfileScreen() {
 
   if (!user) return null;
 
+  const initials = (user.full_name ?? "?")
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
   return (
     <View
       className="flex-1 bg-canvas px-6"
       style={{ paddingTop: insets.top + 24 }}
     >
-      {/* Profile Header Card */}
+      {/* Profile Card */}
       <View
         className="items-center rounded-3xl bg-surface px-8 py-10"
         style={{
@@ -65,14 +54,14 @@ export default function ProfileScreen() {
           elevation: 2,
         }}
       >
-        <View className="mb-5 h-20 w-20 items-center justify-center rounded-full bg-canvas">
-          <Text className="text-3xl font-semibold text-primary">
-            {user.full_name?.[0]?.toUpperCase() ?? "?"}
-          </Text>
+        <View className="mb-5 h-20 w-20 items-center justify-center rounded-full bg-primary/10">
+          <Text className="text-2xl font-bold text-primary">{initials}</Text>
         </View>
 
-        <Text className="text-xl font-semibold text-ink">{user.full_name}</Text>
-        <Text className="mt-2 text-sm text-ink-faint">{user.email}</Text>
+        <Text className="text-xl font-semibold text-ink">
+          {user.full_name}
+        </Text>
+        <Text className="mt-1.5 text-sm text-ink-faint">{user.email}</Text>
 
         <View className="mt-4 rounded-full bg-canvas px-4 py-1.5">
           <Text className="text-xs font-medium capitalize tracking-wider text-ink-faint">
@@ -81,22 +70,59 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      {/* Settings List */}
+      {/* Info Section */}
       <View className="mt-6 rounded-2xl bg-surface px-5">
-        <SettingsRow label="Account" />
-        <SettingsRow label="Preferences" last />
+        <InfoRow
+          icon="person-outline"
+          label="Account"
+          value={user.is_active ? "Active" : "Inactive"}
+        />
+        <InfoRow
+          icon="shield-checkmark-outline"
+          label="Role"
+          value={user.role}
+          last
+        />
       </View>
 
       <View className="flex-1" />
 
-      {/* Destructive Sign Out */}
+      {/* Sign Out */}
       <Pressable
         onPress={handleSignOut}
-        className="items-center rounded-2xl border border-danger-light bg-surface py-4"
-        style={{ marginBottom: Math.max(insets.bottom, 16) + 60 }}
+        className="flex-row items-center justify-center gap-2 rounded-2xl border border-danger/30 bg-surface py-4"
+        style={({ pressed }) => ({
+          marginBottom: Math.max(insets.bottom, 16) + 60,
+          opacity: pressed ? 0.8 : 1,
+        })}
       >
+        <Ionicons name="log-out-outline" size={18} color="#C4836E" />
         <Text className="text-sm font-medium text-danger">Sign Out</Text>
       </Pressable>
+    </View>
+  );
+}
+
+function InfoRow({
+  icon,
+  label,
+  value,
+  last = false,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  value: string;
+  last?: boolean;
+}) {
+  return (
+    <View
+      className={`flex-row items-center py-4 ${
+        last ? "" : "border-b border-subtle"
+      }`}
+    >
+      <Ionicons name={icon} size={18} color="#8A8A85" />
+      <Text className="ml-3 flex-1 text-base text-ink">{label}</Text>
+      <Text className="text-sm capitalize text-ink-faint">{value}</Text>
     </View>
   );
 }
