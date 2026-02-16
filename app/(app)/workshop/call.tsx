@@ -46,7 +46,6 @@ async function requestMediaPermissions(): Promise<{
 function getVideoTrack(p: DailyParticipant) {
   const t = p.tracks?.video;
   if (t?.state !== "playable") return null;
-  // Prefer guaranteed-playable `track`, fall back to `persistentTrack`
   return t.track ?? t.persistentTrack ?? null;
 }
 
@@ -105,7 +104,6 @@ export default function NativeCallScreen() {
   const handleJoined = useCallback(() => {
     setCallState("joined");
 
-    // Explicitly enable camera/mic after join to guarantee they start
     const shouldEnableCamera =
       rules.force_camera_on && !rules.all_cameras_off;
     const shouldEnableMic =
@@ -273,7 +271,7 @@ export default function NativeCallScreen() {
   if (callState === "joining") {
     return (
       <View style={[s.root, s.center]}>
-        <ActivityIndicator size="large" color="#7C8B72" />
+        <ActivityIndicator size="large" color="#8A9A7E" />
         <Text style={s.joiningText}>Connecting...</Text>
       </View>
     );
@@ -297,12 +295,10 @@ export default function NativeCallScreen() {
       {/* ── Video area ── */}
       <View style={s.videoArea}>
         {remotes.length === 0 && local ? (
-          // Solo: full-screen self-view
           <View style={s.soloTile}>
             <VideoTile participant={local} mirror />
           </View>
         ) : remotes.length === 1 ? (
-          // 1-on-1
           <View style={s.flex1}>
             <View style={s.soloTile}>
               <VideoTile participant={remotes[0]} />
@@ -314,7 +310,6 @@ export default function NativeCallScreen() {
             )}
           </View>
         ) : (
-          // Grid
           <View style={s.grid}>
             {participantList.map((p) => (
               <View key={p.session_id} style={s.gridCell}>
@@ -373,7 +368,7 @@ export default function NativeCallScreen() {
       )}
 
       {/* ── Bottom control bar ── */}
-      <View style={[s.controlBar, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+      <View style={[s.controlBar, { paddingBottom: Math.max(insets.bottom, 20) }]}>
         <ControlBtn
           icon={isMicOn ? "mic" : "mic-off"}
           on={isMicOn}
@@ -445,7 +440,7 @@ function VideoTile({
           <Ionicons
             name="mic-off"
             size={small ? 9 : 11}
-            color="#ff6b6b"
+            color="#C4836E"
           />
         )}
         <Text style={[s.nameText, small && s.nameTextSmall]}>{name}</Text>
@@ -492,14 +487,16 @@ function ControlBtn({
 /* ─── Styles ─────────────────────────────────────────────────── */
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#111" },
+  root: { flex: 1, backgroundColor: "#1A1A1A" },
   center: { alignItems: "center", justifyContent: "center" },
   flex1: { flex: 1 },
 
   joiningText: {
-    marginTop: 16,
+    marginTop: 20,
     fontSize: 15,
-    color: "rgba(255,255,255,0.5)",
+    fontWeight: "300",
+    letterSpacing: 0.5,
+    color: "rgba(255,255,255,0.4)",
   },
 
   // Top bar
@@ -507,34 +504,43 @@ const s = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
   },
   row: { flexDirection: "row", alignItems: "center", gap: 8 },
   liveDot: {
     width: 7,
     height: 7,
     borderRadius: 4,
-    backgroundColor: "#22c55e",
+    backgroundColor: "#8A9A7E",
   },
-  timerText: { fontSize: 13, color: "rgba(255,255,255,0.45)", fontVariant: ["tabular-nums"] },
-  countText: { fontSize: 12, color: "rgba(255,255,255,0.4)" },
+  timerText: {
+    fontSize: 13,
+    fontWeight: "300",
+    color: "rgba(255,255,255,0.4)",
+    fontVariant: ["tabular-nums"],
+  },
+  countText: {
+    fontSize: 12,
+    fontWeight: "300",
+    color: "rgba(255,255,255,0.35)",
+  },
 
   // Video area
-  videoArea: { flex: 1, padding: 6 },
-  soloTile: { flex: 1, borderRadius: 16, overflow: "hidden" },
+  videoArea: { flex: 1, padding: 8 },
+  soloTile: { flex: 1, borderRadius: 20, overflow: "hidden" },
 
-  // PIP (picture-in-picture self-view)
+  // PIP
   pip: {
     position: "absolute",
-    bottom: 12,
-    right: 12,
+    bottom: 14,
+    right: 14,
     width: 100,
     height: 140,
-    borderRadius: 14,
+    borderRadius: 16,
     overflow: "hidden",
-    borderWidth: 2,
-    borderColor: "rgba(255,255,255,0.15)",
+    borderWidth: 1.5,
+    borderColor: "rgba(255,255,255,0.1)",
   },
 
   // Grid
@@ -542,13 +548,13 @@ const s = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 6,
+    gap: 8,
   },
   gridCell: {
     flexBasis: "48%",
     flexGrow: 1,
     minHeight: 200,
-    borderRadius: 16,
+    borderRadius: 20,
     overflow: "hidden",
   },
 
@@ -567,28 +573,33 @@ const s = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: "#7C8B72",
+    backgroundColor: "#5E6B5A",
     alignItems: "center",
     justifyContent: "center",
   },
   avatarSmall: { width: 40, height: 40, borderRadius: 20 },
-  avatarText: { fontSize: 26, fontWeight: "700", color: "#fff" },
+  avatarText: { fontSize: 24, fontWeight: "300", color: "#FAF9F6" },
   avatarTextSmall: { fontSize: 16 },
 
   namePill: {
     position: "absolute",
-    bottom: 8,
-    left: 8,
+    bottom: 10,
+    left: 10,
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: "rgba(0,0,0,0.55)",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
   },
-  namePillSmall: { bottom: 4, left: 4, paddingHorizontal: 5, paddingVertical: 2 },
-  nameText: { fontSize: 11, color: "#fff", fontWeight: "500" },
+  namePillSmall: {
+    bottom: 5,
+    left: 5,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  nameText: { fontSize: 11, color: "rgba(255,255,255,0.8)", fontWeight: "400" },
   nameTextSmall: { fontSize: 9 },
 
   // Host controls
@@ -596,37 +607,37 @@ const s = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     gap: 10,
-    paddingHorizontal: 16,
-    paddingBottom: 8,
+    paddingHorizontal: 20,
+    paddingBottom: 10,
   },
   hostBtn: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    backgroundColor: "rgba(255,255,255,0.08)",
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.06)",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 24,
   },
-  hostBtnText: { fontSize: 11, fontWeight: "600", color: "#fff" },
+  hostBtnText: { fontSize: 11, fontWeight: "500", color: "rgba(255,255,255,0.8)" },
 
   // Bottom control bar
   controlBar: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    gap: 16,
-    paddingTop: 10,
-    backgroundColor: "rgba(0,0,0,0.3)",
+    gap: 18,
+    paddingTop: 12,
+    backgroundColor: "rgba(0,0,0,0.2)",
   },
   ctrlBtn: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: 54,
+    height: 54,
+    borderRadius: 27,
     alignItems: "center",
     justifyContent: "center",
   },
-  ctrlOn: { backgroundColor: "rgba(255,255,255,0.12)" },
-  ctrlOff: { backgroundColor: "rgba(255,255,255,0.25)" },
-  ctrlDanger: { backgroundColor: "#ef4444" },
+  ctrlOn: { backgroundColor: "rgba(255,255,255,0.10)" },
+  ctrlOff: { backgroundColor: "rgba(255,255,255,0.20)" },
+  ctrlDanger: { backgroundColor: "#C4836E" },
 });

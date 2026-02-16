@@ -58,6 +58,9 @@ export default function SignInScreen() {
 
   return (
     <View style={s.container}>
+      {/* Spacer to push content to golden ratio */}
+      <View style={s.topSpacer} />
+
       <View style={s.hero}>
         <Text style={s.title}>Kalba</Text>
         <Text style={s.tagline}>Mindful workshops, simply found</Text>
@@ -71,14 +74,17 @@ export default function SignInScreen() {
           disabled={loading}
           style={({ pressed }) => [
             s.button,
-            { opacity: pressed ? 0.9 : loading ? 0.7 : 1 },
+            {
+              opacity: loading ? 0.6 : 1,
+              transform: [{ scale: pressed ? 0.97 : 1 }],
+            },
           ]}
         >
           {loading ? (
-            <ActivityIndicator color="#FAFAF7" />
+            <ActivityIndicator color="#FAF9F6" />
           ) : (
             <View style={s.buttonInner}>
-              <Ionicons name="logo-google" size={18} color="#FAFAF7" />
+              <Ionicons name="logo-google" size={17} color="#FAF9F6" />
               <Text style={s.buttonText}>Continue with Google</Text>
             </View>
           )}
@@ -91,6 +97,8 @@ export default function SignInScreen() {
           </View>
         )}
       </View>
+
+      <View style={s.bottomSpacer} />
     </View>
   );
 }
@@ -101,28 +109,32 @@ const s = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#F5F2ED",
-    paddingHorizontal: 40,
+    paddingHorizontal: 44,
+  },
+  topSpacer: {
+    flex: 3,
   },
   hero: {
     alignItems: "center",
   },
   title: {
-    fontSize: 48,
-    fontWeight: "200",
-    letterSpacing: 8,
+    fontSize: 56,
+    fontWeight: "100",
+    letterSpacing: 12,
     color: "#3D3D3D",
   },
   tagline: {
-    marginTop: 12,
+    marginTop: 16,
     fontSize: 15,
-    letterSpacing: 0.5,
-    color: "#B0AEA6",
+    fontWeight: "300",
+    letterSpacing: 1,
+    color: "#B5B0A8",
   },
   divider: {
-    marginVertical: 48,
-    height: 1,
-    width: 40,
-    backgroundColor: "#E8E4DE",
+    marginVertical: 56,
+    height: StyleSheet.hairlineWidth,
+    width: 48,
+    backgroundColor: "#EBE7E1",
   },
   actions: {
     width: "100%",
@@ -133,10 +145,10 @@ const s = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#7C8B72",
-    borderRadius: 16,
-    paddingHorizontal: 24,
-    paddingVertical: 18,
+    backgroundColor: "#5E6B5A",
+    borderRadius: 999,
+    paddingHorizontal: 28,
+    paddingVertical: 20,
   },
   buttonInner: {
     flexDirection: "row",
@@ -146,17 +158,21 @@ const s = StyleSheet.create({
   buttonText: {
     fontSize: 16,
     fontWeight: "500",
-    letterSpacing: 0.3,
-    color: "#FAFAF7",
+    letterSpacing: 0.5,
+    color: "#FAF9F6",
   },
   errorRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    marginTop: 24,
+    marginTop: 28,
   },
   error: {
     fontSize: 13,
+    fontWeight: "300",
     color: "#C4836E",
+  },
+  bottomSpacer: {
+    flex: 5,
   },
 });

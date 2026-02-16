@@ -126,6 +126,39 @@ frontend-kalba/
 6. All subsequent API requests include the JWT via an Axios interceptor
 7. On 401 responses, the user is automatically signed out
 
+## Troubleshooting
+
+### Styles look stale / Tailwind changes not showing
+
+After editing `tailwind.config.js` or `global.css`, clear the Metro cache:
+
+```bash
+npx expo start --clear
+```
+
+### Full cache reset
+
+When things are stuck (white screen, old styles, module errors):
+
+```bash
+rm -rf node_modules/.cache
+npx expo start --clear
+```
+
+### Complete reinstall
+
+Nuclear option when nothing else works:
+
+```bash
+rm -rf node_modules
+npm install
+npx expo start --clear
+```
+
+### Expo Go not reflecting changes
+
+Shake device > "Reload", or close and reopen Expo Go entirely.
+
 ## Type checking
 
 ```bash
