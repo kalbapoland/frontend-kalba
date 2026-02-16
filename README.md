@@ -8,7 +8,7 @@ React Native + Expo mobile app for discovering and booking workshops. Connects t
 - **npm** (ships with Node)
 - **Xcode** (macOS, for iOS development builds)
 - **Android Studio** (for Android development builds)
-- The Kalba backend running locally on port 8000
+- The Kalba backend running locally on port 8000 (or use `start:dev`/`web:dev` scripts to target the deployed instance)
 
 ## Setup
 
@@ -47,11 +47,14 @@ React Native + Expo mobile app for discovering and booking workshops. Connects t
 
 ## Running the app
 
-### Web
+All scripts have a `:dev` variant that points at the deployed backend (`https://backend-kalba.fly.dev`) instead of `localhost`.
 
-```bash
-npm run web
-```
+| Platform | Local backend | Deployed backend |
+|----------|--------------|-----------------|
+| Dev server (native) | `npm start` | `npm run start:dev` |
+| iOS build + run | `npm run ios` | `npm run ios:dev` |
+| Android build + run | `npm run android` | `npm run android:dev` |
+| Web | `npm run web` | `npm run web:dev` |
 
 ### Mobile (development build)
 
