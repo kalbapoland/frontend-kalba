@@ -47,7 +47,7 @@ React Native + Expo mobile app for discovering and booking workshops. Connects t
 
 ## Running the app
 
-All scripts have a `:dev` variant that points at the deployed backend (`https://backend-kalba.fly.dev`) instead of `localhost`.
+All scripts have a `:dev` variant that targets the deployed backend (`https://backend-kalba.fly.dev`) instead of localhost.
 
 | Platform | Local backend | Deployed backend |
 |----------|--------------|-----------------|
@@ -56,26 +56,32 @@ All scripts have a `:dev` variant that points at the deployed backend (`https://
 | Android build + run | `npm run android` | `npm run android:dev` |
 | Web | `npm run web` | `npm run web:dev` |
 
+> **How env switching works:** The API URL is read from `Constants.expoConfig.extra` (set in `app.config.js`), which is evaluated by the Expo CLI process at startup — before the bundle is served. The `:dev` scripts copy `.env.dev` to `.env.development.local` (highest-priority dotenv file) so Expo's env loader picks up the remote URL. The file is auto-deleted when the script exits. Switching backends requires a **full Metro restart**.
+
 ### Mobile (development build)
 
-Mobile requires a **development build** — Expo Go will not work. Google OAuth on iOS/Android needs custom URL schemes (the reverse client ID) registered in the native app binary. Expo Go doesn't register schemes from your `app.json`, so the OAuth redirect fails with `Error 400: invalid_request`.
+Mobile requires a **development build** — Expo Go will not work. Google OAuth on iOS/Android needs custom URL schemes (the reverse client ID) registered in the native app binary. Expo Go doesn't register schemes from your `app.config.js`, so the OAuth redirect fails with `Error 400: invalid_request`.
 
 **First run** — build the native app:
 
 ```bash
-npx expo run:ios       # iOS (requires Xcode)
-npx expo run:android   # Android (requires Android Studio)
+npm run ios        # local backend  (requires Xcode)
+npm run ios:dev    # deployed backend
 ```
 
 This generates the native project, registers the OAuth URL scheme, and installs the dev client on your device/simulator. The first build takes a few minutes.
 
-**Subsequent runs** — start the dev server only:
+**Subsequent runs against local backend** — start the dev server only:
 
 ```bash
 npx expo start --dev-client
 ```
 
-Then open the already-installed dev client app on your device. It will connect to the dev server automatically.
+**Subsequent runs against deployed backend** — always use the full script (it sets the correct env before Metro starts):
+
+```bash
+npm run ios:dev    # or start:dev if the native binary is already installed
+```
 
 ## Project structure
 
@@ -94,16 +100,18 @@ frontend-kalba/
 │           └── profile.tsx       # User profile + sign out
 ├── src/
 │   ├── api/
-│   │   ├── client.ts             # Axios instance with JWT interceptor
+│   │   ├── client.ts             # Axios instance — reads URL from Constants.expoConfig.extra
 │   │   └── endpoints.ts          # Typed API functions
 │   ├── hooks/                    # TanStack Query hooks
 │   ├── store/auth.ts             # Zustand auth store
 │   ├── types/api.ts              # TypeScript interfaces
 │   └── lib/query-client.ts       # React Query config
+├── app.config.js                 # Expo app config (injects API URL into extra)
 ├── global.css                    # Tailwind CSS directives
 ├── tailwind.config.js            # NativeWind/Tailwind config
 ├── metro.config.js               # Metro bundler + NativeWind
-└── app.json                      # Expo app config
+├── .env.local                    # Local overrides (gitignored) — set your local IP here
+└── .env.dev                      # Deployed backend URLs (used by :dev scripts)
 ```
 
 ## Tech stack
@@ -138,6 +146,25 @@ After editing `tailwind.config.js` or `global.css`, clear the Metro cache:
 ```bash
 npx expo start --clear
 ```
+
+### App hitting the wrong server / URL not updating
+
+The API URL comes from `Constants.expoConfig.extra`, which is evaluated when the Expo CLI process starts. If the wrong URL is active:
+
+```bash
+# 1. Stop any running Metro / Expo server (Ctrl+C)
+
+# 2. Remove any stale .env.development.local (auto-deleted on clean exit, may linger after a crash)
+rm -f .env.development.local
+
+# 3. Clear Metro's bundle cache (on macOS, Metro caches in $TMPDIR, not /tmp)
+rm -rf "$TMPDIR/metro-cache" "$TMPDIR/metro-file-map-"* node_modules/.cache .expo
+
+# 4. Restart with the correct script
+npm run ios:dev      # or npm run start:dev if the native binary is already installed
+```
+
+Verify the active URL: the Hermes console logs `[API] baseURL: <url>` on every cold start.
 
 ### Full cache reset
 

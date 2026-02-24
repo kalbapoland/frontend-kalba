@@ -33,7 +33,10 @@ export default function SignInScreen() {
       setLoading(true);
       exchangeGoogleToken(response.params.id_token)
         .then((authResponse) => signIn(authResponse.access_token))
-        .catch(() => setError("Something went wrong. Please try again."))
+        .catch((err) => {
+          console.error("[SignIn] exchangeGoogleToken failed:", err?.response?.data ?? err?.message ?? err);
+          setError("Something went wrong. Please try again.");
+        })
         .finally(() => setLoading(false));
     } else if (response.type === "error") {
       setError("Google sign-in failed. Please try again.");

@@ -4,13 +4,13 @@
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
-    "start:dev": "dotenv -e .env.dev -- expo start",
+    "start:dev": "bash -c 'trap \"rm -f .env.development.local\" EXIT; cp .env.dev .env.development.local && expo start'",
     "android": "expo run:android",
-    "android:dev": "dotenv -e .env.dev -- expo run:android",
+    "android:dev": "bash -c 'trap \"rm -f .env.development.local\" EXIT; cp .env.dev .env.development.local && expo run:android'",
     "ios": "expo run:ios",
-    "ios:dev": "dotenv -e .env.dev -- expo run:ios",
+    "ios:dev": "bash -c 'trap \"rm -f .env.development.local\" EXIT; cp .env.dev .env.development.local && expo run:ios'",
     "web": "expo start --web",
-    "web:dev": "dotenv -e .env.dev -- expo start --web"
+    "web:dev": "bash -c 'trap \"rm -f .env.development.local\" EXIT; cp .env.dev .env.development.local && expo start --web'"
   },
   "dependencies": {
     "@daily-co/react-native-daily-js": "^0.83.0",
@@ -21,9 +21,11 @@
     "axios": "^1.13.4",
     "expo": "~54.0.33",
     "expo-auth-session": "~7.0.10",
+    "expo-blur": "~15.0.8",
     "expo-constants": "~18.0.13",
     "expo-crypto": "~15.0.8",
     "expo-dev-client": "~6.0.20",
+    "expo-linear-gradient": "~15.0.8",
     "expo-linking": "~8.0.11",
     "expo-router": "~6.0.23",
     "expo-secure-store": "~15.0.8",
