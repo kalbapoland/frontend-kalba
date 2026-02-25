@@ -52,7 +52,8 @@ All scripts have a `:dev` variant that targets the deployed backend (`https://ba
 | Platform | Local backend | Deployed backend |
 |----------|--------------|-----------------|
 | Dev server (native) | `npm start` | `npm run start:dev` |
-| iOS build + run | `npm run ios` | `npm run ios:dev` |
+| iOS simulator | `npm run ios` | `npm run ios:dev` |
+| iOS real device | `npm run ios:device` | `npm run ios:dev:device` |
 | Android build + run | `npm run android` | `npm run android:dev` |
 | Web | `npm run web` | `npm run web:dev` |
 
@@ -65,23 +66,56 @@ Mobile requires a **development build** — Expo Go will not work. Google OAuth 
 **First run** — build the native app:
 
 ```bash
-npm run ios        # local backend  (requires Xcode)
-npm run ios:dev    # deployed backend
+# Simulator
+npm run ios           # local backend  (requires Xcode)
+npm run ios:dev       # deployed backend
+
+# Real iPhone (connect via USB and trust this Mac first)
+npm run ios:device        # local backend
+npm run ios:dev:device    # deployed backend
 ```
+
+The `--device` variants show an interactive list of connected devices and simulators — select your iPhone from there.
+
+> **Real device — one-time Xcode signing setup required:**
+> Before the first real device build, open Xcode and enable automatic signing:
+> 1. `open ios/Kalba.xcworkspace`
+> 2. Select the **Kalba** target → **Signing & Capabilities**
+> 3. Check **Automatically manage signing**
+> 4. Set **Team** to your Apple ID (add it via Xcode → Settings → Accounts if needed)
+>
+> Without this, the build fails with _"No profiles for 'com.kalba.app' were found"_. This is a one-time step.
 
 This generates the native project, registers the OAuth URL scheme, and installs the dev client on your device/simulator. The first build takes a few minutes.
 
-**Subsequent runs against local backend** — start the dev server only:
+**Subsequent runs** — once the native binary is installed, just start Metro:
 
-```bash
-npx expo start --dev-client
+| Backend | Command |
+|---------|---------|
+| Local (`192.168.x.x:8000`) | `npx expo start --dev-client` |
+| Deployed (`backend-kalba.fly.dev`) | `npm run start:dev` |
+
+> **Important:** `npx expo start --dev-client` always loads `.env.local` → local IP. To hit the deployed backend you **must** use `npm run start:dev` — it sets the remote URL before Metro starts.
+
+When Metro starts, it prints the server URL in the terminal — something like:
+
+```
+Metro waiting on exp://192.168.0.80:8081
 ```
 
-**Subsequent runs against deployed backend** — always use the full script (it sets the correct env before Metro starts):
+Open the **Kalba** dev client app on your iPhone → tap **Enter URL manually** → enter:
+
+```
+http://<your-mac-ip>:8081
+```
+
+To find your Mac's current IP:
 
 ```bash
-npm run ios:dev    # or start:dev if the native binary is already installed
+ipconfig getifaddr en0
 ```
+
+Your iPhone must be on the **same WiFi network** as your Mac. The IP changes when you switch networks, so re-check it if the connection fails.
 
 ## Project structure
 

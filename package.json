@@ -8,7 +8,9 @@
     "android": "expo run:android",
     "android:dev": "bash -c 'trap \"rm -f .env.development.local\" EXIT; cp .env.dev .env.development.local && expo run:android'",
     "ios": "expo run:ios",
+    "ios:device": "expo run:ios --device",
     "ios:dev": "bash -c 'trap \"rm -f .env.development.local\" EXIT; cp .env.dev .env.development.local && expo run:ios'",
+    "ios:dev:device": "bash -c 'trap \"rm -f .env.development.local\" EXIT; cp .env.dev .env.development.local && expo run:ios --device'",
     "web": "expo start --web",
     "web:dev": "bash -c 'trap \"rm -f .env.development.local\" EXIT; cp .env.dev .env.development.local && expo start --web'"
   },
