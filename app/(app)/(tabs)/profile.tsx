@@ -44,16 +44,7 @@ export default function ProfileScreen() {
       style={{ paddingTop: insets.top + 24 }}
     >
       {/* Profile Card */}
-      <View
-        className="items-center rounded-3xl bg-surface px-8 py-10"
-        style={{
-          shadowColor: "#3D3D3D",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.05,
-          shadowRadius: 12,
-          elevation: 2,
-        }}
-      >
+      <View className="items-center rounded-3xl bg-surface px-8 py-10">
         <View className="mb-5 h-20 w-20 items-center justify-center rounded-full bg-primary/10">
           <Text className="text-2xl font-bold text-primary">{initials}</Text>
         </View>
@@ -70,59 +61,22 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      {/* Info Section */}
-      <View className="mt-6 rounded-2xl bg-surface px-5">
-        <InfoRow
-          icon="person-outline"
-          label="Account"
-          value={user.is_active ? "Active" : "Inactive"}
-        />
-        <InfoRow
-          icon="shield-checkmark-outline"
-          label="Role"
-          value={user.role}
-          last
-        />
-      </View>
-
       <View className="flex-1" />
 
       {/* Sign Out */}
       <Pressable
         onPress={handleSignOut}
-        className="flex-row items-center justify-center gap-2 rounded-2xl border border-danger/30 bg-surface py-4"
+        className="flex-row items-center justify-center gap-2 rounded-full border border-danger/30 bg-surface py-4"
         style={({ pressed }) => ({
           marginBottom: Math.max(insets.bottom, 16) + 60,
           opacity: pressed ? 0.8 : 1,
         })}
+        accessibilityRole="button"
+        accessibilityLabel="Sign out"
       >
         <Ionicons name="log-out-outline" size={18} color="#C4836E" />
         <Text className="text-sm font-medium text-danger">Sign Out</Text>
       </Pressable>
-    </View>
-  );
-}
-
-function InfoRow({
-  icon,
-  label,
-  value,
-  last = false,
-}: {
-  icon: keyof typeof Ionicons.glyphMap;
-  label: string;
-  value: string;
-  last?: boolean;
-}) {
-  return (
-    <View
-      className={`flex-row items-center py-4 ${
-        last ? "" : "border-b border-subtle"
-      }`}
-    >
-      <Ionicons name={icon} size={18} color="#8A8A85" />
-      <Text className="ml-3 flex-1 text-base text-ink">{label}</Text>
-      <Text className="text-sm capitalize text-ink-faint">{value}</Text>
     </View>
   );
 }

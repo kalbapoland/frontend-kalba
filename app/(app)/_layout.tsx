@@ -16,7 +16,7 @@ export default function AppLayout() {
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-canvas">
-        <ActivityIndicator size="large" color="#7C8B72" />
+        <ActivityIndicator size="large" color="#5E6B5A" />
       </View>
     );
   }
@@ -33,7 +33,7 @@ export default function AppLayout() {
         </Text>
         <Pressable
           onPress={() => refetch()}
-          className="mt-2 rounded-2xl bg-primary px-8 py-4"
+          className="mt-2 rounded-full bg-primary px-8 py-4"
         >
           <Text className="font-medium tracking-wide text-surface">Retry</Text>
         </Pressable>
@@ -49,7 +49,7 @@ export default function AppLayout() {
       screenOptions={{
         headerStyle: { backgroundColor: "#F5F2ED" },
         headerShadowVisible: false,
-        headerTintColor: "#7C8B72",
+        headerTintColor: "#5E6B5A",
         headerTitleStyle: {
           fontWeight: "600",
           fontSize: 17,

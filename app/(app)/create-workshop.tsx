@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Alert,
   Platform,
+  KeyboardAvoidingView,
 } from "react-native";
 import { useRouter } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -92,92 +93,99 @@ export default function CreateWorkshopScreen() {
   };
 
   return (
-    <ScrollView
-      className="flex-1 bg-canvas"
-      contentContainerStyle={{ padding: 24, paddingBottom: 48 }}
-      keyboardShouldPersistTaps="handled"
+    <KeyboardAvoidingView
+      className="flex-1"
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <FormField
-        label="Title"
-        value={title}
-        onChangeText={setTitle}
-        placeholder="e.g. Morning Yoga Flow"
-      />
-      <FormField
-        label="Description"
-        value={description}
-        onChangeText={setDescription}
-        placeholder="What will participants experience?"
-        multiline
-      />
-
-      <SectionLabel icon="calendar-outline">Schedule</SectionLabel>
-      <View className="flex-row gap-3">
-        <View className="flex-1">
-          <FormField
-            label="Date"
-            value={date}
-            onChangeText={setDate}
-            placeholder="YYYY-MM-DD"
-          />
-        </View>
-        <View className="flex-1">
-          <FormField
-            label="Time"
-            value={time}
-            onChangeText={setTime}
-            placeholder="HH:MM"
-          />
-        </View>
-      </View>
-      <FormField
-        label="Duration (minutes)"
-        value={duration}
-        onChangeText={setDuration}
-        placeholder="60"
-        keyboardType="numeric"
-      />
-
-      <SectionLabel icon="information-circle-outline">Details</SectionLabel>
-      <View className="flex-row gap-3">
-        <View className="flex-1">
-          <FormField
-            label="Price"
-            value={price}
-            onChangeText={setPrice}
-            placeholder="0.00"
-            keyboardType="decimal-pad"
-          />
-        </View>
-        <View className="flex-1">
-          <FormField
-            label="Max participants"
-            value={maxParticipants}
-            onChangeText={setMaxParticipants}
-            placeholder="20"
-            keyboardType="numeric"
-          />
-        </View>
-      </View>
-
-      <Pressable
-        onPress={handleSubmit}
-        disabled={isPending}
-        className="mt-8 flex-row items-center justify-center gap-2 rounded-2xl bg-primary py-4"
-        style={({ pressed }) => ({ opacity: pressed ? 0.9 : isPending ? 0.6 : 1 })}
+      <ScrollView
+        className="flex-1 bg-canvas"
+        contentContainerStyle={{ padding: 24, paddingBottom: 48 }}
+        keyboardShouldPersistTaps="handled"
       >
-        {isPending ? (
-          <ActivityIndicator color="#FAFAF7" />
-        ) : (
-          <>
-            <Ionicons name="add-circle-outline" size={18} color="#FAFAF7" />
-            <Text className="text-base font-medium tracking-wide text-surface">
-              Create Workshop
-            </Text>
-          </>
-        )}
-      </Pressable>
-    </ScrollView>
+        <FormField
+          label="Title"
+          value={title}
+          onChangeText={setTitle}
+          placeholder="e.g. Morning Yoga Flow"
+        />
+        <FormField
+          label="Description"
+          value={description}
+          onChangeText={setDescription}
+          placeholder="What will participants experience?"
+          multiline
+        />
+
+        <SectionLabel icon="calendar-outline">Schedule</SectionLabel>
+        <View className="flex-row gap-3">
+          <View className="flex-1">
+            <FormField
+              label="Date"
+              value={date}
+              onChangeText={setDate}
+              placeholder="YYYY-MM-DD"
+            />
+          </View>
+          <View className="flex-1">
+            <FormField
+              label="Time"
+              value={time}
+              onChangeText={setTime}
+              placeholder="HH:MM"
+            />
+          </View>
+        </View>
+        <FormField
+          label="Duration (minutes)"
+          value={duration}
+          onChangeText={setDuration}
+          placeholder="60"
+          keyboardType="numeric"
+        />
+
+        <SectionLabel icon="information-circle-outline">Details</SectionLabel>
+        <View className="flex-row gap-3">
+          <View className="flex-1">
+            <FormField
+              label="Price"
+              value={price}
+              onChangeText={setPrice}
+              placeholder="0.00"
+              keyboardType="decimal-pad"
+            />
+          </View>
+          <View className="flex-1">
+            <FormField
+              label="Max participants"
+              value={maxParticipants}
+              onChangeText={setMaxParticipants}
+              placeholder="20"
+              keyboardType="numeric"
+            />
+          </View>
+        </View>
+
+        <Pressable
+          onPress={handleSubmit}
+          disabled={isPending}
+          className="mt-8 flex-row items-center justify-center gap-2 rounded-full bg-primary py-4"
+          style={({ pressed }) => ({
+            opacity: pressed ? 0.9 : isPending ? 0.6 : 1,
+          })}
+        >
+          {isPending ? (
+            <ActivityIndicator color="#FAF9F6" />
+          ) : (
+            <>
+              <Ionicons name="add-circle-outline" size={18} color="#FAF9F6" />
+              <Text className="text-base font-medium tracking-wide text-surface">
+                Create Workshop
+              </Text>
+            </>
+          )}
+        </Pressable>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -190,8 +198,8 @@ function SectionLabel({
 }) {
   return (
     <View className="mb-4 mt-2 flex-row items-center gap-2">
-      <Ionicons name={icon} size={14} color="#7C8B72" />
-      <Text className="text-xs font-medium uppercase tracking-widest text-ink-faint">
+      <Ionicons name={icon} size={14} color="#5E6B5A" />
+      <Text className="text-xs font-medium uppercase tracking-widest text-ink-light">
         {children}
       </Text>
     </View>
@@ -215,7 +223,7 @@ function FormField({
 }) {
   return (
     <View className="mb-4">
-      <Text className="mb-1.5 text-xs font-medium tracking-wider text-ink-faint">
+      <Text className="mb-1.5 text-xs font-medium tracking-wider text-ink-light">
         {label}
       </Text>
       <TextInput
@@ -224,9 +232,11 @@ function FormField({
         placeholder={placeholder}
         multiline={multiline}
         keyboardType={keyboardType}
-        className="rounded-xl border border-subtle bg-surface px-4 py-3.5 text-base text-ink"
-        style={multiline ? { minHeight: 100, textAlignVertical: "top" } : undefined}
-        placeholderTextColor="#B0AEA6"
+        className="rounded-2xl bg-surface px-5 py-4 text-base text-ink"
+        style={
+          multiline ? { minHeight: 100, textAlignVertical: "top" } : undefined
+        }
+        placeholderTextColor="#9A9590"
       />
     </View>
   );

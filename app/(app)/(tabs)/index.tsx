@@ -43,49 +43,46 @@ function WorkshopCard({ workshop }: { workshop: Workshop }) {
   return (
     <Pressable
       onPress={() => router.push(`/(app)/workshop/${workshop.id}`)}
-      className="mb-4 flex-row overflow-hidden rounded-2xl bg-surface"
+      className="mb-5 flex-row overflow-hidden rounded-2xl bg-surface"
       style={({ pressed }) => ({
-        opacity: pressed ? 0.95 : 1,
-        shadowColor: "#3D3D3D",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 12,
-        elevation: 2,
+        transform: [{ scale: pressed ? 0.98 : 1 }],
       })}
+      accessibilityRole="button"
+      accessibilityLabel={`${workshop.title}, ${weekday} ${day} ${month} at ${time}, ${formatPrice(workshop.price)}`}
     >
       {/* Left accent strip */}
       <View className="w-1 bg-primary" />
 
       <View className="flex-1 px-5 py-5">
-        <Text className="text-lg font-semibold text-ink">
-          {workshop.title}
-        </Text>
+        <View className="flex-row items-start justify-between">
+          <Text className="flex-1 text-lg font-medium text-ink">
+            {workshop.title}
+          </Text>
+          <Text className="ml-3 text-sm font-semibold text-primary">
+            {formatPrice(workshop.price)}
+          </Text>
+        </View>
 
         <View className="mt-2.5 flex-row items-center">
-          <Ionicons name="calendar-outline" size={13} color="#8A8A85" />
+          <Ionicons name="calendar-outline" size={13} color="#9A9590" />
           <Text className="ml-1.5 text-sm text-ink-light">
             {weekday}, {day} {month}
           </Text>
           <Text className="mx-2 text-ink-faint">·</Text>
-          <Ionicons name="time-outline" size={13} color="#8A8A85" />
+          <Ionicons name="time-outline" size={13} color="#9A9590" />
           <Text className="ml-1 text-sm text-ink-light">{time}</Text>
         </View>
 
-        <View className="mt-3.5 flex-row items-center gap-2">
-          <View className="rounded-lg bg-primary/10 px-2.5 py-1">
-            <Text className="text-xs font-semibold text-primary">
-              {formatPrice(workshop.price)}
-            </Text>
-          </View>
-          <View className="flex-row items-center gap-1 rounded-lg bg-canvas px-2.5 py-1">
-            <Ionicons name="time-outline" size={11} color="#8A8A85" />
-            <Text className="text-xs text-ink-faint">
+        <View className="mt-3 flex-row items-center gap-4">
+          <View className="flex-row items-center gap-1">
+            <Ionicons name="time-outline" size={11} color="#6B6B66" />
+            <Text className="text-xs text-ink-light">
               {workshop.duration_minutes} min
             </Text>
           </View>
-          <View className="flex-row items-center gap-1 rounded-lg bg-canvas px-2.5 py-1">
-            <Ionicons name="people-outline" size={11} color="#8A8A85" />
-            <Text className="text-xs text-ink-faint">
+          <View className="flex-row items-center gap-1">
+            <Ionicons name="people-outline" size={11} color="#6B6B66" />
+            <Text className="text-xs text-ink-light">
               {workshop.max_participants} spots
             </Text>
           </View>
@@ -133,7 +130,7 @@ export default function WorkshopListScreen() {
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-canvas">
-        <ActivityIndicator size="large" color="#7C8B72" />
+        <ActivityIndicator size="large" color="#5E6B5A" />
       </View>
     );
   }
@@ -150,7 +147,9 @@ export default function WorkshopListScreen() {
         </Text>
         <Pressable
           onPress={() => refetch()}
-          className="mt-8 rounded-2xl bg-primary px-8 py-4"
+          className="mt-8 rounded-full bg-primary px-8 py-4"
+          accessibilityRole="button"
+          accessibilityLabel="Retry loading workshops"
         >
           <Text className="font-medium tracking-wide text-surface">Retry</Text>
         </Pressable>
@@ -165,7 +164,7 @@ export default function WorkshopListScreen() {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <WorkshopCard workshop={item} />}
         contentContainerStyle={{
-          paddingHorizontal: 20,
+          paddingHorizontal: 24,
           paddingTop: insets.top + 24,
           paddingBottom: 100,
         }}
@@ -174,18 +173,30 @@ export default function WorkshopListScreen() {
           <RefreshControl
             refreshing={isRefetching}
             onRefresh={refetch}
-            tintColor="#7C8B72"
+            tintColor="#5E6B5A"
           />
         }
         ListEmptyComponent={
           <View className="items-center py-24">
             <Ionicons name="calendar-outline" size={40} color="#C5C3BC" />
             <Text className="mt-4 text-lg font-light text-ink-light">
-              Nothing scheduled yet
+              Your schedule is clear
             </Text>
             <Text className="mt-2 text-sm text-muted">
-              Check back soon for new workshops
+              New workshops will appear here
             </Text>
+            {isTrainer && (
+              <Pressable
+                onPress={() => router.push("/(app)/create-workshop")}
+                className="mt-6 rounded-full bg-primary px-8 py-4"
+                accessibilityRole="button"
+                accessibilityLabel="Create a workshop"
+              >
+                <Text className="font-medium tracking-wide text-surface">
+                  Create a workshop
+                </Text>
+              </Pressable>
+            )}
           </View>
         }
       />
@@ -201,8 +212,10 @@ export default function WorkshopListScreen() {
             shadowRadius: 12,
             elevation: 6,
           }}
+          accessibilityRole="button"
+          accessibilityLabel="Create new workshop"
         >
-          <Ionicons name="add" size={28} color="#FAFAF7" />
+          <Ionicons name="add" size={28} color="#FAF9F6" />
         </Pressable>
       )}
     </View>

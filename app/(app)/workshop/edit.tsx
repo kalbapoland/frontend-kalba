@@ -109,7 +109,7 @@ export default function EditWorkshopScreen() {
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-canvas">
-        <ActivityIndicator size="large" color="#7C8B72" />
+        <ActivityIndicator size="large" color="#5E6B5A" />
       </View>
     );
   }
@@ -197,14 +197,14 @@ export default function EditWorkshopScreen() {
       <Pressable
         onPress={handleSubmit}
         disabled={isPending}
-        className="mt-8 flex-row items-center justify-center gap-2 rounded-2xl bg-primary py-4"
+        className="mt-8 flex-row items-center justify-center gap-2 rounded-full bg-primary py-4"
         style={({ pressed }) => ({ opacity: pressed ? 0.9 : isPending ? 0.6 : 1 })}
       >
         {isPending ? (
-          <ActivityIndicator color="#FAFAF7" />
+          <ActivityIndicator color="#FAF9F6" />
         ) : (
           <>
-            <Ionicons name="checkmark-circle-outline" size={18} color="#FAFAF7" />
+            <Ionicons name="checkmark-circle-outline" size={18} color="#FAF9F6" />
             <Text className="text-base font-medium tracking-wide text-surface">
               Save Changes
             </Text>
@@ -224,8 +224,8 @@ function SectionLabel({
 }) {
   return (
     <View className="mb-4 mt-2 flex-row items-center gap-2">
-      <Ionicons name={icon} size={14} color="#7C8B72" />
-      <Text className="text-xs font-medium uppercase tracking-widest text-ink-faint">
+      <Ionicons name={icon} size={14} color="#5E6B5A" />
+      <Text className="text-xs font-medium uppercase tracking-widest text-ink-light">
         {children}
       </Text>
     </View>
@@ -249,7 +249,7 @@ function FormField({
 }) {
   return (
     <View className="mb-4">
-      <Text className="mb-1.5 text-xs font-medium tracking-wider text-ink-faint">
+      <Text className="mb-1.5 text-xs font-medium tracking-wider text-ink-light">
         {label}
       </Text>
       <TextInput
@@ -258,13 +258,13 @@ function FormField({
         placeholder={placeholder}
         multiline={multiline}
         keyboardType={keyboardType}
-        className="rounded-xl border border-subtle bg-surface px-4 py-3.5 text-base text-ink"
+        className="rounded-2xl bg-surface px-5 py-4 text-base text-ink"
         style={
           multiline
             ? { minHeight: 100, textAlignVertical: "top" }
             : undefined
         }
-        placeholderTextColor="#B0AEA6"
+        placeholderTextColor="#9A9590"
       />
     </View>
   );

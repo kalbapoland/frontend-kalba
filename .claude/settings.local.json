@@ -17,7 +17,8 @@
       "Bash(EXPO_NO_DOTENV=1 dotenv -e .env.dev -o node -p 'process.env.EXPO_PUBLIC_API_URL_NATIVE')",
       "Bash(EXPO_NO_DOTENV=1 npx dotenv -e .env.dev -o node -p 'process.env.EXPO_PUBLIC_API_URL_NATIVE')",
       "Bash(EXPO_NO_DOTENV=1 node_modules/.bin/dotenv -e .env.dev -o -- node -p 'process.env.EXPO_PUBLIC_API_URL_NATIVE')",
-      "Bash(env)"
+      "Bash(env)",
+      "Bash(python3:*)"
     ]
   }
 }

@@ -82,6 +82,9 @@ export default function SignInScreen() {
               transform: [{ scale: pressed ? 0.97 : 1 }],
             },
           ]}
+          accessibilityRole="button"
+          accessibilityLabel={loading ? "Signing in" : "Continue with Google"}
+          accessibilityState={{ disabled: loading }}
         >
           {loading ? (
             <ActivityIndicator color="#FAF9F6" />
@@ -167,11 +170,15 @@ const s = StyleSheet.create({
   errorRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    marginTop: 28,
+    gap: 8,
+    marginTop: 16,
+    backgroundColor: "#F8EDE8",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
   },
   error: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: "300",
     color: "#C4836E",
   },

@@ -5,6 +5,7 @@ import {
   Pressable,
   ActivityIndicator,
   Alert,
+  Platform,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -50,36 +51,53 @@ export default function WorkshopDetailScreen() {
         const axiosErr = error as AxiosError<{ detail?: string }>;
         const msg =
           axiosErr.response?.data?.detail ?? "Could not join workshop";
-        Alert.alert("Unable to Join", msg);
+        if (Platform.OS === "web") {
+          window.alert(msg);
+        } else {
+          Alert.alert("Unable to Join", msg);
+        }
       },
     });
   };
 
   const handleDelete = () => {
-    Alert.alert(
-      "Delete Workshop",
-      "Are you sure you want to delete this workshop? This cannot be undone.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: () => {
-            deleteMutation.mutate(id!, {
-              onSuccess: () => router.back(),
-              onError: () =>
-                Alert.alert("Error", "Failed to delete workshop"),
-            });
-          },
+    const doDelete = () => {
+      deleteMutation.mutate(id!, {
+        onSuccess: () => router.back(),
+        onError: () => {
+          if (Platform.OS === "web") {
+            window.alert("Failed to delete workshop");
+          } else {
+            Alert.alert("Error", "Failed to delete workshop");
+          }
         },
-      ],
-    );
+      });
+    };
+
+    if (Platform.OS === "web") {
+      if (
+        window.confirm(
+          "Are you sure you want to delete this workshop? This cannot be undone.",
+        )
+      ) {
+        doDelete();
+      }
+    } else {
+      Alert.alert(
+        "Delete Workshop",
+        "Are you sure you want to delete this workshop? This cannot be undone.",
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Delete", style: "destructive", onPress: doDelete },
+        ],
+      );
+    }
   };
 
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-canvas">
-        <ActivityIndicator size="large" color="#7C8B72" />
+        <ActivityIndicator size="large" color="#5E6B5A" />
       </View>
     );
   }
@@ -108,7 +126,9 @@ export default function WorkshopDetailScreen() {
       >
         {/* Header */}
         <View className="px-6 pb-6 pt-4">
-          <Text className="text-2xl font-bold text-ink">{workshop.title}</Text>
+          <Text className="text-2xl font-light tracking-wide text-ink">
+            {workshop.title}
+          </Text>
           <View className="mt-3 flex-row items-center">
             <Ionicons name="calendar-outline" size={15} color="#6B6B66" />
             <Text className="ml-2 text-base text-ink-light">
@@ -120,12 +140,9 @@ export default function WorkshopDetailScreen() {
           </View>
         </View>
 
-        {/* About */}
+        {/* Description (no section label) */}
         {workshop.description ? (
-          <View className="px-6 pb-6">
-            <Text className="mb-3 text-sm font-semibold uppercase tracking-wider text-ink-faint">
-              About
-            </Text>
+          <View className="mt-6 px-6 pb-6">
             <Text className="text-base leading-7 text-ink-light">
               {workshop.description}
             </Text>
@@ -137,16 +154,7 @@ export default function WorkshopDetailScreen() {
           <Text className="mb-3 text-sm font-semibold uppercase tracking-wider text-ink-faint">
             Details
           </Text>
-          <View
-            className="rounded-2xl bg-surface px-5"
-            style={{
-              shadowColor: "#3D3D3D",
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.04,
-              shadowRadius: 8,
-              elevation: 1,
-            }}
-          >
+          <View className="rounded-2xl bg-surface px-5">
             <DetailRow
               icon="time-outline"
               label="Duration"
@@ -182,8 +190,10 @@ export default function WorkshopDetailScreen() {
                     params: { id: id! },
                   })
                 }
+                accessibilityRole="button"
+                accessibilityLabel="Edit workshop"
               >
-                <Ionicons name="create-outline" size={16} color="#7C8B72" />
+                <Ionicons name="create-outline" size={16} color="#5E6B5A" />
                 <Text className="text-sm font-semibold text-primary">Edit</Text>
               </Pressable>
               <Pressable
@@ -191,6 +201,8 @@ export default function WorkshopDetailScreen() {
                 style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
                 onPress={handleDelete}
                 disabled={deleteMutation.isPending}
+                accessibilityRole="button"
+                accessibilityLabel="Delete workshop"
               >
                 <Ionicons name="trash-outline" size={16} color="#C4836E" />
                 <Text className="text-sm font-semibold text-danger">
@@ -208,16 +220,18 @@ export default function WorkshopDetailScreen() {
         style={{ paddingBottom: Math.max(insets.bottom, 16) }}
       >
         <Pressable
-          className="flex-row items-center justify-center gap-2 rounded-2xl bg-primary py-4"
+          className="flex-row items-center justify-center gap-2 rounded-full bg-primary py-4"
           style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}
           onPress={handleJoin}
           disabled={joinMutation.isPending}
+          accessibilityRole="button"
+          accessibilityLabel="Join workshop"
         >
           {joinMutation.isPending ? (
-            <ActivityIndicator color="#FAFAF7" />
+            <ActivityIndicator color="#FAF9F6" />
           ) : (
             <>
-              <Ionicons name="videocam" size={18} color="#FAFAF7" />
+              <Ionicons name="videocam" size={18} color="#FAF9F6" />
               <Text className="text-base font-semibold text-surface">
                 Join Workshop
               </Text>
@@ -246,8 +260,8 @@ function DetailRow({
         last ? "" : "border-b border-subtle"
       }`}
     >
-      <Ionicons name={icon} size={18} color="#8A8A85" />
-      <Text className="ml-3 flex-1 text-sm text-ink-faint">{label}</Text>
+      <Ionicons name={icon} size={18} color="#9A9590" />
+      <Text className="ml-3 flex-1 text-sm text-ink-light">{label}</Text>
       <Text className="text-sm font-semibold text-ink">{value}</Text>
     </View>
   );

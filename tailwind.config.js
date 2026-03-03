@@ -5,16 +5,17 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: "#7C8B72",
-        "primary-soft": "#A3B18A",
+        primary: "#5E6B5A",
+        "primary-soft": "#8A9A7E",
         secondary: "#9A8E80",
-        surface: "#FAFAF7",
+        surface: "#FAF9F6",
         canvas: "#F5F2ED",
-        muted: "#B0AEA6",
-        subtle: "#E8E4DE",
+        "canvas-deep": "#EDE8E0",
+        muted: "#B5B0A8",
+        subtle: "#EBE7E1",
         ink: "#3D3D3D",
         "ink-light": "#6B6B66",
-        "ink-faint": "#8A8A85",
+        "ink-faint": "#9A9590",
         danger: "#C4836E",
         "danger-light": "#F0E0D8",
       },
