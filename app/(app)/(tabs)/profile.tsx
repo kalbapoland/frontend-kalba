@@ -1,9 +1,11 @@
-import { View, Text, Pressable, Alert, Platform } from "react-native";
+import { View, Text, Pressable, Alert, Platform, StyleSheet } from "react-native";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
 import { useAuthStore } from "@/store/auth";
+import { colors } from "@/theme/tokens";
 
 export default function ProfileScreen() {
   const user = useAuthStore((s) => s.user);
@@ -39,44 +41,142 @@ export default function ProfileScreen() {
     .toUpperCase();
 
   return (
-    <View
-      className="flex-1 bg-canvas px-6"
-      style={{ paddingTop: insets.top + 24 }}
-    >
-      {/* Profile Card */}
-      <View className="items-center rounded-3xl bg-surface px-8 py-10">
-        <View className="mb-5 h-20 w-20 items-center justify-center rounded-full bg-primary/10">
-          <Text className="text-2xl font-bold text-primary">{initials}</Text>
+    <View style={[s.screen, { paddingTop: insets.top + 32 }]}>
+      <LinearGradient
+        colors={[colors.canvas, colors.canvasDeep]}
+        locations={[0, 1]}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={StyleSheet.absoluteFill}
+      />
+
+      {/* Profile card */}
+      <View style={s.card}>
+        {/* Avatar */}
+        <View style={s.avatarWrapper}>
+          <LinearGradient
+            colors={[colors.primaryWash, colors.accentSoft]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={s.avatarRing}
+          />
+          <View style={s.avatarInner}>
+            <Text style={s.avatarInitials}>{initials}</Text>
+          </View>
         </View>
 
-        <Text className="text-xl font-semibold text-ink">
-          {user.full_name}
-        </Text>
-        <Text className="mt-1.5 text-sm text-ink-faint">{user.email}</Text>
+        <Text style={s.name}>{user.full_name}</Text>
+        <Text style={s.email}>{user.email}</Text>
 
-        <View className="mt-4 rounded-full bg-canvas px-4 py-1.5">
-          <Text className="text-xs font-medium capitalize tracking-wider text-ink-faint">
-            {user.role}
-          </Text>
+        <View style={s.rolePill}>
+          <Text style={s.roleText}>{user.role}</Text>
         </View>
       </View>
 
-      <View className="flex-1" />
+      <View style={{ flex: 1 }} />
 
-      {/* Sign Out */}
+      {/* Sign out */}
       <Pressable
         onPress={handleSignOut}
-        className="flex-row items-center justify-center gap-2 rounded-full border border-danger/30 bg-surface py-4"
-        style={({ pressed }) => ({
-          marginBottom: Math.max(insets.bottom, 16) + 60,
-          opacity: pressed ? 0.8 : 1,
-        })}
         accessibilityRole="button"
         accessibilityLabel="Sign out"
+        style={({ pressed }) => [
+          s.signOutButton,
+          {
+            marginBottom: Math.max(insets.bottom, 16) + 80,
+            transform: [{ scale: pressed ? 0.97 : 1 }],
+            opacity: pressed ? 0.85 : 1,
+          },
+        ]}
       >
-        <Ionicons name="log-out-outline" size={18} color="#C4836E" />
-        <Text className="text-sm font-medium text-danger">Sign Out</Text>
+        <Ionicons name="log-out-outline" size={17} color={colors.danger} />
+        <Text style={s.signOutText}>Sign Out</Text>
       </Pressable>
     </View>
   );
 }
+
+const s = StyleSheet.create({
+  screen: {
+    flex: 1,
+    paddingHorizontal: 24,
+  },
+  card: {
+    alignItems: "center",
+    borderRadius: 24,
+    backgroundColor: "#FAF8F4",
+    borderWidth: 1,
+    borderColor: "#EDE9E2",
+    paddingHorizontal: 32,
+    paddingVertical: 40,
+  },
+  avatarWrapper: {
+    width: 88,
+    height: 88,
+    marginBottom: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarRing: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 44,
+  },
+  avatarInner: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: "#FAF8F4",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarInitials: {
+    fontSize: 26,
+    fontWeight: "300",
+    letterSpacing: 2,
+    color: "#566B52",
+  },
+  name: {
+    fontSize: 22,
+    fontWeight: "300",
+    letterSpacing: 0.5,
+    color: "#2E2E2B",
+  },
+  email: {
+    fontSize: 13,
+    fontWeight: "400",
+    color: "#8C8A82",
+    marginTop: 6,
+    letterSpacing: 0.2,
+  },
+  rolePill: {
+    marginTop: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: "#E8EDE5",
+  },
+  roleText: {
+    fontSize: 11,
+    fontWeight: "500",
+    letterSpacing: 1.5,
+    color: "#566B52",
+    textTransform: "uppercase",
+  },
+  signOutButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    borderRadius: 999,
+    borderWidth: 1.5,
+    borderColor: "rgba(196,131,110,0.3)",
+    backgroundColor: "#FAF8F4",
+    paddingVertical: 16,
+  },
+  signOutText: {
+    fontSize: 15,
+    fontWeight: "500",
+    letterSpacing: 0.3,
+    color: "#C4836E",
+  },
+});

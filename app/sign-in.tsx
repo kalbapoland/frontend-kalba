@@ -9,10 +9,12 @@ import { Redirect } from "expo-router";
 import * as Google from "expo-auth-session/providers/google";
 import * as WebBrowser from "expo-web-browser";
 import { useCallback, useEffect, useState } from "react";
+import { LinearGradient } from "expo-linear-gradient";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
 import { exchangeGoogleToken } from "@/api/endpoints";
 import { useAuthStore } from "@/store/auth";
+import { colors } from "@/theme/tokens";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -61,49 +63,61 @@ export default function SignInScreen() {
 
   return (
     <View style={s.container}>
-      {/* Spacer to push content to golden ratio */}
+      <LinearGradient
+        colors={[colors.accentSoft, colors.canvas, colors.canvas]}
+        locations={[0, 0.42, 1]}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={StyleSheet.absoluteFill}
+      />
+
+      {/* Top spacer (golden ratio) */}
       <View style={s.topSpacer} />
 
+      {/* Hero */}
       <View style={s.hero}>
-        <Text style={s.title}>Kalba</Text>
+        <Text style={s.brand}>Kalba</Text>
         <Text style={s.tagline}>Mindful workshops, simply found</Text>
       </View>
 
+      {/* Divider */}
       <View style={s.divider} />
 
+      {/* Actions */}
       <View style={s.actions}>
         <Pressable
           onPress={handleSignIn}
           disabled={loading}
-          style={({ pressed }) => [
-            s.button,
-            {
-              opacity: loading ? 0.6 : 1,
-              transform: [{ scale: pressed ? 0.97 : 1 }],
-            },
-          ]}
           accessibilityRole="button"
           accessibilityLabel={loading ? "Signing in" : "Continue with Google"}
           accessibilityState={{ disabled: loading }}
+          style={({ pressed }) => [
+            s.button,
+            {
+              opacity: loading ? 0.55 : 1,
+              transform: [{ scale: pressed && !loading ? 0.97 : 1 }],
+            },
+          ]}
         >
           {loading ? (
-            <ActivityIndicator color="#FAF9F6" />
+            <ActivityIndicator color={colors.surface} />
           ) : (
             <View style={s.buttonInner}>
-              <Ionicons name="logo-google" size={17} color="#FAF9F6" />
+              <Ionicons name="logo-google" size={17} color={colors.surface} />
               <Text style={s.buttonText}>Continue with Google</Text>
             </View>
           )}
         </Pressable>
 
         {error && (
-          <View style={s.errorRow}>
-            <Ionicons name="alert-circle-outline" size={14} color="#C4836E" />
-            <Text style={s.error}>{error}</Text>
+          <View style={s.errorPill}>
+            <Ionicons name="alert-circle-outline" size={14} color={colors.danger} />
+            <Text style={s.errorText}>{error}</Text>
           </View>
         )}
       </View>
 
+      {/* Bottom spacer */}
       <View style={s.bottomSpacer} />
     </View>
   );
@@ -114,33 +128,31 @@ const s = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#F5F2ED",
     paddingHorizontal: 44,
   },
-  topSpacer: {
-    flex: 3,
-  },
+  topSpacer: { flex: 3 },
+  bottomSpacer: { flex: 5 },
   hero: {
     alignItems: "center",
   },
-  title: {
+  brand: {
     fontSize: 56,
     fontWeight: "100",
     letterSpacing: 12,
-    color: "#3D3D3D",
+    color: "#2E2E2B",
   },
   tagline: {
     marginTop: 16,
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "300",
     letterSpacing: 1,
-    color: "#B5B0A8",
+    color: "#8C8A82",
   },
   divider: {
     marginVertical: 56,
     height: StyleSheet.hairlineWidth,
-    width: 48,
-    backgroundColor: "#EBE7E1",
+    width: 40,
+    backgroundColor: "#DDD9D1",
   },
   actions: {
     width: "100%",
@@ -148,13 +160,13 @@ const s = StyleSheet.create({
   },
   button: {
     width: "100%",
+    height: 56,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#5E6B5A",
+    backgroundColor: "#566B52",
     borderRadius: 999,
     paddingHorizontal: 28,
-    paddingVertical: 20,
   },
   buttonInner: {
     flexDirection: "row",
@@ -165,24 +177,21 @@ const s = StyleSheet.create({
     fontSize: 16,
     fontWeight: "500",
     letterSpacing: 0.5,
-    color: "#FAF9F6",
+    color: "#FAF8F4",
   },
-  errorRow: {
+  errorPill: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    marginTop: 16,
+    marginTop: 20,
     backgroundColor: "#F8EDE8",
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 12,
   },
-  error: {
+  errorText: {
     fontSize: 14,
     fontWeight: "300",
     color: "#C4836E",
-  },
-  bottomSpacer: {
-    flex: 5,
   },
 });
