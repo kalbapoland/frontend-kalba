@@ -41,6 +41,17 @@ module.exports = {
       },
       edgeToEdgeEnabled: true,
       package: "com.kalba.app",
+      intentFilters: [
+        {
+          action: "VIEW",
+          data: [
+            {
+              scheme: "com.googleusercontent.apps.294519048023-qp9dophfvb237gu9fc4i49ofrr1sbp9r",
+            },
+          ],
+          category: ["BROWSABLE", "DEFAULT"],
+        },
+      ],
     },
     web: {
       favicon: "./assets/favicon.png",
