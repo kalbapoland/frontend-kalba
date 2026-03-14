@@ -118,6 +118,8 @@ Copy `.env.dev.example` → `.env.dev` for local development.
 ## Git Conventions
 
 - Branch names prefixed with developer name, e.g. `banaszki/feature-name`
+- **Always create a new branch for every new feature or fix** — never commit directly to `main`
+- Branch protection is enabled on `main` — direct pushes are blocked
 - Never push directly to `main` — all changes via pull request
-- `deployment` branch is used as integration branch before merging to `main`
-- 2 developers on this project — PR approval from the other dev before merge
+- PR requires approval from the other developer before merge
+- CI (TypeScript check) must pass before merge is allowed
