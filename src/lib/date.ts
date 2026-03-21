@@ -1,8 +1,8 @@
 /**
- * Date formatting utilities — all times displayed in Europe/Warsaw timezone.
+ * Date formatting utilities — all workshop times are displayed in UTC.
  */
 
-const TZ = "Europe/Warsaw";
+const TZ = "UTC";
 
 export function formatWeekdayShort(iso: string): string {
   return new Date(iso).toLocaleDateString("pl-PL", {
@@ -42,10 +42,20 @@ export function formatMonthDay(iso: string): string {
   });
 }
 
+export function formatMonthDayYear(iso: string): string {
+  return new Date(iso).toLocaleDateString("pl-PL", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: TZ,
+  });
+}
+
 export function formatTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString("pl-PL", {
+  const time = new Date(iso).toLocaleTimeString("pl-PL", {
     hour: "2-digit",
     minute: "2-digit",
     timeZone: TZ,
   });
+  return `${time} UTC`;
 }

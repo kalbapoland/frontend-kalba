@@ -7,10 +7,10 @@ import {
   formatWeekdayShort,
 } from "../date";
 
-// Fixed point in time: Saturday 2025-03-15 10:00 UTC = 11:00 Warsaw (UTC+1, winter)
+// Fixed point in time: Saturday 2025-03-15 10:00 UTC.
 const ISO = "2025-03-15T10:00:00.000Z";
 
-describe("date formatting (Europe/Warsaw timezone)", () => {
+describe("date formatting (UTC timezone)", () => {
   test("formatWeekdayShort returns short weekday in Polish", () => {
     expect(formatWeekdayShort(ISO)).toBe("sob.");
   });
@@ -31,7 +31,7 @@ describe("date formatting (Europe/Warsaw timezone)", () => {
     expect(formatMonthDay(ISO)).toBe("15 marca");
   });
 
-  test("formatTime returns HH:MM in Warsaw time", () => {
-    expect(formatTime(ISO)).toBe("11:00");
+  test("formatTime returns HH:MM UTC", () => {
+    expect(formatTime(ISO)).toBe("10:00 UTC");
   });
 });

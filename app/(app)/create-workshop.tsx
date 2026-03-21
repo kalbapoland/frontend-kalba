@@ -18,6 +18,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 
 import { useCreateWorkshop } from "@/hooks/useCreateWorkshop";
 import { useAuthStore } from "@/store/auth";
+import { parseWorkshopSchedule } from "@/lib/workshopSchedule";
 import { colors } from "@/theme/tokens";
 
 export default function CreateWorkshopScreen() {
@@ -73,9 +74,9 @@ export default function CreateWorkshopScreen() {
       return;
     }
 
-    const startTime = new Date(`${date}T${time}`);
-    if (isNaN(startTime.getTime())) {
-      showAlert("Invalid date/time format. Use YYYY-MM-DD and HH:MM");
+    const parsedSchedule = parseWorkshopSchedule(date, time);
+    if (!parsedSchedule.ok) {
+      showAlert(parsedSchedule.error);
       return;
     }
 
@@ -83,7 +84,7 @@ export default function CreateWorkshopScreen() {
       {
         title: title.trim(),
         description: description.trim(),
-        start_time: startTime.toISOString(),
+        start_time: parsedSchedule.value.toISOString(),
         duration_minutes: Number(duration),
         price: price.trim() || "0.00",
         max_participants: Number(maxParticipants),
@@ -143,10 +144,10 @@ export default function CreateWorkshopScreen() {
           />
           <View style={s.row}>
             <View style={{ flex: 1 }}>
-              <FormField label="Date" value={date} onChangeText={setDate} placeholder="YYYY-MM-DD" />
+              <FormField label="Date (UTC)" value={date} onChangeText={setDate} placeholder="YYYY-MM-DD" />
             </View>
             <View style={{ flex: 1 }}>
-              <FormField label="Time" value={time} onChangeText={setTime} placeholder="HH:MM" />
+              <FormField label="Time (UTC)" value={time} onChangeText={setTime} placeholder="HH:MM" />
             </View>
           </View>
           <View style={s.row}>

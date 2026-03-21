@@ -14,20 +14,11 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 
 import { useWorkshopDetail } from "@/hooks/useWorkshopDetail";
 import { useUpdateWorkshop } from "@/hooks/useUpdateWorkshop";
-
-function toWarsawDateStr(iso: string): string {
-  return new Date(iso).toLocaleDateString("sv-SE", {
-    timeZone: "Europe/Warsaw",
-  });
-}
-
-function toWarsawTimeStr(iso: string): string {
-  return new Date(iso).toLocaleTimeString("sv-SE", {
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "Europe/Warsaw",
-  });
-}
+import {
+  parseWorkshopSchedule,
+  toUtcDateInput,
+  toUtcTimeInput,
+} from "@/lib/workshopSchedule";
 
 export default function EditWorkshopScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -47,8 +38,8 @@ export default function EditWorkshopScreen() {
     if (!workshop) return;
     setTitle(workshop.title);
     setDescription(workshop.description);
-    setDate(toWarsawDateStr(workshop.start_time));
-    setTime(toWarsawTimeStr(workshop.start_time));
+    setDate(toUtcDateInput(workshop.start_time));
+    setTime(toUtcTimeInput(workshop.start_time));
     setDuration(String(workshop.duration_minutes));
     setPrice(String(Number(workshop.price) || ""));
     setMaxParticipants(String(workshop.max_participants));
@@ -84,9 +75,9 @@ export default function EditWorkshopScreen() {
       return;
     }
 
-    const startTime = new Date(`${date}T${time}`);
-    if (isNaN(startTime.getTime())) {
-      showAlert("Invalid date/time format. Use YYYY-MM-DD and HH:MM");
+    const parsedSchedule = parseWorkshopSchedule(date, time);
+    if (!parsedSchedule.ok) {
+      showAlert(parsedSchedule.error);
       return;
     }
 
@@ -94,7 +85,7 @@ export default function EditWorkshopScreen() {
       {
         title: title.trim(),
         description: description.trim(),
-        start_time: startTime.toISOString(),
+        start_time: parsedSchedule.value.toISOString(),
         duration_minutes: Number(duration),
         price: price.trim() || "0.00",
         max_participants: Number(maxParticipants),
@@ -149,7 +140,7 @@ export default function EditWorkshopScreen() {
       <View className="flex-row gap-3">
         <View className="flex-1">
           <FormField
-            label="Date"
+            label="Date (UTC)"
             value={date}
             onChangeText={setDate}
             placeholder="YYYY-MM-DD"
@@ -157,7 +148,7 @@ export default function EditWorkshopScreen() {
         </View>
         <View className="flex-1">
           <FormField
-            label="Time"
+            label="Time (UTC)"
             value={time}
             onChangeText={setTime}
             placeholder="HH:MM"

@@ -17,7 +17,7 @@ import { useWorkshopDetail } from "@/hooks/useWorkshopDetail";
 import { useJoinWorkshop } from "@/hooks/useJoinWorkshop";
 import { useDeleteWorkshop } from "@/hooks/useDeleteWorkshop";
 import { useAuthStore } from "@/store/auth";
-import { formatWeekdayLong, formatMonthDay, formatTime } from "@/lib/date";
+import { formatWeekdayLong, formatMonthDayYear, formatTime } from "@/lib/date";
 import { colors } from "@/theme/tokens";
 
 function formatPrice(price: string | number): string {
@@ -110,7 +110,7 @@ export default function WorkshopDetailScreen() {
 
   const isOwner = user?.id === workshop.trainer_id;
   const weekday = formatWeekdayLong(workshop.start_time);
-  const monthDay = formatMonthDay(workshop.start_time);
+  const monthDay = formatMonthDayYear(workshop.start_time);
   const time = formatTime(workshop.start_time);
 
   return (

@@ -42,7 +42,7 @@ React Native + Expo mobile app for discovering and booking workshops. Connects t
 
    ```bash
    cd backend-kalba
-   uv run uvicorn app.main:app --reload
+   uv run uvicorn app.main:app --reload --host 0.0.0.0
    ```
 
 ## Running the app
