@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  Modal,
   View,
   Text,
   TextInput,
@@ -15,11 +16,20 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import DateTimePicker, {
+  type DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
 
 import { useCreateWorkshop } from "@/hooks/useCreateWorkshop";
 import { useAuthStore } from "@/store/auth";
-import { parseWorkshopSchedule } from "@/lib/workshopSchedule";
+import {
+  parseWorkshopSchedule,
+  toUtcDateInput,
+  toUtcTimeInput,
+} from "@/lib/workshopSchedule";
 import { colors } from "@/theme/tokens";
+
+type PickerMode = "date" | "time" | null;
 
 export default function CreateWorkshopScreen() {
   const user = useAuthStore((s) => s.user);
@@ -29,11 +39,14 @@ export default function CreateWorkshopScreen() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
+  const nowIso = new Date().toISOString();
+  const [date, setDate] = useState(toUtcDateInput(nowIso));
+  const [time, setTime] = useState(toUtcTimeInput(nowIso));
   const [duration, setDuration] = useState("");
   const [price, setPrice] = useState("");
   const [maxParticipants, setMaxParticipants] = useState("");
+  const [pickerMode, setPickerMode] = useState<PickerMode>(null);
+  const isNativePickerSupported = Platform.OS === "ios" || Platform.OS === "android";
 
   if (user?.role !== "trainer") {
     return (
@@ -49,6 +62,63 @@ export default function CreateWorkshopScreen() {
       window.alert(msg);
     } else {
       Alert.alert("Error", msg);
+    }
+  };
+
+  const resolveCurrentSchedule = () => {
+    const parsed = parseWorkshopSchedule(date, time);
+    if (parsed.ok) {
+      return parsed.value;
+    }
+    return new Date();
+  };
+
+  const onChangeSchedule = (
+    _event: DateTimePickerEvent,
+    selected?: Date,
+  ) => {
+    if (!selected || !pickerMode) {
+      if (Platform.OS === "android") {
+        setPickerMode(null);
+      }
+      return;
+    }
+
+    const current = resolveCurrentSchedule();
+    let next = current;
+
+    if (pickerMode === "date") {
+      next = new Date(
+        Date.UTC(
+          selected.getFullYear(),
+          selected.getMonth(),
+          selected.getDate(),
+          current.getUTCHours(),
+          current.getUTCMinutes(),
+          0,
+          0,
+        ),
+      );
+    } else {
+      next = new Date(
+        Date.UTC(
+          current.getUTCFullYear(),
+          current.getUTCMonth(),
+          current.getUTCDate(),
+          selected.getHours(),
+          selected.getMinutes(),
+          0,
+          0,
+        ),
+      );
+    }
+
+    const nextIso = next.toISOString();
+    setDate(toUtcDateInput(nextIso));
+    setTime(toUtcTimeInput(nextIso));
+
+    if (Platform.OS === "android") {
+      setPickerMode(null);
     }
   };
 
@@ -142,12 +212,68 @@ export default function CreateWorkshopScreen() {
             placeholder="What will participants experience?"
             multiline
           />
-          <View style={s.row}>
-            <View style={{ flex: 1 }}>
-              <FormField label="Date (UTC)" value={date} onChangeText={setDate} placeholder="YYYY-MM-DD" />
-            </View>
-            <View style={{ flex: 1 }}>
-              <FormField label="Time (UTC)" value={time} onChangeText={setTime} placeholder="HH:MM" />
+          <View style={s.fieldContainer}>
+            <Text style={s.fieldLabel}>Schedule (UTC)</Text>
+            <View style={s.scheduleCard}>
+              <View style={s.schedulePreviewRow}>
+                <Ionicons name="calendar-outline" size={16} color={colors.inkMuted} />
+                <Text style={s.schedulePreviewText}>{date}</Text>
+                <Text style={s.scheduleDot}>·</Text>
+                <Ionicons name="time-outline" size={16} color={colors.inkMuted} />
+                <Text style={s.schedulePreviewText}>{time}</Text>
+              </View>
+
+              {isNativePickerSupported ? (
+                <View style={s.scheduleButtonRow}>
+                  <Pressable
+                    onPress={() => setPickerMode("date")}
+                    accessibilityRole="button"
+                    accessibilityLabel="Pick workshop date"
+                    style={({ pressed }) => [
+                      s.scheduleButton,
+                      { opacity: pressed ? 0.7 : 1 },
+                    ]}
+                  >
+                    <Ionicons name="calendar" size={16} color={colors.primary} />
+                    <Text style={s.scheduleButtonText}>Pick Date</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => setPickerMode("time")}
+                    accessibilityRole="button"
+                    accessibilityLabel="Pick workshop time"
+                    style={({ pressed }) => [
+                      s.scheduleButton,
+                      { opacity: pressed ? 0.7 : 1 },
+                    ]}
+                  >
+                    <Ionicons name="time" size={16} color={colors.primary} />
+                    <Text style={s.scheduleButtonText}>Pick Time</Text>
+                  </Pressable>
+                </View>
+              ) : (
+                <View style={s.row}>
+                  <View style={{ flex: 1 }}>
+                    <FormField
+                      label="Date (UTC)"
+                      value={date}
+                      onChangeText={setDate}
+                      placeholder="YYYY-MM-DD"
+                    />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <FormField
+                      label="Time (UTC)"
+                      value={time}
+                      onChangeText={setTime}
+                      placeholder="HH:MM"
+                    />
+                  </View>
+                </View>
+              )}
+
+              <Text style={s.scheduleHint}>
+                Everyone sees this exact UTC schedule in the app.
+              </Text>
             </View>
           </View>
           <View style={s.row}>
@@ -193,6 +319,50 @@ export default function CreateWorkshopScreen() {
           </Pressable>
         </View>
       </KeyboardAvoidingView>
+
+      {pickerMode && Platform.OS === "android" ? (
+        <DateTimePicker
+          value={resolveCurrentSchedule()}
+          mode={pickerMode}
+          is24Hour
+          onChange={onChangeSchedule}
+        />
+      ) : null}
+
+      {pickerMode && Platform.OS === "ios" ? (
+        <Modal
+          visible
+          transparent
+          animationType="slide"
+          onRequestClose={() => setPickerMode(null)}
+        >
+          <View style={s.pickerSheetBackdrop}>
+            <View style={s.pickerSheet}>
+              <View style={s.pickerSheetHeader}>
+                <Text style={s.pickerSheetTitle}>
+                  {pickerMode === "date" ? "Choose Date (UTC)" : "Choose Time (UTC)"}
+                </Text>
+                <Pressable
+                  onPress={() => setPickerMode(null)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Close date picker"
+                  style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+                >
+                  <Text style={s.pickerDoneText}>Done</Text>
+                </Pressable>
+              </View>
+
+              <DateTimePicker
+                value={resolveCurrentSchedule()}
+                mode={pickerMode}
+                display="spinner"
+                is24Hour
+                onChange={onChangeSchedule}
+              />
+            </View>
+          </View>
+        </Modal>
+      ) : null}
     </View>
   );
 }
@@ -289,6 +459,54 @@ const s = StyleSheet.create({
     marginBottom: 6,
     textTransform: "uppercase",
   },
+  scheduleCard: {
+    backgroundColor: "#FAF8F4",
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: "#E8E3DA",
+    padding: 14,
+    gap: 10,
+  },
+  schedulePreviewRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  schedulePreviewText: {
+    fontSize: 14,
+    color: "#2E2E2B",
+    fontWeight: "500",
+    letterSpacing: 0.2,
+  },
+  scheduleDot: {
+    color: "#CFC8BD",
+    fontSize: 13,
+  },
+  scheduleButtonRow: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  scheduleButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    backgroundColor: "#F1EEE8",
+    borderRadius: 999,
+    paddingVertical: 10,
+  },
+  scheduleButtonText: {
+    fontSize: 13,
+    color: "#566B52",
+    fontWeight: "600",
+    letterSpacing: 0.3,
+  },
+  scheduleHint: {
+    fontSize: 12,
+    color: "#8C8A82",
+    lineHeight: 16,
+  },
   fieldInput: {
     backgroundColor: "#FAF8F4",
     borderRadius: 14,
@@ -326,5 +544,34 @@ const s = StyleSheet.create({
     fontWeight: "500",
     letterSpacing: 0.5,
     color: "#FAF8F4",
+  },
+  pickerSheetBackdrop: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0,0,0,0.2)",
+  },
+  pickerSheet: {
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: 20,
+    overflow: "hidden",
+  },
+  pickerSheetHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingTop: 14,
+  },
+  pickerSheetTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#2E2E2B",
+  },
+  pickerDoneText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#566B52",
   },
 });
