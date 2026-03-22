@@ -39,9 +39,12 @@ export default function CreateWorkshopScreen() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const nowIso = new Date().toISOString();
-  const [date, setDate] = useState(toUtcDateInput(nowIso));
-  const [time, setTime] = useState(toUtcTimeInput(nowIso));
+  // Default to now+1h so the workshop is always in the future on first open,
+  // which prevents it from being immediately filtered out by the backend's
+  // "upcoming only" query and makes manual testing easier.
+  const defaultIso = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+  const [date, setDate] = useState(toUtcDateInput(defaultIso));
+  const [time, setTime] = useState(toUtcTimeInput(defaultIso));
   const [duration, setDuration] = useState("");
   const [price, setPrice] = useState("");
   const [maxParticipants, setMaxParticipants] = useState("");
@@ -90,9 +93,9 @@ export default function CreateWorkshopScreen() {
     if (pickerMode === "date") {
       next = new Date(
         Date.UTC(
-          selected.getFullYear(),
-          selected.getMonth(),
-          selected.getDate(),
+          selected.getUTCFullYear(),
+          selected.getUTCMonth(),
+          selected.getUTCDate(),
           current.getUTCHours(),
           current.getUTCMinutes(),
           0,
@@ -105,8 +108,8 @@ export default function CreateWorkshopScreen() {
           current.getUTCFullYear(),
           current.getUTCMonth(),
           current.getUTCDate(),
-          selected.getHours(),
-          selected.getMinutes(),
+          selected.getUTCHours(),
+          selected.getUTCMinutes(),
           0,
           0,
         ),
