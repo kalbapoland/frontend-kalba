@@ -153,6 +153,11 @@ export default function CreateWorkshopScreen() {
       return;
     }
 
+    if (parsedSchedule.value <= new Date()) {
+      showAlert("Start time must be in the future. Please choose a later date or time.");
+      return;
+    }
+
     mutate(
       {
         title: title.trim(),
