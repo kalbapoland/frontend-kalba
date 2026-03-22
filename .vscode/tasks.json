@@ -9,13 +9,25 @@
       "problemMatcher": {
         "owner": "typescript",
         "fileLocation": "relative",
-        "pattern": { "regexp": "^.*" },
+        "pattern": {
+          "regexp": "^.*"
+        },
         "background": {
           "activeOnStart": true,
           "beginsPattern": "Starting dev tools",
           "endsPattern": "Web is waiting on"
         }
       }
+    },
+    {
+      "label": "npm run android",
+      "type": "shell",
+      "command": "npm run android",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "isBackground": true
     }
   ]
 }
