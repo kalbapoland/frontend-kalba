@@ -41,6 +41,7 @@ module.exports = {
       },
       edgeToEdgeEnabled: true,
       package: "com.kalba.app",
+      permissions: ["android.permission.CAMERA", "android.permission.RECORD_AUDIO"],
       intentFilters: [
         {
           action: "VIEW",
