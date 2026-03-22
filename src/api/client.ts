@@ -1,8 +1,15 @@
-import axios from "axios";
+import axios, { type InternalAxiosRequestConfig } from "axios";
 import { Platform } from "react-native";
 import Constants from "expo-constants";
 
 import { useAuthStore } from "@/store/auth";
+
+// Extend Axios config to support retry flag for token refresh
+declare module "axios" {
+  interface InternalAxiosRequestConfig {
+    _retry?: boolean;
+  }
+}
 
 const extra = Constants.expoConfig?.extra;
 const LOCALHOST_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0"]);
@@ -53,7 +60,7 @@ function resolveApiUrl(): string {
       const rewritten = parsed.toString();
       console.warn(
         `[API] Rewrote native API host from ${configuredHost} to ${metroHost}. ` +
-          "Update EXPO_PUBLIC_API_URL_NATIVE if this is intentional.",
+        "Update EXPO_PUBLIC_API_URL_NATIVE if this is intentional.",
       );
       return rewritten;
     }
@@ -93,15 +100,32 @@ apiClient.interceptors.response.use(
     if (axios.isAxiosError(error)) {
       console.error(
         "[API] error",
-        error.code,                          // e.g. ECONNABORTED (timeout), ERR_NETWORK
-        error.response?.status,              // HTTP status if server replied
-        error.response?.data,               // body if server replied
+        error.code,
+        error.response?.status,
+        error.response?.data,
         error.config?.url,
       );
     } else {
       console.error("[API] unexpected error", error);
     }
-    if (error.response?.status === 401) {
+
+    const originalRequest = error.config;
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+      originalRequest._retry = true;
+      try {
+        const { loadRefreshToken } = await import("@/store/auth");
+        const { refreshAccessToken } = await import("./endpoints");
+        const storedRefreshToken = await loadRefreshToken();
+        if (storedRefreshToken) {
+          const auth = await refreshAccessToken(storedRefreshToken);
+          const { useAuthStore } = await import("@/store/auth");
+          useAuthStore.getState().setToken(auth.access_token);
+          originalRequest.headers.Authorization = `Bearer ${auth.access_token}`;
+          return apiClient(originalRequest);
+        }
+      } catch {
+        // Refresh failed — fall through to sign out
+      }
       await useAuthStore.getState().signOut();
     }
     return Promise.reject(error);

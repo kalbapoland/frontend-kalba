@@ -57,8 +57,8 @@ export default function SignInScreen() {
             Platform.OS === "android"
               ? process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID!
               : Platform.OS === "ios"
-              ? process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID!
-              : process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID!;
+                ? process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID!
+                : process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID!;
 
           const tokenResponse = await exchangeCodeAsync(
             {
@@ -77,7 +77,7 @@ export default function SignInScreen() {
 
         if (idToken) {
           const authResponse = await exchangeGoogleToken(idToken);
-          await signIn(authResponse.access_token);
+          await signIn(authResponse.access_token, authResponse.refresh_token);
           // Navigation handled reactively: sign-in's <Redirect> if still mounted,
           // or oauthredirect's token watcher if we were navigated there.
         } else {
