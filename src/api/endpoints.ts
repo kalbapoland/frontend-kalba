@@ -17,6 +17,13 @@ export async function exchangeGoogleToken(idToken: string): Promise<AuthResponse
   return data;
 }
 
+export async function refreshAccessToken(refreshToken: string): Promise<AuthResponse> {
+  const { data } = await apiClient.post<AuthResponse>("/auth/refresh", {
+    refresh_token: refreshToken,
+  });
+  return data;
+}
+
 export async function fetchCurrentUser(): Promise<User> {
   const { data } = await apiClient.get<User>("/users/me");
   return data;

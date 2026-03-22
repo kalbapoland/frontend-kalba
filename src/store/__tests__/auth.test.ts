@@ -21,12 +21,12 @@ describe("useAuthStore", () => {
   });
 
   test("signIn sets the token in state", async () => {
-    await useAuthStore.getState().signIn("test-jwt-token");
+    await useAuthStore.getState().signIn("test-jwt-token", "test-refresh-token");
     expect(useAuthStore.getState().token).toBe("test-jwt-token");
   });
 
   test("signOut clears token and user", async () => {
-    await useAuthStore.getState().signIn("test-jwt-token");
+    await useAuthStore.getState().signIn("test-jwt-token", "test-refresh-token");
     useAuthStore.getState().setUser({ id: "1", email: "a@b.com", full_name: "Test", is_active: true, role: "user" });
     await useAuthStore.getState().signOut();
     const { token, user } = useAuthStore.getState();
