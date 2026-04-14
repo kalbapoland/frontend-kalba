@@ -141,7 +141,7 @@ export default function EditWorkshopScreen() {
         multiline
       />
 
-      <SectionLabel icon="calendar-outline">Schedule ({timezone})</SectionLabel>
+      <SectionLabel icon="calendar-outline">{`Schedule (${timezone})`}</SectionLabel>
       <View className="flex-row gap-3">
         <View className="flex-1">
           <FormField

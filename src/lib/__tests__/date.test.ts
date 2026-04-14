@@ -55,8 +55,8 @@ describe("formatTimeWithTZ", () => {
   });
 
   test("returns time in US/Pacific timezone", () => {
-    // 10:00 UTC = 02:00 PST (UTC-8) in March
+    // 10:00 UTC = 03:00 PDT (UTC-7) in March (after DST starts)
     const result = formatTimeWithTZ(ISO, "America/Los_Angeles");
-    expect(result).toMatch(/02:00/);
+    expect(result).toMatch(/03:00/);
   });
 });

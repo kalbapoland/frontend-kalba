@@ -34,8 +34,9 @@ describe("toLocalDateInput / toLocalTimeInput", () => {
         expect(toLocalTimeInput(ISO_UTC_NOON, "Europe/Warsaw")).toBe("13:00");
     });
 
-    test("converts to Los Angeles time (UTC-8 in March)", () => {
-        expect(toLocalTimeInput(ISO_UTC_NOON, "America/Los_Angeles")).toBe("04:00");
+    test("converts to Los Angeles time (UTC-7 in March after DST)", () => {
+        // March 15 is after US DST starts (second Sunday of March) → PDT = UTC-7
+        expect(toLocalTimeInput(ISO_UTC_NOON, "America/Los_Angeles")).toBe("05:00");
     });
 });
 
@@ -77,9 +78,9 @@ describe("localTimeToUTC", () => {
         }
     });
 
-    test("converts Los Angeles local time to UTC (UTC-8 in March)", () => {
-        // 04:00 LA = 12:00 UTC in March
-        const result = localTimeToUTC("2026-03-15", "04:00", "America/Los_Angeles");
+    test("converts Los Angeles local time to UTC (UTC-7 in March after DST)", () => {
+        // March 15 is after US DST starts → PDT = UTC-7; 05:00 PDT = 12:00 UTC
+        const result = localTimeToUTC("2026-03-15", "05:00", "America/Los_Angeles");
         expect(result.ok).toBe(true);
         if (result.ok) {
             expect(result.value.toISOString()).toBe("2026-03-15T12:00:00.000Z");
@@ -108,7 +109,7 @@ describe("localTimeToUTC", () => {
     });
 
     test("returns error for year out of range", () => {
-        const result = localTimeToUTC("2099-01-01", "10:00", "UTC");
+        const result = localTimeToUTC("2101-01-01", "10:00", "UTC");
         expect(result.ok).toBe(false);
     });
 });
