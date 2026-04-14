@@ -23,9 +23,10 @@ import DateTimePicker, {
 import { useCreateWorkshop } from "@/hooks/useCreateWorkshop";
 import { useAuthStore } from "@/store/auth";
 import {
-  parseWorkshopSchedule,
-  toUtcDateInput,
-  toUtcTimeInput,
+  getDeviceTimezone,
+  localTimeToUTC,
+  toLocalDateInput,
+  toLocalTimeInput,
 } from "@/lib/workshopSchedule";
 import { colors } from "@/theme/tokens";
 
@@ -39,12 +40,11 @@ export default function CreateWorkshopScreen() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  // Default to now+1h so the workshop is always in the future on first open,
-  // which prevents it from being immediately filtered out by the backend's
-  // "upcoming only" query and makes manual testing easier.
+  // Default to now+1h in the device timezone.
+  const [timezone] = useState(getDeviceTimezone);
   const defaultIso = new Date(Date.now() + 60 * 60 * 1000).toISOString();
-  const [date, setDate] = useState(toUtcDateInput(defaultIso));
-  const [time, setTime] = useState(toUtcTimeInput(defaultIso));
+  const [date, setDate] = useState(() => toLocalDateInput(defaultIso, getDeviceTimezone()));
+  const [time, setTime] = useState(() => toLocalTimeInput(defaultIso, getDeviceTimezone()));
   const [duration, setDuration] = useState("");
   const [price, setPrice] = useState("");
   const [maxParticipants, setMaxParticipants] = useState("");
@@ -69,7 +69,7 @@ export default function CreateWorkshopScreen() {
   };
 
   const resolveCurrentSchedule = () => {
-    const parsed = parseWorkshopSchedule(date, time);
+    const parsed = localTimeToUTC(date, time, timezone);
     if (parsed.ok) {
       return parsed.value;
     }
@@ -87,38 +87,16 @@ export default function CreateWorkshopScreen() {
       return;
     }
 
-    const current = resolveCurrentSchedule();
-    let next = current;
-
     if (pickerMode === "date") {
-      next = new Date(
-        Date.UTC(
-          selected.getUTCFullYear(),
-          selected.getUTCMonth(),
-          selected.getUTCDate(),
-          current.getUTCHours(),
-          current.getUTCMinutes(),
-          0,
-          0,
-        ),
-      );
+      const y = selected.getFullYear();
+      const m = String(selected.getMonth() + 1).padStart(2, "0");
+      const d = String(selected.getDate()).padStart(2, "0");
+      setDate(`${y}-${m}-${d}`);
     } else {
-      next = new Date(
-        Date.UTC(
-          current.getUTCFullYear(),
-          current.getUTCMonth(),
-          current.getUTCDate(),
-          selected.getUTCHours(),
-          selected.getUTCMinutes(),
-          0,
-          0,
-        ),
-      );
+      const h = String(selected.getHours()).padStart(2, "0");
+      const min = String(selected.getMinutes()).padStart(2, "0");
+      setTime(`${h}:${min}`);
     }
-
-    const nextIso = next.toISOString();
-    setDate(toUtcDateInput(nextIso));
-    setTime(toUtcTimeInput(nextIso));
 
     if (Platform.OS === "android") {
       setPickerMode(null);
@@ -147,7 +125,7 @@ export default function CreateWorkshopScreen() {
       return;
     }
 
-    const parsedSchedule = parseWorkshopSchedule(date, time);
+    const parsedSchedule = localTimeToUTC(date, time, timezone);
     if (!parsedSchedule.ok) {
       showAlert(parsedSchedule.error);
       return;
@@ -163,6 +141,7 @@ export default function CreateWorkshopScreen() {
         title: title.trim(),
         description: description.trim(),
         start_time: parsedSchedule.value.toISOString(),
+        timezone,
         duration_minutes: Number(duration),
         price: price.trim() || "0.00",
         max_participants: Number(maxParticipants),
@@ -221,7 +200,7 @@ export default function CreateWorkshopScreen() {
             multiline
           />
           <View style={s.fieldContainer}>
-            <Text style={s.fieldLabel}>Schedule (UTC)</Text>
+            <Text style={s.fieldLabel}>Schedule ({timezone})</Text>
             <View style={s.scheduleCard}>
               <View style={s.schedulePreviewRow}>
                 <Ionicons name="calendar-outline" size={16} color={colors.inkMuted} />
@@ -262,7 +241,7 @@ export default function CreateWorkshopScreen() {
                 <View style={s.row}>
                   <View style={{ flex: 1 }}>
                     <FormField
-                      label="Date (UTC)"
+                      label="Date"
                       value={date}
                       onChangeText={setDate}
                       placeholder="YYYY-MM-DD"
@@ -270,7 +249,7 @@ export default function CreateWorkshopScreen() {
                   </View>
                   <View style={{ flex: 1 }}>
                     <FormField
-                      label="Time (UTC)"
+                      label="Time"
                       value={time}
                       onChangeText={setTime}
                       placeholder="HH:MM"
@@ -280,7 +259,7 @@ export default function CreateWorkshopScreen() {
               )}
 
               <Text style={s.scheduleHint}>
-                Everyone sees this exact UTC schedule in the app.
+                Time is in your local timezone ({timezone}). Participants see it in their own timezone.
               </Text>
             </View>
           </View>

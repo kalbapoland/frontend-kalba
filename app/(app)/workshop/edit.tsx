@@ -15,9 +15,10 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { useWorkshopDetail } from "@/hooks/useWorkshopDetail";
 import { useUpdateWorkshop } from "@/hooks/useUpdateWorkshop";
 import {
-  parseWorkshopSchedule,
-  toUtcDateInput,
-  toUtcTimeInput,
+  getDeviceTimezone,
+  localTimeToUTC,
+  toLocalDateInput,
+  toLocalTimeInput,
 } from "@/lib/workshopSchedule";
 
 export default function EditWorkshopScreen() {
@@ -28,6 +29,7 @@ export default function EditWorkshopScreen() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [timezone, setTimezone] = useState(getDeviceTimezone);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [duration, setDuration] = useState("");
@@ -38,8 +40,10 @@ export default function EditWorkshopScreen() {
     if (!workshop) return;
     setTitle(workshop.title);
     setDescription(workshop.description);
-    setDate(toUtcDateInput(workshop.start_time));
-    setTime(toUtcTimeInput(workshop.start_time));
+    const tz = workshop.timezone || getDeviceTimezone();
+    setTimezone(tz);
+    setDate(toLocalDateInput(workshop.start_time, tz));
+    setTime(toLocalTimeInput(workshop.start_time, tz));
     setDuration(String(workshop.duration_minutes));
     setPrice(String(Number(workshop.price) || ""));
     setMaxParticipants(String(workshop.max_participants));
@@ -75,7 +79,7 @@ export default function EditWorkshopScreen() {
       return;
     }
 
-    const parsedSchedule = parseWorkshopSchedule(date, time);
+    const parsedSchedule = localTimeToUTC(date, time, timezone);
     if (!parsedSchedule.ok) {
       showAlert(parsedSchedule.error);
       return;
@@ -86,6 +90,7 @@ export default function EditWorkshopScreen() {
         title: title.trim(),
         description: description.trim(),
         start_time: parsedSchedule.value.toISOString(),
+        timezone,
         duration_minutes: Number(duration),
         price: price.trim() || "0.00",
         max_participants: Number(maxParticipants),
@@ -136,11 +141,11 @@ export default function EditWorkshopScreen() {
         multiline
       />
 
-      <SectionLabel icon="calendar-outline">Schedule</SectionLabel>
+      <SectionLabel icon="calendar-outline">Schedule ({timezone})</SectionLabel>
       <View className="flex-row gap-3">
         <View className="flex-1">
           <FormField
-            label="Date (UTC)"
+            label="Date"
             value={date}
             onChangeText={setDate}
             placeholder="YYYY-MM-DD"
@@ -148,7 +153,7 @@ export default function EditWorkshopScreen() {
         </View>
         <View className="flex-1">
           <FormField
-            label="Time (UTC)"
+            label="Time"
             value={time}
             onChangeText={setTime}
             placeholder="HH:MM"

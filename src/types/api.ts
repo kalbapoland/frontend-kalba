@@ -13,6 +13,7 @@ export interface Workshop {
   description: string;
   start_time: string;
   duration_minutes: number;
+  timezone: string;  // IANA timezone, e.g. "America/Los_Angeles"
   price: string;
   max_participants: number;
 }
@@ -29,6 +30,7 @@ export interface WorkshopCreatePayload {
   description?: string;
   start_time: string;
   duration_minutes: number;
+  timezone?: string;
   price?: string;
   max_participants: number;
 }
@@ -38,6 +40,7 @@ export interface WorkshopUpdatePayload {
   description?: string;
   start_time?: string;
   duration_minutes?: number;
+  timezone?: string;
   price?: string;
   max_participants?: number;
 }
