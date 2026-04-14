@@ -17,7 +17,7 @@ import { useWorkshopDetail } from "@/hooks/useWorkshopDetail";
 import { useJoinWorkshop } from "@/hooks/useJoinWorkshop";
 import { useDeleteWorkshop } from "@/hooks/useDeleteWorkshop";
 import { useAuthStore } from "@/store/auth";
-import { formatWeekdayLong, formatMonthDayYear, formatTime } from "@/lib/date";
+import { formatWeekdayLong, formatMonthDayYear, formatTime, formatTimeWithTZ } from "@/lib/date";
 import { colors } from "@/theme/tokens";
 
 function formatPrice(price: string | number): string {
@@ -112,6 +112,10 @@ export default function WorkshopDetailScreen() {
   const weekday = formatWeekdayLong(workshop.start_time);
   const monthDay = formatMonthDayYear(workshop.start_time);
   const time = formatTime(workshop.start_time);
+  const eventTZ = workshop.timezone || "UTC";
+  const viewerTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const showOriginalTZ = eventTZ !== viewerTZ;
+  const originalTZTime = formatTimeWithTZ(workshop.start_time, eventTZ);
 
   return (
     <View style={[s.screen, { backgroundColor: colors.canvas }]}>
@@ -156,7 +160,13 @@ export default function WorkshopDetailScreen() {
           <View style={s.detailCard}>
             <DetailRow icon="time-outline" label="Duration" value={`${workshop.duration_minutes} min`} />
             <DetailRow icon="people-outline" label="Spots" value={`${workshop.max_participants} max`} />
-            <DetailRow icon="pricetag-outline" label="Price" value={formatPrice(workshop.price)} last />
+            <DetailRow icon="pricetag-outline" label="Price" value={formatPrice(workshop.price)} />
+            {showOriginalTZ && (
+              <DetailRow icon="globe-outline" label="Event timezone" value={originalTZTime} last />
+            )}
+            {!showOriginalTZ && (
+              <DetailRow icon="globe-outline" label="Timezone" value={eventTZ} last />
+            )}
           </View>
         </View>
 

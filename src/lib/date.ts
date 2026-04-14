@@ -1,8 +1,9 @@
 /**
- * Date formatting utilities — all workshop times are displayed in UTC.
+ * Date formatting utilities — times are displayed in the viewer's device timezone.
  */
 
-const TZ = "UTC";
+// Viewer's local timezone — used for all display functions.
+const TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 export function formatWeekdayShort(iso: string): string {
   return new Date(iso).toLocaleDateString("pl-PL", {
@@ -52,10 +53,23 @@ export function formatMonthDayYear(iso: string): string {
 }
 
 export function formatTime(iso: string): string {
-  const time = new Date(iso).toLocaleTimeString("pl-PL", {
+  return new Date(iso).toLocaleTimeString("pl-PL", {
     hour: "2-digit",
     minute: "2-digit",
     timeZone: TZ,
   });
-  return `${time} UTC`;
+}
+
+/**
+ * Formats time in a specific IANA timezone, with the short timezone abbreviation.
+ * Example: "21:00 PDT"
+ */
+export function formatTimeWithTZ(iso: string, timezone: string): string {
+  return new Date(iso).toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: timezone,
+    timeZoneName: "short",
+  });
 }
