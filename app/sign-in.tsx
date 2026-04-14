@@ -77,6 +77,12 @@ export default function SignInScreen() {
 
         if (idToken) {
           const authResponse = await exchangeGoogleToken(idToken);
+          console.log("[SignIn] authResponse keys:", Object.keys(authResponse));
+          console.log("[SignIn] access_token type:", typeof authResponse.access_token, "len:", String(authResponse.access_token ?? "").length);
+          console.log("[SignIn] refresh_token type:", typeof authResponse.refresh_token, "len:", String(authResponse.refresh_token ?? "").length);
+          if (!authResponse.refresh_token) {
+            console.warn("[SignIn] auth response missing refresh_token; continuing with access token only");
+          }
           await signIn(authResponse.access_token, authResponse.refresh_token);
           // Navigation handled reactively: sign-in's <Redirect> if still mounted,
           // or oauthredirect's token watcher if we were navigated there.

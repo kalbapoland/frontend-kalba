@@ -7,11 +7,43 @@ import type { User } from "@/types/api";
 const TOKEN_KEY = "kalba_token";
 const REFRESH_TOKEN_KEY = "kalba_refresh_token";
 
+function describeTokenValue(value: unknown): string {
+  if (value === null) {
+    return "null";
+  }
+
+  if (Array.isArray(value)) {
+    return "array";
+  }
+
+  return typeof value;
+}
+
+function requireTokenString(value: unknown, name: string): string {
+  if (typeof value !== "string" || !value) {
+    throw new Error(
+      `Invalid ${name}: expected non-empty string, got ${describeTokenValue(value)}`,
+    );
+  }
+
+  return value;
+}
+
+function normalizeOptionalToken(value: unknown, name: string): string | null {
+  if (value == null || value === "") {
+    return null;
+  }
+
+  return requireTokenString(value, name);
+}
+
 async function saveToken(token: string): Promise<void> {
+  const normalizedToken = requireTokenString(token, "access_token");
+
   if (Platform.OS === "web") {
-    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(TOKEN_KEY, normalizedToken);
   } else {
-    await SecureStore.setItemAsync(TOKEN_KEY, token);
+    await SecureStore.setItemAsync(TOKEN_KEY, normalizedToken);
   }
 }
 
@@ -31,10 +63,12 @@ async function removeToken(): Promise<void> {
 }
 
 async function saveRefreshToken(token: string): Promise<void> {
+  const normalizedToken = requireTokenString(token, "refresh_token");
+
   if (Platform.OS === "web") {
-    localStorage.setItem(REFRESH_TOKEN_KEY, token);
+    localStorage.setItem(REFRESH_TOKEN_KEY, normalizedToken);
   } else {
-    await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, token);
+    await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, normalizedToken);
   }
 }
 
@@ -58,7 +92,7 @@ interface AuthState {
   user: User | null;
   isRestoringToken: boolean;
   setUser: (user: User) => void;
-  signIn: (token: string, refreshToken: string) => Promise<void>;
+  signIn: (token: string, refreshToken?: string | null) => Promise<void>;
   signOut: () => Promise<void>;
   restoreToken: () => Promise<void>;
   setToken: (token: string) => void;
@@ -72,9 +106,21 @@ export const useAuthStore = create<AuthState>((set) => ({
   setUser: (user) => set({ user }),
 
   signIn: async (token, refreshToken) => {
-    await saveToken(token);
-    await saveRefreshToken(refreshToken);
-    set({ token });
+    const normalizedToken = requireTokenString(token, "access_token");
+    const normalizedRefreshToken = normalizeOptionalToken(
+      refreshToken,
+      "refresh_token",
+    );
+
+    await saveToken(normalizedToken);
+
+    if (normalizedRefreshToken) {
+      await saveRefreshToken(normalizedRefreshToken);
+    } else {
+      await removeRefreshToken();
+    }
+
+    set({ token: normalizedToken });
   },
 
   signOut: async () => {
@@ -89,7 +135,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   setToken: (token) => {
-    saveToken(token);
-    set({ token });
+    const normalizedToken = requireTokenString(token, "access_token");
+    void saveToken(normalizedToken);
+    set({ token: normalizedToken });
   },
 }));

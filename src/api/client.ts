@@ -12,6 +12,8 @@ declare module "axios" {
 }
 
 const extra = Constants.expoConfig?.extra;
+const bundledApiUrlWeb = process.env.EXPO_PUBLIC_API_URL_WEB;
+const bundledApiUrlNative = process.env.EXPO_PUBLIC_API_URL_NATIVE;
 const LOCALHOST_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0"]);
 const ANDROID_EMULATOR_HOSTS = new Set(["10.0.2.2", "10.0.3.2"]);
 
@@ -29,10 +31,11 @@ function getMetroHost(): string | null {
 
 function resolveApiUrl(): string {
   if (Platform.OS === "web") {
-    return extra?.apiUrlWeb ?? "http://localhost:8000/api/v1";
+    return bundledApiUrlWeb ?? extra?.apiUrlWeb ?? "http://localhost:8000/api/v1";
   }
 
-  const configuredNativeUrl = extra?.apiUrlNative ?? "http://localhost:8000/api/v1";
+  const configuredNativeUrl =
+    bundledApiUrlNative ?? extra?.apiUrlNative ?? "http://localhost:8000/api/v1";
 
   if (!__DEV__) {
     return configuredNativeUrl;
@@ -75,6 +78,14 @@ const API_URL = resolveApiUrl();
 
 // Always log the resolved URL so you can verify it in Metro / Hermes debugger
 console.log("[API] baseURL:", API_URL);
+console.log(
+  "[API] config source:",
+  bundledApiUrlNative || bundledApiUrlWeb
+    ? "process.env"
+    : extra?.apiUrlNative || extra?.apiUrlWeb
+      ? "expoConfig.extra"
+      : "fallback",
+);
 
 export const apiClient = axios.create({
   baseURL: API_URL,

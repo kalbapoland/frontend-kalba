@@ -1,4 +1,5 @@
 import { useAuthStore } from "../auth";
+import * as SecureStore from "expo-secure-store";
 
 // expo-secure-store is auto-mocked by jest-expo preset
 jest.mock("expo-secure-store", () => ({
@@ -11,7 +12,10 @@ const reset = () =>
   useAuthStore.setState({ token: null, user: null, isRestoringToken: true });
 
 describe("useAuthStore", () => {
-  beforeEach(reset);
+  beforeEach(() => {
+    reset();
+    jest.clearAllMocks();
+  });
 
   test("initial state has no token and no user", () => {
     const { token, user, isRestoringToken } = useAuthStore.getState();
@@ -23,6 +27,25 @@ describe("useAuthStore", () => {
   test("signIn sets the token in state", async () => {
     await useAuthStore.getState().signIn("test-jwt-token", "test-refresh-token");
     expect(useAuthStore.getState().token).toBe("test-jwt-token");
+  });
+
+  test("signIn tolerates a missing refresh token", async () => {
+    await useAuthStore.getState().signIn("test-jwt-token");
+
+    expect(useAuthStore.getState().token).toBe("test-jwt-token");
+    expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
+      "kalba_token",
+      "test-jwt-token",
+    );
+    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith(
+      "kalba_refresh_token",
+    );
+  });
+
+  test("signIn rejects non-string refresh tokens", async () => {
+    await expect(
+      useAuthStore.getState().signIn("test-jwt-token", { token: "bad" } as never),
+    ).rejects.toThrow("Invalid refresh_token");
   });
 
   test("signOut clears token and user", async () => {
