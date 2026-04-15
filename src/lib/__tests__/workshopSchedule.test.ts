@@ -112,4 +112,34 @@ describe("localTimeToUTC", () => {
         const result = localTimeToUTC("2101-01-01", "10:00", "UTC");
         expect(result.ok).toBe(false);
     });
+
+    test("fast path: device-timezone input round-trips through new Date() constructor", () => {
+        // Use the JS Date constructor directly (same source as the fast path) to
+        // build a known local time, then verify localTimeToUTC reproduces it exactly.
+        const tz = getDeviceTimezone();
+        const local = new Date(2026, 5, 20, 9, 30, 0, 0); // June 20 09:30 local
+        const dateStr = `${local.getFullYear()}-${String(local.getMonth() + 1).padStart(2, "0")}-${String(local.getDate()).padStart(2, "0")}`;
+        const timeStr = `${String(local.getHours()).padStart(2, "0")}:${String(local.getMinutes()).padStart(2, "0")}`;
+
+        const result = localTimeToUTC(dateStr, timeStr, tz);
+        expect(result.ok).toBe(true);
+        if (result.ok) {
+            expect(result.value.getTime()).toBe(local.getTime());
+        }
+    });
+});
+
+describe("toLocalDateInput / toLocalTimeInput — device timezone fast path", () => {
+    test("returns same value as native Date methods for device timezone", () => {
+        // Derive expected values from native Date methods — the same source the
+        // fast path uses — so this test is independent of the machine's timezone.
+        const ISO = "2026-06-20T08:30:00.000Z";
+        const tz = getDeviceTimezone();
+        const d = new Date(ISO);
+        const expectedDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+        const expectedTime = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+
+        expect(toLocalDateInput(ISO, tz)).toBe(expectedDate);
+        expect(toLocalTimeInput(ISO, tz)).toBe(expectedTime);
+    });
 });

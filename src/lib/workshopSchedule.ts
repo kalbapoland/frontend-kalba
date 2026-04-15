@@ -73,6 +73,13 @@ export function getDeviceTimezone(): string {
 /** Returns the date part (YYYY-MM-DD) of an ISO string in the given IANA timezone. */
 export function toLocalDateInput(iso: string, timezone: string): string {
   const date = new Date(iso);
+  // Fast path: use OS-native Date methods to avoid Hermes Intl DST inaccuracies.
+  if (timezone === getDeviceTimezone()) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone: timezone,
     year: "numeric",
@@ -86,6 +93,12 @@ export function toLocalDateInput(iso: string, timezone: string): string {
 /** Returns the time part (HH:MM) of an ISO string in the given IANA timezone. */
 export function toLocalTimeInput(iso: string, timezone: string): string {
   const date = new Date(iso);
+  // Fast path: use OS-native Date methods to avoid Hermes Intl DST inaccuracies.
+  if (timezone === getDeviceTimezone()) {
+    const h = String(date.getHours()).padStart(2, "0");
+    const min = String(date.getMinutes()).padStart(2, "0");
+    return `${h}:${min}`;
+  }
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone: timezone,
     hour: "2-digit",
@@ -101,6 +114,14 @@ export function toLocalTimeInput(iso: string, timezone: string): string {
 /**
  * Parses a date + time entered in the given IANA timezone and converts it to a
  * UTC Date. This is the timezone-aware replacement for parseWorkshopSchedule.
+ *
+ * When the requested timezone matches the device timezone we use the JS Date
+ * constructor directly (new Date(y, m, d, h, min)) instead of Intl.DateTimeFormat
+ * to compute the UTC offset.  The Date constructor is driven by the OS-level
+ * timezone implementation that React Native's native pickers also use, so the
+ * two are always in sync.  Intl.DateTimeFormat in Hermes can disagree with the
+ * OS timezone for DST periods on some Android / iOS versions, causing a
+ * consistent +1 h offset in the saved start_time.
  */
 export function localTimeToUTC(
   dateInput: string,
@@ -125,6 +146,30 @@ export function localTimeToUTC(
 
   if (year < 2024 || year > 2100) {
     return { ok: false, error: "Year must be between 2024 and 2100" };
+  }
+
+  // Fast path: when the requested timezone is the device's own timezone, use
+  // the JS Date constructor (new Date(y, m, d, h, min)) which is driven by the
+  // OS-level timezone — the same source used by the native date/time pickers.
+  // This avoids a Hermes Intl.DateTimeFormat DST discrepancy that can cause
+  // the Intl-based algorithm below to be off by one hour during DST periods.
+  if (timezone === getDeviceTimezone()) {
+    try {
+      const d = new Date(year, month - 1, day, hours, minutes, 0, 0);
+      if (
+        isNaN(d.getTime()) ||
+        d.getFullYear() !== year ||
+        d.getMonth() !== month - 1 ||
+        d.getDate() !== day ||
+        d.getHours() !== hours ||
+        d.getMinutes() !== minutes
+      ) {
+        return { ok: false, error: "Invalid calendar date/time" };
+      }
+      return { ok: true, value: d };
+    } catch {
+      return { ok: false, error: "Invalid calendar date/time" };
+    }
   }
 
   try {
