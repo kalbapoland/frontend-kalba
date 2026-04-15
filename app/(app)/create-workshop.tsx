@@ -87,14 +87,19 @@ export default function CreateWorkshopScreen() {
       return;
     }
 
+    // Clamp to minimum allowed time (now + 1h). On Android the time picker
+    // does not enforce minimumDate in the UI, so we enforce it here.
+    const minAllowed = new Date(Date.now() + 60 * 60 * 1000);
+    const effective = selected < minAllowed ? minAllowed : selected;
+
     if (pickerMode === "date") {
-      const y = selected.getFullYear();
-      const m = String(selected.getMonth() + 1).padStart(2, "0");
-      const d = String(selected.getDate()).padStart(2, "0");
+      const y = effective.getFullYear();
+      const m = String(effective.getMonth() + 1).padStart(2, "0");
+      const d = String(effective.getDate()).padStart(2, "0");
       setDate(`${y}-${m}-${d}`);
     } else {
-      const h = String(selected.getHours()).padStart(2, "0");
-      const min = String(selected.getMinutes()).padStart(2, "0");
+      const h = String(effective.getHours()).padStart(2, "0");
+      const min = String(effective.getMinutes()).padStart(2, "0");
       setTime(`${h}:${min}`);
     }
 
@@ -312,6 +317,7 @@ export default function CreateWorkshopScreen() {
           value={resolveCurrentSchedule()}
           mode={pickerMode}
           is24Hour
+          minimumDate={new Date(Date.now() + 60 * 60 * 1000)}
           onChange={onChangeSchedule}
         />
       ) : null}
@@ -327,7 +333,7 @@ export default function CreateWorkshopScreen() {
             <View style={s.pickerSheet}>
               <View style={s.pickerSheetHeader}>
                 <Text style={s.pickerSheetTitle}>
-                  {pickerMode === "date" ? "Choose Date (UTC)" : "Choose Time (UTC)"}
+                  {pickerMode === "date" ? "Choose Date" : "Choose Time"}
                 </Text>
                 <Pressable
                   onPress={() => setPickerMode(null)}
@@ -344,6 +350,7 @@ export default function CreateWorkshopScreen() {
                 mode={pickerMode}
                 display="spinner"
                 is24Hour
+                minimumDate={new Date(Date.now() + 60 * 60 * 1000)}
                 onChange={onChangeSchedule}
               />
             </View>
