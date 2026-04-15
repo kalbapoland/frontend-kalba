@@ -25,6 +25,7 @@ import { useAuthStore } from "@/store/auth";
 import {
   getDeviceTimezone,
   localTimeToUTC,
+  MIN_WORKSHOP_OFFSET_MS,
   toLocalDateInput,
   toLocalTimeInput,
 } from "@/lib/workshopSchedule";
@@ -40,9 +41,9 @@ export default function CreateWorkshopScreen() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  // Default to now+1h in the device timezone.
+  // Default to now + MIN_WORKSHOP_OFFSET_MS in the device timezone.
   const [timezone] = useState(getDeviceTimezone);
-  const defaultIso = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+  const defaultIso = new Date(Date.now() + MIN_WORKSHOP_OFFSET_MS).toISOString();
   const [date, setDate] = useState(() => toLocalDateInput(defaultIso, getDeviceTimezone()));
   const [time, setTime] = useState(() => toLocalTimeInput(defaultIso, getDeviceTimezone()));
   const [duration, setDuration] = useState("");
@@ -89,7 +90,7 @@ export default function CreateWorkshopScreen() {
 
     // Clamp to minimum allowed time (now + 1h). On Android the time picker
     // does not enforce minimumDate in the UI, so we enforce it here.
-    const minAllowed = new Date(Date.now() + 60 * 60 * 1000);
+    const minAllowed = new Date(Date.now() + MIN_WORKSHOP_OFFSET_MS);
     const effective = selected < minAllowed ? minAllowed : selected;
 
     if (pickerMode === "date") {
@@ -136,8 +137,10 @@ export default function CreateWorkshopScreen() {
       return;
     }
 
-    if (parsedSchedule.value <= new Date()) {
-      showAlert("Start time must be in the future. Please choose a later date or time.");
+    if (parsedSchedule.value <= new Date(Date.now() + MIN_WORKSHOP_OFFSET_MS)) {
+      showAlert(__DEV__
+        ? "Start time must be at least 1 minute in the future."
+        : "Start time must be in the future. Please choose a later date or time.");
       return;
     }
 
@@ -317,7 +320,7 @@ export default function CreateWorkshopScreen() {
           value={resolveCurrentSchedule()}
           mode={pickerMode}
           is24Hour
-          minimumDate={new Date(Date.now() + 60 * 60 * 1000)}
+          minimumDate={new Date(Date.now() + MIN_WORKSHOP_OFFSET_MS)}
           onChange={onChangeSchedule}
         />
       ) : null}
@@ -350,7 +353,7 @@ export default function CreateWorkshopScreen() {
                 mode={pickerMode}
                 display="spinner"
                 is24Hour
-                minimumDate={new Date(Date.now() + 60 * 60 * 1000)}
+                minimumDate={new Date(Date.now() + MIN_WORKSHOP_OFFSET_MS)}
                 onChange={onChangeSchedule}
               />
             </View>
