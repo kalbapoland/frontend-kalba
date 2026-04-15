@@ -1,6 +1,13 @@
 const DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
 const TIME_PATTERN = /^([01]\d|2[0-3]):([0-5]\d)$/;
 
+/**
+ * Minimum offset from now that a workshop start_time must be in the future.
+ * In dev builds: 1 minute (so developers can test without waiting an hour).
+ * In production: 1 hour.
+ */
+export const MIN_WORKSHOP_OFFSET_MS = __DEV__ ? 60 * 1000 : 60 * 60 * 1000;
+
 type ParseScheduleResult =
   | { ok: true; value: Date }
   | { ok: false; error: string };
