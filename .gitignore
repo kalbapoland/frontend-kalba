@@ -3,6 +3,11 @@
 # Claude Code
 .claude/
 
+# AI agent generated links (source of truth is scripts/AIAgents/ — run setup.py after clone)
+/CLAUDE.md
+/.github/copilot-instructions.md
+/.github/prompts/
+
 # dependencies
 node_modules/
 
