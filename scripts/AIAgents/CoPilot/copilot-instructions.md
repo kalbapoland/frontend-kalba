@@ -60,6 +60,13 @@ export default function WorkshopDetailScreen() {
 - `user` — browse and join workshops
 - `trainer` — create/edit/delete workshops, host video calls
 
+## Pre-Commit Code Review Workflow
+
+Before committing changes, a code review should be performed using `.github/prompts/code-reviewer.prompt.md`.
+In Copilot Chat, reference it manually: attach the prompt file and provide the staged diff (`git diff --cached`).
+The reviewer reports findings and the developer decides whether to commit, fix issues first, or explicitly skip the review.
+This step is skipped only when the developer explicitly says so.
+
 ## Rules
 
 - Never call API endpoints directly from a component — always use a hook

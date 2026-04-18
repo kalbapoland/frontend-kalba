@@ -126,6 +126,16 @@ Copy `.env.dev.example` → `.env.dev` for local development.
 
 ## Workflow Orchestration
 
+### Pre-Commit Code Review (Default — Mandatory)
+
+Before executing any `git commit` command:
+1. Invoke the `code-reviewer` sub-agent on the staged changes (`git diff --cached`)
+2. Present the full review findings to the user
+3. Wait for the user to explicitly decide: approve and commit, request changes, or skip
+4. Only proceed with the commit after the user's decision
+
+Skip this step only if the user explicitly says so (e.g. "skip review", "just commit", "no review").
+
 ### Plan Mode Default
 
 - Enter plan mode for ANY non-trivial task (3+ steps or UI architectural decisions)
