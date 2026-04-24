@@ -2,12 +2,15 @@ import axios, { type InternalAxiosRequestConfig } from "axios";
 import { Platform } from "react-native";
 import Constants from "expo-constants";
 
-import { useAuthStore } from "@/store/auth";
+import { loadRefreshToken, useAuthStore } from "@/store/auth";
+
+import { normalizeAuthResponse } from "./auth-response";
 
 // Extend Axios config to support retry flag for token refresh
 declare module "axios" {
   interface InternalAxiosRequestConfig {
     _retry?: boolean;
+    _skipAuthRefresh?: boolean;
   }
 }
 
@@ -121,16 +124,29 @@ apiClient.interceptors.response.use(
     }
 
     const originalRequest = error.config;
-    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+    const isRefreshRequest = originalRequest?.url?.includes("/auth/refresh");
+
+    if (
+      error.response?.status === 401
+      && originalRequest
+      && !originalRequest._retry
+      && !originalRequest._skipAuthRefresh
+      && !isRefreshRequest
+    ) {
       originalRequest._retry = true;
       try {
-        const { loadRefreshToken } = await import("@/store/auth");
-        const { refreshAccessToken } = await import("./endpoints");
         const storedRefreshToken = await loadRefreshToken();
         if (storedRefreshToken) {
-          const auth = await refreshAccessToken(storedRefreshToken);
-          const { useAuthStore } = await import("@/store/auth");
-          useAuthStore.getState().setToken(auth.access_token);
+          const refreshResponse = await apiClient.post("/auth/refresh", {
+            refresh_token: storedRefreshToken,
+          }, {
+            _skipAuthRefresh: true,
+          });
+          const auth = normalizeAuthResponse(refreshResponse.data);
+          await useAuthStore.getState().signIn(
+            auth.access_token,
+            auth.refresh_token,
+          );
           originalRequest.headers.Authorization = `Bearer ${auth.access_token}`;
           return apiClient(originalRequest);
         }
