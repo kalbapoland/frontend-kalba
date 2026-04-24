@@ -8,6 +8,11 @@ import { normalizeAuthResponse } from "./auth-response";
 
 // Extend Axios config to support retry flag for token refresh
 declare module "axios" {
+  interface AxiosRequestConfig {
+    _retry?: boolean;
+    _skipAuthRefresh?: boolean;
+  }
+
   interface InternalAxiosRequestConfig {
     _retry?: boolean;
     _skipAuthRefresh?: boolean;
