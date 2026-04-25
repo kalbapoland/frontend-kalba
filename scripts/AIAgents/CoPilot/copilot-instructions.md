@@ -60,6 +60,13 @@ export default function WorkshopDetailScreen() {
 - `user` — browse and join workshops
 - `trainer` — create/edit/delete workshops, host video calls
 
+## Design Document
+
+`docs/DESIGN.md` is the living record of product/design decisions, current
+capabilities, known limitations, and future improvement ideas. Consult it
+before designing new features and update it whenever a decision is made
+or a feature ships.
+
 ## Pre-Commit Code Review Workflow
 
 Before committing changes, a multi-agent code review should be performed.

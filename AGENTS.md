@@ -115,6 +115,13 @@ Copy `.env.dev.example` → `.env.dev` for local development.
 - Styling with NativeWind (`className` prop), design tokens in `src/theme/tokens.ts`
 - Platform-specific files use `.web.tsx` / `.native.tsx` suffixes
 
+## Design Document
+
+[`docs/DESIGN.md`](docs/DESIGN.md) is the living record of product/design
+decisions, current capabilities, known limitations, and future improvement
+ideas. **Consult it before designing new features and update it whenever a
+decision is made or a feature ships.** Keep entries concise and dated.
+
 ## Git Conventions
 
 - Branch names prefixed with developer name, e.g. `banaszki/feature-name`
