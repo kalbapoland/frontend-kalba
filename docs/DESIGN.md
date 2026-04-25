@@ -23,7 +23,7 @@ Each feature section follows the same shape so it stays scannable:
 
 ## Push Notifications
 
-**Status:** planned (2026-04-25)
+**Status:** in progress (2026-04-25) — backend Phase 1 complete (token registration, Expo dispatch, reminder scheduler); frontend integration pending.
 
 ### Overview
 
@@ -65,25 +65,48 @@ new user on the same device is normal (shared tablet, account switch).
 #### Reminder lead time — per-workshop, configurable at creation
 
 Trainers choose how many minutes before start they want to be reminded
-(e.g., 15 / 30 / 60 / 120 min). Stored as `Workshop.reminder_minutes_before`.
-A global default in config (`NOTIFICATION_LEAD_MINUTES = 60`) seeds the
-form and is used when the field is missing.
+(e.g., 15 / 30 / 60 / 120 min). Stored as `Workshop.reminder_minutes_before`
+(integer ≥ 1; 0 is rejected because it can never match the SELECT window).
+A global default in config (`NOTIFICATION_LEAD_MINUTES_DEFAULT = 60`) seeds
+the form and is used when the field is missing.
 
 Why per-workshop instead of one global value: trainers running back-to-back
 short sessions vs. multi-hour workshops have very different needs.
 
 #### Scheduler — DB polling loop, not APScheduler
 
-Background task started in FastAPI `lifespan`, polls every 60s:
+Background task started in FastAPI `lifespan`, polls every
+`NOTIFICATION_POLL_SECONDS` (default 60s):
 
 ```sql
 SELECT id FROM workshop
 WHERE deleted_at IS NULL
   AND reminder_sent_at IS NULL
-  AND start_time BETWEEN now() AND now() + reminder_minutes_before * interval '1 minute'
+  AND start_time > now()
+  AND start_time <= now() + make_interval(0,0,0,0,0, reminder_minutes_before)
 ```
 
-Idempotent via `Workshop.reminder_sent_at` (set after successful Expo call).
+Backed by a partial index (`ix_workshop_due_reminders`) that filters on
+`deleted_at IS NULL AND reminder_sent_at IS NULL` so the scan stays small.
+
+**Atomic claim-then-dispatch.** Each due workshop is claimed by a single
+`UPDATE workshop SET reminder_sent_at = now() WHERE id = :id AND
+reminder_sent_at IS NULL AND deleted_at IS NULL` returning `rowcount`.
+Only the winner of that race dispatches. This makes the loop safe against
+multiple scheduler instances (Fly multi-machine, blue/green overlap).
+
+**Single-shot semantics.** A workshop is marked sent *before* the push
+goes out. If Expo fails partially or fully the workshop is **not** retried
+— preferring at-most-once delivery to spam or window-miss. Failure counts
+appear in `DispatchResult` logs.
+
+**Re-arming.** `update_workshop` clears `reminder_sent_at` when
+`start_time` or `reminder_minutes_before` changes (and the workshop is
+not soft-deleted). The next poll picks it up.
+
+**Kill-switch.** `NOTIFICATIONS_ENABLED=false` disables the loop. The
+flag is read at process startup only — a runtime toggle would require a
+restart.
 
 Why not APScheduler:
 - No new dependency, no job-store table to maintain
@@ -101,10 +124,11 @@ workshops), revisit (see *Future improvements*).
 - `PUT /api/v1/users/me/push-tokens` — body `{ token, platform }`. Idempotent
   upsert keyed on `token`. If the token already exists for another user,
   reassign ownership (device, not user, owns the token).
-- `DELETE /api/v1/users/me/push-tokens/{token}` — called on explicit logout.
-  Scoped to current user (`AND user_id = :current_user`) to prevent
-  cross-user token deletion. Returns 204 even if token is missing
-  (idempotent, no info leakage).
+- `POST /api/v1/users/me/push-tokens/unregister` — called on explicit
+  logout; token is sent in the request body (not the URL path) to keep
+  it out of access logs. Scoped to current user
+  (`AND user_id = :current_user`) to prevent cross-user token deletion.
+  Returns 204 even if token is missing (idempotent, no info leakage).
 
 PostgreSQL `INSERT ... ON CONFLICT (token) DO UPDATE` handles concurrent
 requests from the same device atomically.
