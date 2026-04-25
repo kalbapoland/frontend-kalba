@@ -23,7 +23,7 @@ Each feature section follows the same shape so it stays scannable:
 
 ## Push Notifications
 
-**Status:** in progress (2026-04-25) — backend Phase 1 complete (token registration, Expo dispatch, reminder scheduler); frontend integration pending.
+**Status:** in progress (2026-04-25) — backend Phase 1 complete (token registration, Expo dispatch, reminder scheduler); frontend push-token registration shipped (PR 6, 2026-04-25).
 
 ### Overview
 
@@ -118,6 +118,18 @@ Why not APScheduler:
 
 If we hit volumes where polling becomes expensive (thousands of pending
 workshops), revisit (see *Future improvements*).
+
+#### Frontend push-token registration (PR 6, 2026-04-25)
+
+`usePushRegistration` hook (src/hooks/usePushRegistration.ts) runs inside
+`app/(app)/_layout.tsx` after the auth gate. On every authenticated launch it:
+1. Calls `Notifications.requestPermissionsAsync()` — exits silently if denied.
+2. Calls `Notifications.getExpoPushTokenAsync({ projectId })` using
+   `EXPO_PUBLIC_EAS_PROJECT_ID` from `app.config.js` → `extra.easProjectId`.
+3. Calls `PUT /api/v1/users/me/push-tokens` — idempotent upsert.
+4. Stores the token in Zustand (`pushToken` field) for logout cleanup.
+On explicit `signOut`, `unregisterPushToken` is called before clearing state.
+Web is skipped entirely (Phase 1 — VAPID is a separate flow).
 
 #### Token registration endpoint shape
 

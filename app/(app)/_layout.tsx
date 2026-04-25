@@ -3,12 +3,17 @@ import { Redirect, Stack } from "expo-router";
 
 import { useAuthStore } from "@/store/auth";
 import { useUser } from "@/hooks/useUser";
+import { usePushRegistration } from "@/hooks/usePushRegistration";
 import { colors } from "@/theme/tokens";
 
 export default function AppLayout() {
   const token = useAuthStore((s) => s.token);
   const signOut = useAuthStore((s) => s.signOut);
   const { isLoading, isError, error, refetch } = useUser();
+
+  // Register / refresh the Expo push token with the backend on every launch.
+  // The hook skips itself on web and when permission is denied.
+  usePushRegistration();
 
   if (!token) {
     return <Redirect href="/sign-in" />;

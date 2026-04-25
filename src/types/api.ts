@@ -72,3 +72,14 @@ export interface HostActionResponse {
   action: HostActionType;
   broadcast_sent: boolean;
 }
+
+export type PushTokenPlatform = "ios" | "android";
+
+export interface PushTokenRegister {
+  token: string;
+  platform: PushTokenPlatform;
+}
+
+export interface PushTokenUnregister {
+  token: string;
+}
