@@ -3,6 +3,7 @@ import { create } from "zustand";
 import * as SecureStore from "expo-secure-store";
 
 import type { User } from "@/types/api";
+import { unregisterPushToken } from "@/api/endpoints";
 
 const TOKEN_KEY = "kalba_token";
 const REFRESH_TOKEN_KEY = "kalba_refresh_token";
@@ -91,17 +92,21 @@ interface AuthState {
   token: string | null;
   user: User | null;
   isRestoringToken: boolean;
+  pushToken: string | null;
   setUser: (user: User) => void;
   signIn: (token: string, refreshToken?: string | null) => Promise<void>;
   signOut: () => Promise<void>;
   restoreToken: () => Promise<void>;
   setToken: (token: string) => void;
+  setPushToken: (pushToken: string) => void;
+  clearPushToken: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   token: null,
   user: null,
   isRestoringToken: true,
+  pushToken: null,
 
   setUser: (user) => set({ user }),
 
@@ -124,9 +129,18 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   signOut: async () => {
+    const pushToken = useAuthStore.getState().pushToken;
+    if (pushToken) {
+      try {
+        await unregisterPushToken({ token: pushToken });
+      } catch {
+        // Non-fatal — token will expire naturally or be cleaned up on
+        // the next DeviceNotRegistered response from Expo
+      }
+    }
     await removeToken();
     await removeRefreshToken();
-    set({ token: null, user: null });
+    set({ token: null, user: null, pushToken: null });
   },
 
   restoreToken: async () => {
@@ -139,4 +153,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     void saveToken(normalizedToken);
     set({ token: normalizedToken });
   },
+
+  setPushToken: (pushToken) => set({ pushToken }),
+
+  clearPushToken: () => set({ pushToken: null }),
 }));

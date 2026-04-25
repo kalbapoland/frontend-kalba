@@ -5,6 +5,8 @@ import type {
   HostActionResponse,
   HostActionType,
   JoinWorkshopResponse,
+  PushTokenRegister,
+  PushTokenUnregister,
   User,
   Workshop,
   WorkshopCreatePayload,
@@ -80,4 +82,16 @@ export async function sendHostAction(
     { action },
   );
   return data;
+}
+
+export async function registerPushToken(
+  payload: PushTokenRegister,
+): Promise<void> {
+  await apiClient.put("/users/me/push-tokens", payload);
+}
+
+export async function unregisterPushToken(
+  payload: PushTokenUnregister,
+): Promise<void> {
+  await apiClient.post("/users/me/push-tokens/unregister", payload);
 }
