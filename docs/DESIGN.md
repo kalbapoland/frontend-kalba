@@ -23,7 +23,7 @@ Each feature section follows the same shape so it stays scannable:
 
 ## Push Notifications
 
-**Status:** in progress (2026-04-25) — backend Phase 1 complete (token registration, Expo dispatch, reminder scheduler); frontend push-token registration shipped (PR 6, 2026-04-25).
+**Status:** shipped (2026-04-25) — Phase 1 complete: backend (token registration, Expo dispatch, reminder scheduler) + frontend (push-token registration, notification handler, deep link navigation).
 
 ### Overview
 
@@ -151,6 +151,19 @@ Expo returns `DeviceNotRegistered` when an app is uninstalled or token
 is revoked. The notification service deletes such tokens from the DB
 on the next send attempt. No separate cron job needed for now.
 
+### Current capabilities
+
+- **Trainer reminder delivery (Phase 1).** Trainer receives one push before
+  their workshop based on `reminder_minutes_before`.
+- **Foreground notification behavior.** Reminder notifications are surfaced
+  as alert + sound while app is active.
+- **Deep link on notification tap.** Tapping reminder opens
+  `/workshop/[id]` via `expo-router`.
+- **Cold-start notification routing.** If app is launched from a push,
+  last notification response is read and route is opened automatically.
+- **Idempotent token lifecycle.** Token is registered on authenticated app
+  launches and unregistered on explicit logout.
+
 ### Current limitations
 
 - **Phase 1 covers trainers only.** Participants do not get reminders yet.
@@ -176,8 +189,6 @@ on the next send attempt. No separate cron job needed for now.
 - **Notification types & preferences.** "Workshop changed", "workshop
   cancelled", "your workshop starts soon", "trainer started the call now".
   Per-type opt-in screen in profile.
-- **Deep linking.** Tap on notification opens the relevant workshop screen
-  (planned for Phase 1 — `/workshops/[id]` via `expo-router`).
 - **Persistent scheduler.** If polling becomes a bottleneck, migrate to
   APScheduler with `SQLAlchemyJobStore`, or Celery + Redis if we need
   retries, priorities, and worker scaling.
