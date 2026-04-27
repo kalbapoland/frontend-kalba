@@ -2,6 +2,7 @@ module.exports = {
   expo: {
     name: "Kalba",
     slug: "kalba",
+    owner: "kalba",
     version: "1.0.0",
     scheme: "kalba",
     orientation: "portrait",
@@ -41,6 +42,7 @@ module.exports = {
       },
       edgeToEdgeEnabled: true,
       package: "com.kalba.app",
+      googleServicesFile: "./android/app/google-services.json",
       permissions: ["android.permission.CAMERA", "android.permission.RECORD_AUDIO"],
       intentFilters: [
         {
@@ -76,7 +78,14 @@ module.exports = {
         process.env.EXPO_PUBLIC_API_URL_WEB ?? "http://localhost:8000/api/v1",
       apiUrlNative:
         process.env.EXPO_PUBLIC_API_URL_NATIVE ?? "http://localhost:8000/api/v1",
-      easProjectId: process.env.EXPO_PUBLIC_EAS_PROJECT_ID ?? "",
+      easProjectId:
+        process.env.EXPO_PUBLIC_EAS_PROJECT_ID ??
+        "349675a2-5bd0-4464-9464-b3d4499a10e3",
+      eas: {
+        projectId:
+          process.env.EXPO_PUBLIC_EAS_PROJECT_ID ??
+          "349675a2-5bd0-4464-9464-b3d4499a10e3",
+      },
     },
   },
 };
