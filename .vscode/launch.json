@@ -2,16 +2,11 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Debug Expo Web",
-      "type": "chrome",
+      "name": "Launch iOS Simulator",
+      "type": "node-terminal",
       "request": "launch",
-      "url": "http://localhost:8081",
-      "webRoot": "${workspaceFolder}",
-      "sourceMapPathOverrides": {
-        "webpack:///./~/*": "${workspaceFolder}/node_modules/*",
-        "webpack:///./*": "${workspaceFolder}/*",
-        "webpack:///*": "*"
-      }
+      "command": "npm run ios:dev",
+      "cwd": "${workspaceFolder}"
     }
   ]
 }
