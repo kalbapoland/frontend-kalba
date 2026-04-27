@@ -2,20 +2,23 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "start-expo-web",
+      "label": "npm run ios:dev",
       "type": "shell",
-      "command": "npx expo start --web",
+      "command": "npm run ios:dev",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
       "isBackground": true,
       "problemMatcher": {
-        "owner": "typescript",
+        "owner": "custom",
         "fileLocation": "relative",
         "pattern": {
           "regexp": "^.*"
         },
         "background": {
           "activeOnStart": true,
-          "beginsPattern": "Starting dev tools",
-          "endsPattern": "Web is waiting on"
+          "beginsPattern": "env: load|› Planning build|› Skipping dev server",
+          "endsPattern": "› Installing|› Opening on iOS|› Metro waiting on|› Opening"
         }
       }
     },
