@@ -31,20 +31,26 @@ export function usePushRegistration(): void {
                 return;
             }
 
+            const expoExtra = Constants.expoConfig?.extra as
+                | { easProjectId?: string; eas?: { projectId?: string } }
+                | undefined;
             const projectId: string =
-                (Constants.expoConfig?.extra as { easProjectId?: string } | undefined)
-                    ?.easProjectId ?? "";
+                expoExtra?.easProjectId ??
+                expoExtra?.eas?.projectId ??
+                Constants.easConfig?.projectId ??
+                "";
 
             if (!projectId) {
                 console.warn(
-                    "[push] EXPO_PUBLIC_EAS_PROJECT_ID is not set — push token will not work in production",
+                    "[push] Missing Expo projectId (EXPO_PUBLIC_EAS_PROJECT_ID / EAS config) — skipping push token registration",
                 );
+                return;
             }
 
             let tokenString: string;
             try {
                 const tokenData = await Notifications.getExpoPushTokenAsync({
-                    projectId: projectId || undefined,
+                    projectId,
                 });
                 tokenString = tokenData.data;
             } catch (err) {
