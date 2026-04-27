@@ -20,6 +20,28 @@ export async function exchangeGoogleToken(idToken: string): Promise<AuthResponse
   return normalizeAuthResponse(data);
 }
 
+export async function registerWithEmail(
+  email: string,
+  password: string,
+): Promise<AuthResponse> {
+  const { data } = await apiClient.post<AuthResponse>("/auth/register", {
+    email,
+    password,
+  });
+  return normalizeAuthResponse(data);
+}
+
+export async function loginWithEmail(
+  email: string,
+  password: string,
+): Promise<AuthResponse> {
+  const { data } = await apiClient.post<AuthResponse>("/auth/login", {
+    email,
+    password,
+  });
+  return normalizeAuthResponse(data);
+}
+
 export async function refreshAccessToken(refreshToken: string): Promise<AuthResponse> {
   const { data } = await apiClient.post<AuthResponse>("/auth/refresh", {
     refresh_token: refreshToken,

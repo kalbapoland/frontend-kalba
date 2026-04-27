@@ -2,6 +2,27 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "npm run ios",
+      "type": "shell",
+      "command": "npm run ios",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "custom",
+        "fileLocation": "relative",
+        "pattern": {
+          "regexp": "^.*"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "env: load|› Planning build|› Skipping dev server",
+          "endsPattern": "› Installing|› Opening on iOS|› Metro waiting on|› Opening"
+        }
+      }
+    },
+    {
       "label": "npm run ios:dev",
       "type": "shell",
       "command": "npm run ios:dev",

@@ -117,10 +117,13 @@ apiClient.interceptors.response.use(
   },
   async (error) => {
     if (axios.isAxiosError(error)) {
-      console.error(
+      const status = error.response?.status;
+      const log = status !== undefined && status < 500 ? console.warn : console.error;
+
+      log(
         "[API] error",
         error.code,
-        error.response?.status,
+        status,
         error.response?.data,
         error.config?.url,
       );
