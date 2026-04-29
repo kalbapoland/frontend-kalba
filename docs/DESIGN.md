@@ -200,3 +200,55 @@ on the next send attempt. No separate cron job needed for now.
   and copy.
 
 ---
+
+## Native Authentication
+
+**Status:** shipped (2026-04-27) — email/password registration and login now sit alongside the existing Google auth flow.
+
+### Overview
+
+Kalba now supports a native email/password path for users who do not want to
+depend on Google sign-in. The backend owns registration, password hashing,
+credential verification, and JWT issuance; the frontend presents a single auth
+screen that can switch between sign-up and log-in modes.
+
+### Decisions
+
+#### Password storage — Passlib + bcrypt only
+
+Passwords are never stored or returned in plain text. The backend hashes native
+credentials with Passlib using the bcrypt scheme and stores only
+`User.hashed_password`. API responses continue to expose JWTs and user ids only.
+
+#### Identity model — one user table, optional auth providers
+
+The existing `user` table remains the source of truth. `google_id` is now
+nullable and `hashed_password` is optional, which allows:
+- Google-only accounts
+- native-only accounts
+- accounts linked to both methods over time
+
+This avoids splitting profile data across multiple tables while keeping one
+stable user id across auth methods.
+
+#### JWT handling — HTTPS transport, secure local storage
+
+JWTs should only be used over HTTPS outside local development. On native
+clients, access and refresh tokens are stored in `expo-secure-store`, which is
+the preferred storage for session secrets. If a platform lacks secure storage,
+an encrypted alternative should be chosen before falling back to plain storage.
+
+### Current limitations
+
+- Native auth currently supports only email + password; there is no password
+  reset or email verification flow yet.
+- Web still relies on browser storage semantics for development sessions, so
+  native SecureStore protections do not apply there.
+
+### Future improvements
+
+- Add password reset and email verification.
+- Add explicit account-linking UI for users who want one account to support
+  both Google and native credentials.
+
+---

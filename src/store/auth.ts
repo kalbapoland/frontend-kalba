@@ -1,12 +1,50 @@
 import { Platform } from "react-native";
 import { create } from "zustand";
 import * as SecureStore from "expo-secure-store";
+import Constants from "expo-constants";
 
 import type { User } from "@/types/api";
 import { unregisterPushToken } from "@/api/endpoints";
 
-const TOKEN_KEY = "kalba_token";
-const REFRESH_TOKEN_KEY = "kalba_refresh_token";
+const LEGACY_TOKEN_KEY = "kalba_token";
+const LEGACY_REFRESH_TOKEN_KEY = "kalba_refresh_token";
+
+function sanitizeKeyPart(value: string): string {
+  return value.replace(/[^A-Za-z0-9]+/g, "_").replace(/^_+|_+$/g, "") || "default";
+}
+
+function getConfiguredApiUrl(): string {
+  const extra = Constants.expoConfig?.extra;
+
+  if (Platform.OS === "web") {
+    return (
+      process.env.EXPO_PUBLIC_API_URL_WEB
+      ?? extra?.apiUrlWeb
+      ?? "http://localhost:8000/api/v1"
+    );
+  }
+
+  return (
+    process.env.EXPO_PUBLIC_API_URL_NATIVE
+    ?? extra?.apiUrlNative
+    ?? "http://localhost:8000/api/v1"
+  );
+}
+
+function buildScopedKey(baseKey: string): string {
+  const apiUrl = getConfiguredApiUrl();
+
+  try {
+    const parsed = new URL(apiUrl);
+    const scope = sanitizeKeyPart(`${parsed.protocol}//${parsed.host}${parsed.pathname}`);
+    return `${baseKey}_${scope}`;
+  } catch {
+    return `${baseKey}_${sanitizeKeyPart(apiUrl)}`;
+  }
+}
+
+const TOKEN_KEY = buildScopedKey(LEGACY_TOKEN_KEY);
+const REFRESH_TOKEN_KEY = buildScopedKey(LEGACY_REFRESH_TOKEN_KEY);
 
 function describeTokenValue(value: unknown): string {
   if (value === null) {
@@ -46,6 +84,19 @@ async function saveToken(token: string): Promise<void> {
   } else {
     await SecureStore.setItemAsync(TOKEN_KEY, normalizedToken);
   }
+}
+
+async function removeLegacyAuthKeys(): Promise<void> {
+  if (Platform.OS === "web") {
+    localStorage.removeItem(LEGACY_TOKEN_KEY);
+    localStorage.removeItem(LEGACY_REFRESH_TOKEN_KEY);
+    return;
+  }
+
+  await Promise.all([
+    SecureStore.deleteItemAsync(LEGACY_TOKEN_KEY),
+    SecureStore.deleteItemAsync(LEGACY_REFRESH_TOKEN_KEY),
+  ]);
 }
 
 async function loadToken(): Promise<string | null> {
@@ -125,6 +176,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       await removeRefreshToken();
     }
 
+    await removeLegacyAuthKeys();
+
     set({ token: normalizedToken });
   },
 
@@ -140,11 +193,13 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
     await removeToken();
     await removeRefreshToken();
+    await removeLegacyAuthKeys();
     set({ token: null, user: null, pushToken: null });
   },
 
   restoreToken: async () => {
     const token = await loadToken();
+    await removeLegacyAuthKeys();
     set({ token, isRestoringToken: false });
   },
 

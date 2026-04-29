@@ -2,7 +2,14 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch iOS Simulator",
+      "name": "Launch iOS Simulator (Local Backend)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run ios",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Launch iOS Simulator (Deployed Backend)",
       "type": "node-terminal",
       "request": "launch",
       "command": "npm run ios:dev",

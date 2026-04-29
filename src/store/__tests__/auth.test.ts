@@ -8,6 +8,9 @@ jest.mock("expo-secure-store", () => ({
   deleteItemAsync: jest.fn().mockResolvedValue(undefined),
 }));
 
+const SCOPED_TOKEN_KEY = "kalba_token_http_localhost_8000_api_v1";
+const SCOPED_REFRESH_TOKEN_KEY = "kalba_refresh_token_http_localhost_8000_api_v1";
+
 const reset = () =>
   useAuthStore.setState({ token: null, user: null, isRestoringToken: true });
 
@@ -34,9 +37,14 @@ describe("useAuthStore", () => {
 
     expect(useAuthStore.getState().token).toBe("test-jwt-token");
     expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
-      "kalba_token",
+      SCOPED_TOKEN_KEY,
       "test-jwt-token",
     );
+    expect(SecureStore.deleteItemAsync).toHaveBeenCalledTimes(3);
+    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith(
+      SCOPED_REFRESH_TOKEN_KEY,
+    );
+    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith("kalba_token");
     expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith(
       "kalba_refresh_token",
     );
