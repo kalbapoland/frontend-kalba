@@ -12,6 +12,13 @@ import { useAuthStore } from "@/store/auth";
 let isNotificationHandlerConfigured = false;
 
 if (Platform.OS !== "web" && !isNotificationHandlerConfigured) {
+  if (Platform.OS === "android") {
+    void Notifications.setNotificationChannelAsync("default", {
+      name: "default",
+      importance: Notifications.AndroidImportance.MAX,
+    });
+  }
+
   Notifications.setNotificationHandler({
     handleNotification: async (notification) => {
       const type = notification.request.content.data?.type;

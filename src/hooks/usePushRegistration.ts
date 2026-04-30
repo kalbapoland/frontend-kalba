@@ -17,6 +17,8 @@ import type { PushTokenPlatform } from "@/types/api";
  * `signOut` can unregister it before clearing the session.
  */
 export function usePushRegistration(): void {
+    const token = useAuthStore((s) => s.token);
+    const isRestoringToken = useAuthStore((s) => s.isRestoringToken);
     const setPushToken = useAuthStore((s) => s.setPushToken);
 
     useEffect(() => {
@@ -24,10 +26,14 @@ export function usePushRegistration(): void {
             return;
         }
 
+        // Avoid a startup race where this effect runs before auth token restore/sign-in completes.
+        if (isRestoringToken || !token) {
+            return;
+        }
+
         void (async () => {
             const { status } = await Notifications.requestPermissionsAsync();
             if (status !== "granted") {
-                console.log("[push] Permission not granted — skipping registration");
                 return;
             }
 
@@ -69,6 +75,5 @@ export function usePushRegistration(): void {
                 console.warn("[push] Failed to register push token with backend:", err);
             }
         })();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [isRestoringToken, setPushToken, token]);
 }
