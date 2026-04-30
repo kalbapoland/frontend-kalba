@@ -98,7 +98,7 @@ console.log(
 export const apiClient = axios.create({
   baseURL: API_URL,
   headers: { "Content-Type": "application/json" },
-  timeout: 10_000, // 10 s — prevents hanging forever on unreachable server
+  timeout: 30_000, // 30 s — covers Fly.io cold-start + Google tokeninfo lookup on /auth/google
 });
 
 apiClient.interceptors.request.use((config) => {
@@ -123,6 +123,7 @@ apiClient.interceptors.response.use(
       log(
         "[API] error",
         error.code,
+        error.message,
         status,
         error.response?.data,
         error.config?.url,

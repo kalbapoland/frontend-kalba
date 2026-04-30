@@ -20,7 +20,7 @@ module.exports = {
       bundleURLTypes: [
         {
           CFBundleURLSchemes: [
-            "com.googleusercontent.apps.294519048023-gss6vgnkonpesvb1clkbsuij2517u4m7",
+            "com.googleusercontent.apps.188908572041-k6j2i13i3qjcgib927opv0bs8lh0ta4r",
           ],
         },
       ],
@@ -43,13 +43,17 @@ module.exports = {
       edgeToEdgeEnabled: true,
       package: "com.kalba.app",
       googleServicesFile: "./android/app/google-services.json",
-      permissions: ["android.permission.CAMERA", "android.permission.RECORD_AUDIO"],
+      permissions: [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.POST_NOTIFICATIONS",
+      ],
       intentFilters: [
         {
           action: "VIEW",
           data: [
             {
-              scheme: "com.googleusercontent.apps.294519048023-qp9dophfvb237gu9fc4i49ofrr1sbp9r",
+              scheme: "com.googleusercontent.apps.188908572041-phljppsp6q9tc35jgb928ka9oa8g3ahm",
             },
           ],
           category: ["BROWSABLE", "DEFAULT"],
