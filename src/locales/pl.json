@@ -1,0 +1,13 @@
+{
+  "greeting": "Cześć",
+  "welcome": "Witamy w Kalba",
+  "signin_with_google": "Zaloguj się przez Google",
+  "workshops": "Warsztaty",
+  "profile": "Profil",
+  "create_workshop": "Utwórz warsztat",
+  "signout": "Wyloguj się",
+  "workshop_one": "{{count}} warsztat",
+  "workshop_few": "{{count}} warsztaty",
+  "workshop_many": "{{count}} warsztatów",
+  "workshop_other": "{{count}} warsztatów"
+}

@@ -2,6 +2,17 @@
 
 React Native + Expo mobile app for discovering and booking workshops. Connects to the [Kalba backend](../backend-kalba/) API.
 
+## Tech Stack
+
+- React Native (Expo SDK 54) + TypeScript
+- File-based routing (`expo-router`)
+- Data fetching & server state (`@tanstack/react-query`) + HTTP client (`axios`)
+- Styling, layout, animations (`nativewind` v4 / TailwindCSS)
+- Auth State (`zustand`, JWT in `expo-secure-store`)
+- Auth providers (`expo-auth-session` / Google)
+- Video Calls SDK (`@daily-co/react-native-daily-js`)
+- **i18n & Localization (`i18next`, `react-i18next`, `expo-localization`)**
+
 ## Prerequisites
 
 - **Node.js 20+** (required by Expo SDK 54 — check with `node -v`)

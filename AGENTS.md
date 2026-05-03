@@ -105,6 +105,8 @@ Copy `.env.dev.example` → `.env.dev` for local development.
 | `expo-auth-session` | Google OAuth |
 | `expo-secure-store` | Secure token storage |
 | `@daily-co/react-native-daily-js` | Video call SDK |
+| `react-i18next` / `i18next` | Localization & pluralization |
+| `expo-localization` | Device language detection |
 
 ## Code Conventions
 
@@ -114,6 +116,7 @@ Copy `.env.dev.example` → `.env.dev` for local development.
 - Global state only for auth (`src/store/auth.ts`), everything else via TanStack Query
 - Styling with NativeWind (`className` prop), design tokens in `src/theme/tokens.ts`
 - Platform-specific files use `.web.tsx` / `.native.tsx` suffixes
+- **Localization:** text literals must be wrapped in `const { t } = useTranslation()` with dictionary keys mapped in `src/locales/*.json`.
 
 ## Design Document
 
