@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
@@ -90,6 +91,7 @@ function resolveAuthError(error: unknown, mode: AuthMode): string {
 }
 
 export default function AuthScreen() {
+  const { t } = useTranslation();
   const token = useAuthStore((s) => s.token);
   const signIn = useAuthStore((s) => s.signIn);
   const { mode: modeParam } = useLocalSearchParams<{ mode?: string | string[] }>();
@@ -224,7 +226,7 @@ export default function AuthScreen() {
               style={[s.modeButton, mode === "login" && s.modeButtonActive]}
             >
               <Text style={[s.modeButtonText, mode === "login" && s.modeButtonTextActive]}>
-                Log In
+                {t("login", "Log In")}
               </Text>
             </Pressable>
             <Pressable
@@ -232,21 +234,21 @@ export default function AuthScreen() {
               style={[s.modeButton, mode === "register" && s.modeButtonActive]}
             >
               <Text style={[s.modeButtonText, mode === "register" && s.modeButtonTextActive]}>
-                Sign Up
+                {t("signup", "Sign Up")}
               </Text>
             </Pressable>
           </View>
 
-          <Text style={s.heading}>{isRegister ? "Create your account" : "Welcome back"}</Text>
+          <Text style={s.heading}>{isRegister ? t("create_account_title", "Create your account") : t("welcome_back", "Welcome back")}</Text>
           <Text style={s.subheading}>
             {isRegister
-              ? "Use email and password to create a native Kalba account."
-              : "Log in with your Kalba email and password."}
+              ? t("create_account_subtitle", "Use email and password to create a native Kalba account.")
+              : t("login_subtitle", "Log in with your Kalba email and password.")}
           </Text>
 
           <View style={s.form}>
             <View style={s.inputGroup}>
-              <Text style={s.label}>Email</Text>
+              <Text style={s.label}>{t("email_label", "Email")}</Text>
               <TextInput
                 autoCapitalize="none"
                 autoComplete="email"
@@ -260,7 +262,7 @@ export default function AuthScreen() {
             </View>
 
             <View style={s.inputGroup}>
-              <Text style={s.label}>Password</Text>
+              <Text style={s.label}>{t("password_label", "Password")}</Text>
               <TextInput
                 autoCapitalize="none"
                 autoComplete={isRegister ? "new-password" : "password"}
@@ -294,23 +296,23 @@ export default function AuthScreen() {
               {loading ? (
                 <ActivityIndicator color={colors.surface} />
               ) : (
-                <Text style={s.primaryButtonText}>{isRegister ? "Create Account" : "Log In"}</Text>
+                <Text style={s.primaryButtonText}>{isRegister ? t("create_account_title", "Create Account") : t("login", "Log In")}</Text>
               )}
             </Pressable>
           </View>
 
           <View style={s.footerRow}>
             <Text style={s.footerText}>
-              {isRegister ? "Already have an account?" : "Need an account?"}
+              {isRegister ? t("already_have_account", "Already have an account?") : t("need_account", "Need an account?")}
             </Text>
             <Pressable onPress={() => setMode(isRegister ? "login" : "register")}>
-              <Text style={s.footerLink}>{isRegister ? "Log In" : "Sign Up"}</Text>
+              <Text style={s.footerLink}>{isRegister ? t("login", "Log In") : t("signup", "Sign Up")}</Text>
             </Pressable>
           </View>
 
           <View style={s.separatorRow}>
             <View style={s.separatorLine} />
-            <Text style={s.separatorText}>or</Text>
+            <Text style={s.separatorText}>{t("or", "or")}</Text>
             <View style={s.separatorLine} />
           </View>
 
@@ -329,7 +331,7 @@ export default function AuthScreen() {
             ) : (
               <View style={s.secondaryButtonInner}>
                 <Ionicons name="logo-google" size={18} color={colors.primary} />
-                <Text style={s.secondaryButtonText}>Continue with Google</Text>
+                <Text style={s.secondaryButtonText}>{t("continue_with_google", "Continue with Google")}</Text>
               </View>
             )}
           </Pressable>
