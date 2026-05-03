@@ -6,12 +6,12 @@ import en from '../locales/en.json';
 import pl from '../locales/pl.json';
 
 const resources = {
-  en: {
-    translation: en,
-  },
-  pl: {
-    translation: pl,
-  },
+    en: {
+        translation: en,
+    },
+    pl: {
+        translation: pl,
+    },
 };
 
 const getLanguage = () => {
@@ -23,14 +23,14 @@ const getLanguage = () => {
 };
 
 i18n
-  .use(initReactI18next)
-  .init({
-    resources,
-    lng: getLanguage(),
-    fallbackLng: 'en',
-    interpolation: {
-      escapeValue: false,
-    },
-  });
+    .use(initReactI18next)
+    .init({
+        resources,
+        lng: getLanguage(),
+        fallbackLng: 'en',
+        interpolation: {
+            escapeValue: false,
+        },
+    });
 
 export default i18n;
