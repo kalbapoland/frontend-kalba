@@ -1,0 +1,11 @@
+{
+  "greeting": "Hello",
+  "welcome": "Welcome to Kalba",
+  "signin_with_google": "Sign in with Google",
+  "workshops": "Workshops",
+  "profile": "Profile",
+  "create_workshop": "Create workshop",
+  "signout": "Sign out",
+  "workshop_one": "{{count}} workshop",
+  "workshop_other": "{{count}} workshops"
+}
