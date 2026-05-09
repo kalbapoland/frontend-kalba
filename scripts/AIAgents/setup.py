@@ -116,6 +116,23 @@ def main() -> int:
     print(f"Source of truth: {agents.relative_to(root)}")
     print()
 
+    # Ensure baseline source files exist before creating links.
+    required_paths = [
+        agents / "Claude" / "CLAUDE.md",
+        agents / "CoPilot" / "copilot-instructions.md",
+        agents / "CoPilot" / "skills" / "ship-code-change" / "SKILL.md",
+        agents / "Claude" / "skills" / "ship-code-change" / "SKILL.md",
+        agents / "CoPilot" / "skills" / "ios-testflight-build" / "SKILL.md",
+        agents / "Claude" / "skills" / "ios-testflight-build" / "SKILL.md",
+    ]
+
+    missing = [p for p in required_paths if not p.exists()]
+    if missing:
+        print("[error] Missing required AI agent source files:")
+        for path in missing:
+            print(f"  - {path.relative_to(root)}")
+        return 1
+
     # ── Files (hardlink / symlink) ────────────────────────────────────────────
     files = [
         (agents / "Claude"  / "CLAUDE.md",                root / "CLAUDE.md"),

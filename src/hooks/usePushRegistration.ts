@@ -32,8 +32,16 @@ export function usePushRegistration(): void {
         }
 
         void (async () => {
-            const { status } = await Notifications.requestPermissionsAsync();
-            if (status !== "granted") {
+            const currentPermissions = await Notifications.getPermissionsAsync();
+            const permissions = currentPermissions.granted
+                ? currentPermissions
+                : await Notifications.requestPermissionsAsync();
+
+            if (!permissions.granted) {
+                console.warn(
+                    "[push] Notifications permission not granted; skipping push token registration",
+                    permissions,
+                );
                 return;
             }
 
@@ -46,21 +54,23 @@ export function usePushRegistration(): void {
                 Constants.easConfig?.projectId ??
                 "";
 
-            if (!projectId) {
-                console.warn(
-                    "[push] Missing Expo projectId (EXPO_PUBLIC_EAS_PROJECT_ID / EAS config) — skipping push token registration",
-                );
-                return;
-            }
-
             let tokenString: string;
             try {
-                const tokenData = await Notifications.getExpoPushTokenAsync({
-                    projectId,
-                });
+                const tokenData = projectId
+                    ? await Notifications.getExpoPushTokenAsync({ projectId })
+                    : await Notifications.getExpoPushTokenAsync();
                 tokenString = tokenData.data;
             } catch (err) {
-                console.warn("[push] Failed to get push token:", err);
+                console.warn(
+                    "[push] Failed to get push token:",
+                    {
+                        hasProjectId: Boolean(projectId),
+                        projectId: projectId || "<empty>",
+                        expoExtra,
+                        easProjectId: Constants.easConfig?.projectId,
+                    },
+                    err,
+                );
                 return;
             }
 

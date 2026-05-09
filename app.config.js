@@ -17,6 +17,7 @@ module.exports = {
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.kalba.app",
+      buildNumber: "15",
       bundleURLTypes: [
         {
           CFBundleURLSchemes: [
