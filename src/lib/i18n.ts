@@ -1,6 +1,7 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
+import type { InitOptions } from 'i18next';
 import en from '../locales/en.json';
 import pl from '../locales/pl.json';
 
@@ -30,13 +31,15 @@ async function detectLanguage(): Promise<string> {
 
 // Initialize i18n synchronously so `react-i18next` finds the instance
 // immediately when components call `useTranslation()`.
-i18n.use(initReactI18next).init({
-    resources,
+const initOptions: InitOptions = {
+    // resources typing can be strict in some i18next versions, cast to any
+    resources: resources as any,
     lng: 'en',
     fallbackLng: 'en',
     interpolation: { escapeValue: false },
-    initImmediate: false,
-});
+};
+
+i18n.use(initReactI18next).init(initOptions);
 
 // Detect device language asynchronously and update i18n when ready.
 (async () => {
