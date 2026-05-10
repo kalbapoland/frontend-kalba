@@ -43,7 +43,8 @@ module.exports = {
       },
       edgeToEdgeEnabled: true,
       package: "com.kalba.app",
-      googleServicesFile: "./android/app/google-services.json",
+      googleServicesFile:
+        process.env.GOOGLE_SERVICES_JSON ?? "./android/app/google-services.json",
       permissions: [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
