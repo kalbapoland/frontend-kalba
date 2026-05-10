@@ -120,10 +120,12 @@ def main() -> int:
     required_paths = [
         agents / "Claude" / "CLAUDE.md",
         agents / "CoPilot" / "copilot-instructions.md",
-        agents / "CoPilot" / "skills" / "ship-code-change" / "SKILL.md",
-        agents / "Claude" / "skills" / "ship-code-change" / "SKILL.md",
+        agents / "CoPilot" / "skills" / "ship-code-change-frontend" / "SKILL.md",
+        agents / "Claude" / "skills" / "ship-code-change-frontend" / "SKILL.md",
         agents / "CoPilot" / "skills" / "ios-testflight-build" / "SKILL.md",
         agents / "Claude" / "skills" / "ios-testflight-build" / "SKILL.md",
+        agents / "CoPilot" / "skills" / "android-eas-build" / "SKILL.md",
+        agents / "Claude" / "skills" / "android-eas-build" / "SKILL.md",
     ]
 
     missing = [p for p in required_paths if not p.exists()]

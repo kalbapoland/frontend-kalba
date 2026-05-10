@@ -7,6 +7,8 @@
 > new features. Update it whenever a decision is made, a constraint is
 > discovered, or a feature ships. Keep entries concise and dated.
 
+Build/release source of truth (EAS): [docs/BUILDING_WITH_EAS.md](BUILDING_WITH_EAS.md)
+
 ---
 
 ## Conventions for entries

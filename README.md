@@ -58,6 +58,9 @@ React Native + Expo mobile app for discovering and booking workshops. Connects t
 
 ## Running the app
 
+For EAS cloud build and release workflows (iOS/Android, development/production), use the source-of-truth runbook:
+- [docs/BUILDING_WITH_EAS.md](docs/BUILDING_WITH_EAS.md)
+
 All scripts have a `:dev` variant that targets the deployed backend (`https://backend-kalba.fly.dev`) instead of localhost.
 
 | Platform | Local backend | Deployed backend |
