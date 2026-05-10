@@ -164,6 +164,24 @@ on the next send attempt. No separate cron job needed for now.
 - **Idempotent token lifecycle.** Token is registered on authenticated app
   launches and unregistered on explicit logout.
 
+### iOS Push Smoke Checklist (Release DoD)
+
+Use this short checklist before marking an iOS release as push-ready:
+
+1. Install latest TestFlight build on a physical iPhone.
+2. Open app, log in as `TRAINER`, wait 10-20s.
+3. Confirm backend logs include token registration:
+  - `PUT /api/v1/users/me/push-tokens` -> `204`
+  - `Push token upserted for user ... on ios`
+4. Create a new workshop with start time `now + 61 min` (default reminder is 60 min).
+5. Lock the phone and wait ~1 minute.
+6. Confirm backend reminder dispatch:
+  - `Reminder fired for workshop ...`
+  - `Push dispatch: sent=... failed=0`
+7. Confirm push appears on lock screen.
+
+Detailed runbook: `docs/IOS_PUSH_RUNBOOK.md`.
+
 ### Current limitations
 
 - **Phase 1 covers trainers only.** Participants do not get reminders yet.
