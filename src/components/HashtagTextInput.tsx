@@ -54,7 +54,15 @@ export function HashtagTextInput({ value, onChangeText, placeholder }: Props) {
     ? detectActiveHashtag(value, selection.end)
     : null;
 
-  const alreadyUsed = extractHashtagNames(value);
+  // Already-typed hashtags get filtered out of suggestions so the dropdown
+  // doesn't repeat what's already in the draft. The hashtag the user is
+  // actively typing is excluded from that filter — otherwise it would filter
+  // itself the moment it becomes long enough for the parser to recognize, and
+  // the dropdown would vanish exactly at the keystroke that completes a tag.
+  const activeName = active?.prefix.toLowerCase() ?? null;
+  const alreadyUsed = extractHashtagNames(value).filter(
+    (tag) => tag !== activeName,
+  );
   const { suggestions, isLoading } = useTagSuggestions(
     active?.prefix ?? "",
     alreadyUsed,
