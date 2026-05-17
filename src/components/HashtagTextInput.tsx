@@ -15,7 +15,8 @@ import { useTagSuggestions } from "@/hooks/useTagSuggestions";
 import {
   applySuggestion,
   detectActiveHashtag,
-  extractHashtagNames,
+  findHashtags,
+  isActiveHashtagBeyondCap,
   segmentDescription,
 } from "@/lib/hashtags";
 import { colors } from "@/theme/tokens";
@@ -54,17 +55,25 @@ export function HashtagTextInput({ value, onChangeText, placeholder }: Props) {
     ? detectActiveHashtag(value, selection.end)
     : null;
 
+  // The first MAX_TAGS_PER_WORKSHOP hashtags in the draft are what the
+  // backend will actually persist; anything beyond that is plain text and
+  // shouldn't be autocompleted. Deleting one of the existing tags drops the
+  // count back below the cap and re-enables the dropdown automatically.
+  const beyondCap =
+    active !== null && isActiveHashtagBeyondCap(value, active);
+
   // Already-typed hashtags get filtered out of suggestions so the dropdown
   // doesn't repeat what's already in the draft. The hashtag the user is
   // actively typing is excluded from that filter — otherwise it would filter
   // itself the moment it becomes long enough for the parser to recognize, and
   // the dropdown would vanish exactly at the keystroke that completes a tag.
   const activeName = active?.prefix.toLowerCase() ?? null;
-  const alreadyUsed = extractHashtagNames(value).filter(
-    (tag) => tag !== activeName,
-  );
+  const alreadyUsed = findHashtags(value)
+    .map((h) => h.name)
+    .filter((tag) => tag !== activeName);
+  const suggestPrefix = beyondCap ? "" : active?.prefix ?? "";
   const { suggestions, isLoading } = useTagSuggestions(
-    active?.prefix ?? "",
+    suggestPrefix,
     alreadyUsed,
   );
 

@@ -105,6 +105,26 @@ export function detectActiveHashtag(
 }
 
 /**
+ * Whether the user is composing a hashtag the backend would discard.
+ *
+ * Returns `true` when the active hashtag sits beyond the persistence cap —
+ * i.e. the text already contains MAX_TAGS_PER_WORKSHOP valid hashtags and
+ * the active one isn't among them (so it's a 6th, 7th, ...). UI uses this
+ * to suppress autocomplete for hashtags that won't be saved.
+ *
+ * If a counted hashtag is deleted later, the count drops below the cap and
+ * the active hashtag becomes eligible again — no special handling needed.
+ */
+export function isActiveHashtagBeyondCap(
+  text: string,
+  active: ActiveHashtag,
+): boolean {
+  const counted = findHashtags(text);
+  const activeIsCounted = counted.some((h) => h.start === active.start);
+  return counted.length >= MAX_TAGS_PER_WORKSHOP && !activeIsCounted;
+}
+
+/**
  * Apply a suggestion: replace the partial hashtag at `active` with the full
  * canonical tag name. Inserts a trailing space so the user can keep typing.
  * Returns the new text and the cursor position after insertion.
