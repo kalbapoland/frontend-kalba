@@ -272,3 +272,77 @@ an encrypted alternative should be chosen before falling back to plain storage.
   both Google and native credentials.
 
 ---
+
+## Hashtags
+
+**Status:** shipped (2026-05-17) — hashtag parsing, persistence, highlighting, and autocomplete are live across create/edit/detail workshop flows.
+
+### Overview
+
+Workshop descriptions support hashtags (for example `#joga`, `#medytacja`) to
+improve topic discoverability and guide users while composing content. The
+frontend highlights parsed tags and offers autocomplete during typing; the
+backend parses and persists canonical tag names, then exposes them in workshop
+responses.
+
+### Decisions
+
+#### Parsing parity between backend and frontend
+
+Parsing rules are intentionally mirrored in backend
+`app/services/hashtags.py` and frontend `src/lib/hashtags.ts`.
+Both sides use the same constraints:
+- tag must start with `#` and not be inside a word (`foo#bar` is not a tag)
+- allowed chars are Unicode `\\w` (letters, digits, underscore)
+- length is 2-30 characters
+- max 5 unique tags per workshop
+
+Why: without strict parity, users would see tags in the editor that backend
+would silently drop (or vice versa).
+
+#### Canonical storage format
+
+Tag names are NFC-normalized + casefolded before persistence and suggestions.
+This means variants like `#Joga`, `#JOGA`, and `#joga` collapse into one
+canonical value.
+
+Why: consistent search/autocomplete behavior and no duplicate logical tags in
+different letter cases or Unicode forms.
+
+#### Tags are derived from description text
+
+There is no separate "tags" field in workshop create/update payloads. The
+backend derives tags from `description` and replaces workshop-tag links on each
+description update.
+
+Why: single source of truth (description text) and no risk of description/tag
+drift.
+
+#### Suggestion strategy
+
+`GET /api/v1/tags/suggest?q=<prefix>&limit=<n>` returns canonical names for
+authenticated users only. Results are prefix-based and sorted by popularity
+descending (usage in non-soft-deleted workshops), then alphabetically.
+
+Why: simple, predictable autocomplete with low query cost and good relevance.
+
+### Current limitations
+
+- Only first 5 unique hashtags are persisted and highlighted; additional tags
+  in text remain plain text and are ignored by persistence.
+- Suggestions are prefix-only (no fuzzy/infix matching).
+- Empty prefix intentionally returns no "popular tags overall" list.
+- Orphan tags are kept in the `tag` table; there is no cleanup job yet.
+- Hashtags are visual and assistive today; there is no dedicated tag browse,
+  filter, or search UI.
+
+### Future improvements
+
+- Add hashtag-based workshop discovery (tap hashtag -> filtered list view).
+- Add optional fuzzy matching for autocomplete while preserving prefix as the
+  default ranking signal.
+- Add background cleanup for permanently unused tags if table growth becomes a
+  concern.
+- Add trend analytics (most-used tags over time) for product insights.
+
+---
