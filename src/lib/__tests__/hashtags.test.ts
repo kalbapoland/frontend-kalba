@@ -3,6 +3,7 @@ import {
   detectActiveHashtag,
   extractHashtagNames,
   findHashtags,
+  isActiveHashtagBeyondCap,
   MAX_TAGS_PER_WORKSHOP,
   segmentDescription,
 } from "../hashtags";
@@ -139,6 +140,62 @@ describe("detectActiveHashtag", () => {
       end: 12,
       prefix: "poznań",
     });
+  });
+});
+
+describe("isActiveHashtagBeyondCap", () => {
+  const FIVE_TAGS = "#a1 #b2 #c3 #d4 #e5";
+
+  test("returns false when fewer than cap exist", () => {
+    const text = "#a1 #b2 #wo";
+    const active = detectActiveHashtag(text, text.length)!;
+    expect(active.prefix).toBe("wo");
+    expect(isActiveHashtagBeyondCap(text, active)).toBe(false);
+  });
+
+  test("returns false when editing one of the first MAX hashtags", () => {
+    // Cursor placed inside `#c3` — the 3rd hashtag. Cap reached but the
+    // active tag is one of the counted ones.
+    const cursor = FIVE_TAGS.indexOf("#c3") + 3; // mid-c3
+    const active = detectActiveHashtag(FIVE_TAGS, cursor)!;
+    expect(active.prefix).toBe("c3");
+    expect(isActiveHashtagBeyondCap(FIVE_TAGS, active)).toBe(false);
+  });
+
+  test("returns true when the active hashtag is a 6th past the cap", () => {
+    const text = `${FIVE_TAGS} #f6`;
+    const active = detectActiveHashtag(text, text.length)!;
+    expect(active.prefix).toBe("f6");
+    expect(isActiveHashtagBeyondCap(text, active)).toBe(true);
+  });
+
+  test("returns true even for a single-char partial 6th tag", () => {
+    // `#x` is too short for the parser to count it, but it's still beyond
+    // the cap because the 5 counted ones already filled the budget.
+    const text = `${FIVE_TAGS} #x`;
+    const active = detectActiveHashtag(text, text.length)!;
+    expect(active.prefix).toBe("x");
+    expect(isActiveHashtagBeyondCap(text, active)).toBe(true);
+  });
+
+  test("returns true for an empty `#` after the cap", () => {
+    const text = `${FIVE_TAGS} #`;
+    const active = detectActiveHashtag(text, text.length)!;
+    expect(active.prefix).toBe("");
+    expect(isActiveHashtagBeyondCap(text, active)).toBe(true);
+  });
+
+  test("re-enables once a counted hashtag is removed", () => {
+    // Start at cap + 6th → beyond cap.
+    const overCap = `${FIVE_TAGS} #f6`;
+    const activeBefore = detectActiveHashtag(overCap, overCap.length)!;
+    expect(isActiveHashtagBeyondCap(overCap, activeBefore)).toBe(true);
+
+    // Remove `#e5` → 4 counted + 1 active (the 5th budget slot reopens).
+    const trimmed = overCap.replace(" #e5", "");
+    const activeAfter = detectActiveHashtag(trimmed, trimmed.length)!;
+    expect(activeAfter.prefix).toBe("f6");
+    expect(isActiveHashtagBeyondCap(trimmed, activeAfter)).toBe(false);
   });
 });
 

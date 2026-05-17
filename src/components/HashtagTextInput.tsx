@@ -15,7 +15,8 @@ import { useTagSuggestions } from "@/hooks/useTagSuggestions";
 import {
   applySuggestion,
   detectActiveHashtag,
-  extractHashtagNames,
+  findHashtags,
+  isActiveHashtagBeyondCap,
   segmentDescription,
 } from "@/lib/hashtags";
 import { colors } from "@/theme/tokens";
@@ -45,15 +46,34 @@ export function HashtagTextInput({ value, onChangeText, placeholder }: Props) {
   });
 
   const segments = segmentDescription(value);
-  const isCollapsed = selection.start === selection.end;
-  const active =
-    focused && isCollapsed
-      ? detectActiveHashtag(value, selection.start)
-      : null;
+  // Use `selection.end` (rightmost edge) as the cursor — works for both a
+  // collapsed caret and a transient range selection that Android's predictive
+  // text / autocorrect sometimes produces while the user is typing a word.
+  // Without this, the dropdown would flicker open/closed every time the OS
+  // briefly turned the caret into a range.
+  const active = focused
+    ? detectActiveHashtag(value, selection.end)
+    : null;
 
-  const alreadyUsed = extractHashtagNames(value);
+  // The first MAX_TAGS_PER_WORKSHOP hashtags in the draft are what the
+  // backend will actually persist; anything beyond that is plain text and
+  // shouldn't be autocompleted. Deleting one of the existing tags drops the
+  // count back below the cap and re-enables the dropdown automatically.
+  const beyondCap =
+    active !== null && isActiveHashtagBeyondCap(value, active);
+
+  // Already-typed hashtags get filtered out of suggestions so the dropdown
+  // doesn't repeat what's already in the draft. The hashtag the user is
+  // actively typing is excluded from that filter — otherwise it would filter
+  // itself the moment it becomes long enough for the parser to recognize, and
+  // the dropdown would vanish exactly at the keystroke that completes a tag.
+  const activeName = active?.prefix.toLowerCase() ?? null;
+  const alreadyUsed = findHashtags(value)
+    .map((h) => h.name)
+    .filter((tag) => tag !== activeName);
+  const suggestPrefix = beyondCap ? "" : active?.prefix ?? "";
   const { suggestions, isLoading } = useTagSuggestions(
-    active?.prefix ?? "",
+    suggestPrefix,
     alreadyUsed,
   );
 
@@ -72,8 +92,12 @@ export function HashtagTextInput({ value, onChangeText, placeholder }: Props) {
     setSelection({ start: result.cursor, end: result.cursor });
   };
 
-  const showDropdown =
-    active !== null && (isLoading || suggestions.length > 0);
+  // Show the dropdown only when there's something to show. Rendering a
+  // spinner-only state during the in-flight fetch produces a 1-line empty
+  // flash that vanishes once the API returns `[]` for a non-matching prefix
+  // — perceived as a flicker. Waiting until results arrive trades a small
+  // delay for a calm UI.
+  const showDropdown = active !== null && suggestions.length > 0;
 
   return (
     <View>
