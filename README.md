@@ -187,6 +187,19 @@ frontend-kalba/
 
 ## Troubleshooting
 
+### Why is react-native-background-timer still in dependencies?
+
+Kalba currently uses `@daily-co/react-native-daily-js` for video calls, and
+that SDK still declares and imports `react-native-background-timer`.
+
+Do not remove or replace `react-native-background-timer` unless one of the
+following is done first:
+- Daily releases a version without this dependency.
+- We migrate away from Daily.
+- We maintain an internal fork/patch of the Daily React Native SDK.
+
+Removing it early breaks dependency/runtime expectations of the video layer.
+
 ### Styles look stale / Tailwind changes not showing
 
 After editing `tailwind.config.js` or `global.css`, clear the Metro cache:

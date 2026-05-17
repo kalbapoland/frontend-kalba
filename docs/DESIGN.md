@@ -335,6 +335,10 @@ Why: simple, predictable autocomplete with low query cost and good relevance.
 - Orphan tags are kept in the `tag` table; there is no cleanup job yet.
 - Hashtags are visual and assistive today; there is no dedicated tag browse,
   filter, or search UI.
+- `@daily-co/react-native-daily-js` currently requires
+  `react-native-background-timer` as a peer/runtime dependency. Replacing or
+  removing it is blocked until Daily ships a maintained alternative or we
+  migrate/fork the video SDK.
 
 ### Future improvements
 
