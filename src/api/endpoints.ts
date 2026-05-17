@@ -117,3 +117,13 @@ export async function unregisterPushToken(
 ): Promise<void> {
   await apiClient.post("/users/me/push-tokens/unregister", payload);
 }
+
+export async function suggestTags(
+  prefix: string,
+  limit = 10,
+): Promise<string[]> {
+  const { data } = await apiClient.get<string[]>("/tags/suggest", {
+    params: { q: prefix, limit },
+  });
+  return data;
+}
