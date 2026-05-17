@@ -17,7 +17,9 @@ module.exports = {
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.kalba.app",
-      buildNumber: "25",
+      // buildNumber is managed by EAS via `appVersionSource: "remote"` in
+      // eas.json — see PR #49. Setting it here would surface in the manifest
+      // via expo-constants and confuse readers about the source of truth.
       infoPlist: {
         // Kalba does not implement any custom cryptography — only the
         // standard HTTPS / iOS Keychain provided by the OS. Declaring
