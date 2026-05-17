@@ -43,20 +43,6 @@ export function useTagSuggestions(prefix: string, excluded: string[] = []) {
   const excludedSet = new Set(excluded);
   const suggestions = (query.data ?? []).filter((tag) => !excludedSet.has(tag));
 
-  if (__DEV__ && debouncedPrefix.length >= 1) {
-    console.log(
-      "[tag-suggestions]",
-      JSON.stringify({
-        prefix,
-        debouncedPrefix,
-        excluded,
-        rawData: query.data,
-        suggestions,
-        isFetching: query.isFetching,
-      }),
-    );
-  }
-
   return {
     suggestions,
     isLoading: query.isFetching && debouncedPrefix.length >= 1,
