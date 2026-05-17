@@ -1,4 +1,6 @@
 import {
+  applySuggestion,
+  detectActiveHashtag,
   extractHashtagNames,
   findHashtags,
   MAX_TAGS_PER_WORKSHOP,
@@ -83,6 +85,80 @@ describe("findHashtags", () => {
     expect(matches).toHaveLength(2);
     expect(matches[0]).toEqual({ start: 4, length: 5, name: "joga" });
     expect(matches[1]).toEqual({ start: 14, length: 10, name: "medytacja" });
+  });
+});
+
+describe("detectActiveHashtag", () => {
+  test("cursor at end of `#jo` returns prefix `jo`", () => {
+    expect(detectActiveHashtag("hi #jo", 6)).toEqual({
+      start: 3,
+      end: 6,
+      prefix: "jo",
+    });
+  });
+
+  test("cursor right after `#` returns empty prefix (the user just typed #)", () => {
+    expect(detectActiveHashtag("hi #", 4)).toEqual({
+      start: 3,
+      end: 4,
+      prefix: "",
+    });
+  });
+
+  test("cursor in the middle of a tag returns up-to-cursor prefix", () => {
+    expect(detectActiveHashtag("hi #joga", 6)).toEqual({
+      start: 3,
+      end: 6,
+      prefix: "jo",
+    });
+  });
+
+  test("cursor after whitespace returns null", () => {
+    expect(detectActiveHashtag("hi #jo ", 7)).toBeNull();
+  });
+
+  test("hashtag preceded by word char (mid-word) returns null", () => {
+    expect(detectActiveHashtag("foo#bar", 7)).toBeNull();
+  });
+
+  test("no hashtag in scope returns null", () => {
+    expect(detectActiveHashtag("plain text", 5)).toBeNull();
+  });
+
+  test("hashtag at start of string", () => {
+    expect(detectActiveHashtag("#joga", 5)).toEqual({
+      start: 0,
+      end: 5,
+      prefix: "joga",
+    });
+  });
+
+  test("supports polish chars in the prefix", () => {
+    expect(detectActiveHashtag("opis #poznań", 12)).toEqual({
+      start: 5,
+      end: 12,
+      prefix: "poznań",
+    });
+  });
+});
+
+describe("applySuggestion", () => {
+  test("replaces partial hashtag with full tag + trailing space", () => {
+    const text = "Let's do #jo today";
+    const active = detectActiveHashtag(text, 12)!;
+    expect(active.prefix).toBe("jo");
+
+    const result = applySuggestion(text, active, "joga");
+    expect(result.text).toBe("Let's do #joga  today");
+    expect(result.cursor).toBe(15);
+  });
+
+  test("inserts at end of string", () => {
+    const text = "topic #me";
+    const active = detectActiveHashtag(text, text.length)!;
+    const result = applySuggestion(text, active, "medytacja");
+    expect(result.text).toBe("topic #medytacja ");
+    expect(result.cursor).toBe(17);
   });
 });
 

@@ -61,6 +61,68 @@ export type DescriptionSegment =
   | { type: "text"; text: string }
   | { type: "hashtag"; text: string; name: string };
 
+const WORD_CHAR_RE = /[\p{L}\p{N}_]/u;
+const WORD_CHARS_ONLY_RE = /^[\p{L}\p{N}_]*$/u;
+const WHITESPACE_RE = /\s/;
+
+export interface ActiveHashtag {
+  /** Index of the leading '#'. */
+  start: number;
+  /** Cursor position. */
+  end: number;
+  /** Characters typed between '#' and the cursor (may be empty). */
+  prefix: string;
+}
+
+/**
+ * Detect whether the cursor is currently inside a hashtag being typed.
+ *
+ * "Inside" means: walking backward from the cursor produces only word chars
+ * (letters/digits/underscore) until reaching a '#', and that '#' itself is
+ * not preceded by a word char (matching the parser's lookbehind).
+ *
+ * Returns the hashtag range and the typed prefix, or null when the cursor is
+ * not actively editing a hashtag.
+ */
+export function detectActiveHashtag(
+  text: string,
+  cursor: number,
+): ActiveHashtag | null {
+  if (cursor < 0 || cursor > text.length) return null;
+
+  for (let i = cursor - 1; i >= 0; i--) {
+    const ch = text[i];
+    if (WHITESPACE_RE.test(ch)) return null;
+    if (ch === "#") {
+      if (i > 0 && WORD_CHAR_RE.test(text[i - 1])) return null;
+      const prefix = text.slice(i + 1, cursor);
+      if (!WORD_CHARS_ONLY_RE.test(prefix)) return null;
+      return { start: i, end: cursor, prefix };
+    }
+    if (!WORD_CHAR_RE.test(ch)) return null;
+  }
+  return null;
+}
+
+/**
+ * Apply a suggestion: replace the partial hashtag at `active` with the full
+ * canonical tag name. Inserts a trailing space so the user can keep typing.
+ * Returns the new text and the cursor position after insertion.
+ */
+export function applySuggestion(
+  text: string,
+  active: ActiveHashtag,
+  tagName: string,
+): { text: string; cursor: number } {
+  const replacement = `#${tagName} `;
+  const before = text.slice(0, active.start);
+  const after = text.slice(active.end);
+  return {
+    text: before + replacement + after,
+    cursor: before.length + replacement.length,
+  };
+}
+
 /**
  * Split text into segments for rendering. Hashtags beyond the 5-tag cap are
  * emitted as plain text segments — they aren't highlighted and won't be
