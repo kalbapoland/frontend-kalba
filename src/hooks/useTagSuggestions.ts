@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 import { suggestTags } from "@/api/endpoints";
 
@@ -35,6 +35,9 @@ export function useTagSuggestions(prefix: string, excluded: string[] = []) {
     queryFn: () => suggestTags(debouncedPrefix, SUGGESTION_LIMIT),
     enabled: debouncedPrefix.length >= 1,
     staleTime: STALE_MS,
+    // Keep previous results visible while the new prefix's query is in flight,
+    // so the dropdown doesn't briefly empty out between keystrokes.
+    placeholderData: keepPreviousData,
   });
 
   const excludedSet = new Set(excluded);
