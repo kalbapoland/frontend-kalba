@@ -83,8 +83,12 @@ export function HashtagTextInput({ value, onChangeText, placeholder }: Props) {
     setSelection({ start: result.cursor, end: result.cursor });
   };
 
-  const showDropdown =
-    active !== null && (isLoading || suggestions.length > 0);
+  // Show the dropdown only when there's something to show. Rendering a
+  // spinner-only state during the in-flight fetch produces a 1-line empty
+  // flash that vanishes once the API returns `[]` for a non-matching prefix
+  // — perceived as a flicker. Waiting until results arrive trades a small
+  // delay for a calm UI.
+  const showDropdown = active !== null && suggestions.length > 0;
 
   return (
     <View>
