@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import type { AxiosError } from "axios";
 
+import { DescriptionWithHashtags } from "@/components/DescriptionWithHashtags";
 import { useWorkshopDetail } from "@/hooks/useWorkshopDetail";
 import { useJoinWorkshop } from "@/hooks/useJoinWorkshop";
 import { useDeleteWorkshop } from "@/hooks/useDeleteWorkshop";
@@ -150,7 +151,10 @@ export default function WorkshopDetailScreen() {
         {/* Description */}
         {workshop.description ? (
           <View style={s.section}>
-            <Text style={s.description}>{workshop.description}</Text>
+            <DescriptionWithHashtags
+              text={workshop.description}
+              style={s.description}
+            />
           </View>
         ) : null}
 

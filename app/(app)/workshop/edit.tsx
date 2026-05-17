@@ -12,6 +12,7 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
+import { HashtagTextInput } from "@/components/HashtagTextInput";
 import { useWorkshopDetail } from "@/hooks/useWorkshopDetail";
 import { useUpdateWorkshop } from "@/hooks/useUpdateWorkshop";
 import {
@@ -133,13 +134,16 @@ export default function EditWorkshopScreen() {
         onChangeText={setTitle}
         placeholder="Workshop title"
       />
-      <FormField
-        label="Description"
-        value={description}
-        onChangeText={setDescription}
-        placeholder="What will participants experience?"
-        multiline
-      />
+      <View className="mb-4">
+        <Text className="mb-1.5 text-xs font-medium tracking-wider text-ink-light">
+          Description
+        </Text>
+        <HashtagTextInput
+          value={description}
+          onChangeText={setDescription}
+          placeholder="What will participants experience? Use #hashtags (up to 5)."
+        />
+      </View>
 
       <SectionLabel icon="calendar-outline">{`Schedule (${timezone})`}</SectionLabel>
       <View className="flex-row gap-3">

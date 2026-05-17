@@ -16,6 +16,7 @@ export interface Workshop {
   timezone: string;  // IANA timezone, e.g. "America/Los_Angeles"
   price: string;
   max_participants: number;
+  tags?: string[];
 }
 
 export interface AuthResponse {

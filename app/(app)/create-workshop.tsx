@@ -20,6 +20,7 @@ import DateTimePicker, {
   type DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 
+import { HashtagTextInput } from "@/components/HashtagTextInput";
 import { useCreateWorkshop } from "@/hooks/useCreateWorkshop";
 import { useAuthStore } from "@/store/auth";
 import {
@@ -200,13 +201,14 @@ export default function CreateWorkshopScreen() {
             onChangeText={setTitle}
             placeholder="e.g. Morning Yoga Flow"
           />
-          <FormField
-            label="Description (optional)"
-            value={description}
-            onChangeText={setDescription}
-            placeholder="What will participants experience?"
-            multiline
-          />
+          <View style={s.fieldContainer}>
+            <Text style={s.fieldLabel}>Description (optional)</Text>
+            <HashtagTextInput
+              value={description}
+              onChangeText={setDescription}
+              placeholder="What will participants experience? Use #hashtags (up to 5)."
+            />
+          </View>
           <View style={s.fieldContainer}>
             <Text style={s.fieldLabel}>Schedule ({timezone})</Text>
             <View style={s.scheduleCard}>
