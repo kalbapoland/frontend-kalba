@@ -18,14 +18,14 @@ module.exports = {
       supportsTablet: true,
       bundleIdentifier: "com.kalba.app",
       buildNumber: "25",
-      bundleURLTypes: [
-        {
-          CFBundleURLSchemes: [
-            "com.googleusercontent.apps.188908572041-k6j2i13i3qjcgib927opv0bs8lh0ta4r",
-          ],
-        },
-      ],
       infoPlist: {
+        CFBundleURLTypes: [
+          {
+            CFBundleURLSchemes: [
+              "com.googleusercontent.apps.188908572041-k6j2i13i3qjcgib927opv0bs8lh0ta4r",
+            ],
+          },
+        ],
         NSAppTransportSecurity: {
           NSAllowsLocalNetworking: true,
         },
@@ -70,6 +70,8 @@ module.exports = {
       "expo-router",
       "expo-web-browser",
       "expo-secure-store",
+      "expo-font",
+      "expo-localization",
       [
         "expo-notifications",
         {
