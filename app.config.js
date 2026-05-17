@@ -19,6 +19,12 @@ module.exports = {
       bundleIdentifier: "com.kalba.app",
       buildNumber: "25",
       infoPlist: {
+        // Kalba does not implement any custom cryptography — only the
+        // standard HTTPS / iOS Keychain provided by the OS. Declaring
+        // this here keeps new TestFlight uploads out of the "Missing
+        // Compliance" state, where they sit invisible to testers until
+        // someone manually declares it in App Store Connect.
+        ITSAppUsesNonExemptEncryption: false,
         CFBundleURLTypes: [
           {
             CFBundleURLSchemes: [
