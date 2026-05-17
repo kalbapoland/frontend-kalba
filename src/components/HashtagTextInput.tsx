@@ -45,11 +45,14 @@ export function HashtagTextInput({ value, onChangeText, placeholder }: Props) {
   });
 
   const segments = segmentDescription(value);
-  const isCollapsed = selection.start === selection.end;
-  const active =
-    focused && isCollapsed
-      ? detectActiveHashtag(value, selection.start)
-      : null;
+  // Use `selection.end` (rightmost edge) as the cursor — works for both a
+  // collapsed caret and a transient range selection that Android's predictive
+  // text / autocorrect sometimes produces while the user is typing a word.
+  // Without this, the dropdown would flicker open/closed every time the OS
+  // briefly turned the caret into a range.
+  const active = focused
+    ? detectActiveHashtag(value, selection.end)
+    : null;
 
   const alreadyUsed = extractHashtagNames(value);
   const { suggestions, isLoading } = useTagSuggestions(
