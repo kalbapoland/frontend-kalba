@@ -143,7 +143,7 @@ Before executing any `git commit` command:
     - for small diffs, it may run `review-single-pass`
     - for larger diffs, it dispatches to **max 2 independent reviewers** in parallel:
       - `review-runtime-security` (Correctness, Security, State Management)
-            - `review-architecture-quality` (Architecture, Documentation, Coding Standards, Performance, Tests)
+    - `review-architecture-quality` (Architecture, Documentation, Coding Standards, Performance, Tests)
 2. The manager merges the reviewer reports into a single consolidated review with a deduplicated issue list and a final verdict (`Approve` / `Request Changes` / `Block`).
 3. Present the full consolidated review (and, when relevant, the verbatim reviewer reports) to the user.
 4. Wait for the user to explicitly decide: approve and commit, request changes, or skip.
