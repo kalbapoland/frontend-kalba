@@ -23,9 +23,9 @@ import { useAuthStore } from "@/store/auth";
 import { formatWeekdayLong, formatMonthDayYear, formatTime, formatTimeWithTZ } from "@/lib/date";
 import { colors } from "@/theme/tokens";
 
-function formatPrice(price: string | number): string {
+function formatPrice(price: string | number, freeLabel: string): string {
   const n = Number(price);
-  if (n === 0) return "Free";
+  if (n === 0) return freeLabel;
   return `$${n % 1 === 0 ? n : n.toFixed(2)}`;
 }
 
@@ -57,11 +57,11 @@ export default function WorkshopDetailScreen() {
       },
       onError: (error) => {
         const axiosErr = error as AxiosError<{ detail?: string }>;
-        const msg = axiosErr.response?.data?.detail ?? "Could not join workshop";
+        const msg = axiosErr.response?.data?.detail ?? t("errors.could_not_join");
         if (Platform.OS === "web") {
           window.alert(msg);
         } else {
-          Alert.alert("Unable to Join", msg);
+          Alert.alert(t("errors.unable_to_join"), msg);
         }
       },
     });
@@ -73,25 +73,25 @@ export default function WorkshopDetailScreen() {
         onSuccess: () => router.back(),
         onError: () => {
           if (Platform.OS === "web") {
-            window.alert("Failed to delete workshop");
+            window.alert(t("errors.failed_to_delete"));
           } else {
-            Alert.alert("Error", "Failed to delete workshop");
+            Alert.alert(t("errors.title"), t("errors.failed_to_delete"));
           }
         },
       });
     };
 
     if (Platform.OS === "web") {
-      if (window.confirm("Delete this workshop? This cannot be undone.")) {
+      if (window.confirm(t("workshop.delete_confirm_body"))) {
         doDelete();
       }
     } else {
       Alert.alert(
-        "Delete Workshop",
-        "Are you sure you want to delete this workshop? This cannot be undone.",
+        t("workshop.delete_confirm_title"),
+        t("workshop.delete_confirm_body"),
         [
-          { text: "Cancel", style: "cancel" },
-          { text: "Delete", style: "destructive", onPress: doDelete },
+          { text: t("cancel"), style: "cancel" },
+          { text: t("delete"), style: "destructive", onPress: doDelete },
         ],
       );
     }
@@ -109,7 +109,7 @@ export default function WorkshopDetailScreen() {
     return (
       <View style={[s.centered, { backgroundColor: colors.canvas }]}>
         <Ionicons name="alert-circle-outline" size={48} color={colors.line} />
-        <Text style={s.emptyTitle}>Workshop not found</Text>
+        <Text style={s.emptyTitle}>{t("workshop_not_found")}</Text>
       </View>
     );
   }
@@ -152,7 +152,7 @@ export default function WorkshopDetailScreen() {
           <Pressable
             onPress={() => router.back()}
             accessibilityRole="button"
-            accessibilityLabel="Go back"
+            accessibilityLabel={t("workshop.go_back")}
             style={({ pressed }) => [s.backButton, { opacity: pressed ? 0.5 : 1 }]}
           >
             <Ionicons name="chevron-back" size={24} color={colors.ink} />
@@ -183,20 +183,20 @@ export default function WorkshopDetailScreen() {
 
         {/* Details card */}
         <View style={s.section}>
-          <Text style={s.sectionLabel}>Details</Text>
+          <Text style={s.sectionLabel}>{t("details")}</Text>
           <View style={s.detailCard}>
-            <DetailRow icon="time-outline" label="Duration" value={`${workshop.duration_minutes} min`} />
+            <DetailRow icon="time-outline" label={t("duration")} value={`${workshop.duration_minutes} min`} />
             <DetailRow
               icon="people-outline"
-              label="Spots"
+              label={t("spots")}
               value={`${enrolledCount} / ${workshop.max_participants}`}
             />
-            <DetailRow icon="pricetag-outline" label="Price" value={formatPrice(workshop.price)} />
+            <DetailRow icon="pricetag-outline" label={t("price")} value={formatPrice(workshop.price, t("free"))} />
             {showOriginalTZ && (
-              <DetailRow icon="globe-outline" label="Event timezone" value={originalTZTime} last />
+              <DetailRow icon="globe-outline" label={t("workshop.event_timezone")} value={originalTZTime} last />
             )}
             {!showOriginalTZ && (
-              <DetailRow icon="globe-outline" label="Timezone" value={eventTZ} last />
+              <DetailRow icon="globe-outline" label={t("workshop.timezone")} value={eventTZ} last />
             )}
           </View>
         </View>
@@ -204,27 +204,27 @@ export default function WorkshopDetailScreen() {
         {/* Owner actions */}
         {isOwner && (
           <View style={s.section}>
-            <Text style={s.sectionLabel}>Manage</Text>
+            <Text style={s.sectionLabel}>{t("manage")}</Text>
             <View style={s.manageRow}>
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel="Edit workshop"
+                accessibilityLabel={t("edit")}
                 style={({ pressed }) => [s.ghostButton, s.editButton, { opacity: pressed ? 0.7 : 1, transform: [{ scale: pressed ? 0.97 : 1 }] }]}
                 onPress={() => router.push({ pathname: "/(app)/workshop/edit", params: { id: id! } })}
               >
                 <Ionicons name="create-outline" size={16} color={colors.primary} />
-                <Text style={[s.ghostButtonText, { color: colors.primary }]}>Edit</Text>
+                <Text style={[s.ghostButtonText, { color: colors.primary }]}>{t("edit")}</Text>
               </Pressable>
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel="Delete workshop"
+                accessibilityLabel={t("delete")}
                 style={({ pressed }) => [s.ghostButton, s.deleteButton, { opacity: pressed ? 0.7 : 1, transform: [{ scale: pressed ? 0.97 : 1 }] }]}
                 onPress={handleDelete}
                 disabled={deleteMutation.isPending}
               >
                 <Ionicons name="trash-outline" size={16} color={colors.danger} />
                 <Text style={[s.ghostButtonText, { color: colors.danger }]}>
-                  {deleteMutation.isPending ? "Deleting..." : "Delete"}
+                  {deleteMutation.isPending ? t("workshop.deleting") : t("delete")}
                 </Text>
               </Pressable>
             </View>
@@ -286,7 +286,7 @@ export default function WorkshopDetailScreen() {
         )}
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Join workshop"
+          accessibilityLabel={t("workshop.join")}
           style={({ pressed }) => [s.joinButton, { transform: [{ scale: pressed ? 0.97 : 1 }], opacity: pressed ? 0.92 : 1 }]}
           onPress={handleJoin}
           disabled={joinMutation.isPending}
@@ -296,7 +296,7 @@ export default function WorkshopDetailScreen() {
           ) : (
             <>
               <Ionicons name="videocam" size={18} color={colors.surface} />
-              <Text style={s.joinButtonText}>Join Workshop</Text>
+              <Text style={s.joinButtonText}>{t("workshop.join")}</Text>
             </>
           )}
         </Pressable>

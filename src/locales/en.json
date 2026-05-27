@@ -45,10 +45,20 @@
     "workshop": {
         "enroll": "Enroll",
         "unenroll": "Unenroll",
-        "full": "Full"
+        "full": "Full",
+        "join": "Join Workshop",
+        "deleting": "Deleting...",
+        "timezone": "Timezone",
+        "event_timezone": "Event timezone",
+        "delete_confirm_title": "Delete Workshop",
+        "delete_confirm_body": "Are you sure you want to delete this workshop? This cannot be undone.",
+        "go_back": "Go back"
     },
     "errors": {
         "title": "Error",
-        "action_failed": "Action failed"
+        "action_failed": "Action failed",
+        "unable_to_join": "Unable to Join",
+        "could_not_join": "Could not join workshop",
+        "failed_to_delete": "Failed to delete workshop"
     }
 }
