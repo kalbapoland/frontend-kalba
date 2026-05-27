@@ -61,9 +61,12 @@ export function formatMonthDayYear(iso: string): string {
 }
 
 export function formatTime(iso: string): string {
+  // Always render 24h: cleaner for calendar grids and avoids the en-US
+  // AM/PM suffix that looks out of place across the rest of the UI.
   return new Date(iso).toLocaleTimeString(localeTag(), {
     hour: "2-digit",
     minute: "2-digit",
+    hour12: false,
     timeZone: TZ,
   });
 }
