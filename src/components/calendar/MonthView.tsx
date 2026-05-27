@@ -110,6 +110,11 @@ export function MonthView({ workshops, selectedDate, onSelectDate, emptyLabel }:
   return (
     <View style={s.container}>
       <Calendar
+        // react-native-calendars reads `current` only at mount time and then
+        // owns the displayed month internally. Since we hid its arrows and
+        // the parent screen drives navigation, we need to remount the grid
+        // whenever the month changes — keying on the year-month does that.
+        key={toISODate(selectedDate).slice(0, 7)}
         current={toISODate(selectedDate)}
         markingType="multi-dot"
         markedDates={markedDates as any}
