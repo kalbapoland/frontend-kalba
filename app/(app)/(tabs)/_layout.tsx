@@ -10,6 +10,7 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen name="index" options={{ title: "Workshops" }} />
+      <Tabs.Screen name="calendar" options={{ title: "Calendar" }} />
       <Tabs.Screen name="profile" options={{ title: "Profile" }} />
     </Tabs>
   );

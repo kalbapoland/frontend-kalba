@@ -32,5 +32,35 @@
     "workshop_one": "{{count}} warsztat",
     "workshop_few": "{{count}} warsztaty",
     "workshop_many": "{{count}} warsztatów",
-    "workshop_other": "{{count}} warsztatów"
+    "workshop_other": "{{count}} warsztatów",
+    "calendar": {
+        "title": "Kalendarz",
+        "month": "Miesiąc",
+        "week": "Tydzień",
+        "day": "Dzień",
+        "today": "Dziś",
+        "no_events": "Brak warsztatów tego dnia",
+        "load_error": "Nie udało się załadować kalendarza",
+        "legend_owner": "Moje warsztaty",
+        "legend_enrolled": "Zapisane"
+    },
+    "workshop": {
+        "enroll": "Zapisz się",
+        "unenroll": "Wypisz się",
+        "full": "Brak miejsc",
+        "join": "Dołącz do warsztatu",
+        "deleting": "Usuwanie...",
+        "timezone": "Strefa czasowa",
+        "event_timezone": "Strefa wydarzenia",
+        "delete_confirm_title": "Usuń warsztat",
+        "delete_confirm_body": "Czy na pewno chcesz usunąć ten warsztat? Tej operacji nie można cofnąć.",
+        "go_back": "Wróć"
+    },
+    "errors": {
+        "title": "Błąd",
+        "action_failed": "Nie udało się wykonać operacji",
+        "unable_to_join": "Nie można dołączyć",
+        "could_not_join": "Nie udało się dołączyć do warsztatu",
+        "failed_to_delete": "Nie udało się usunąć warsztatu"
+    }
 }

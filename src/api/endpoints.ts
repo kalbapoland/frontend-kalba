@@ -5,6 +5,7 @@ import type {
   HostActionResponse,
   HostActionType,
   JoinWorkshopResponse,
+  MyWorkshopsQuery,
   PushTokenRegister,
   PushTokenUnregister,
   User,
@@ -84,6 +85,28 @@ export async function updateWorkshop(
 
 export async function deleteWorkshop(id: string): Promise<void> {
   await apiClient.delete(`/workshops/${id}`);
+}
+
+export async function fetchMyWorkshops(
+  query: MyWorkshopsQuery = {},
+): Promise<Workshop[]> {
+  const { data } = await apiClient.get<Workshop[]>("/workshops/mine", {
+    params: {
+      role: query.role,
+      from: query.from,
+      to: query.to,
+    },
+  });
+  return data;
+}
+
+export async function enrollWorkshop(id: string): Promise<Workshop> {
+  const { data } = await apiClient.post<Workshop>(`/workshops/${id}/enroll`);
+  return data;
+}
+
+export async function unenrollWorkshop(id: string): Promise<void> {
+  await apiClient.delete(`/workshops/${id}/enroll`);
 }
 
 export async function joinWorkshop(
