@@ -17,6 +17,18 @@ export interface Workshop {
   price: string;
   max_participants: number;
   tags?: string[];
+  // Caller-context fields populated by authenticated endpoints.
+  is_owner?: boolean;
+  is_enrolled?: boolean;
+  enrolled_count?: number;
+}
+
+export type MyWorkshopsRole = "trainer" | "enrolled" | "all";
+
+export interface MyWorkshopsQuery {
+  role?: MyWorkshopsRole;
+  from?: string;
+  to?: string;
 }
 
 export interface AuthResponse {

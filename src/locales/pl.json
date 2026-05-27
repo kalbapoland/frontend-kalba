@@ -32,5 +32,25 @@
     "workshop_one": "{{count}} warsztat",
     "workshop_few": "{{count}} warsztaty",
     "workshop_many": "{{count}} warsztatów",
-    "workshop_other": "{{count}} warsztatów"
+    "workshop_other": "{{count}} warsztatów",
+    "calendar": {
+        "title": "Kalendarz",
+        "month": "Miesiąc",
+        "week": "Tydzień",
+        "day": "Dzień",
+        "today": "Dziś",
+        "no_events": "Brak warsztatów tego dnia",
+        "load_error": "Nie udało się załadować kalendarza",
+        "legend_owner": "Moje warsztaty",
+        "legend_enrolled": "Zapisane"
+    },
+    "workshop": {
+        "enroll": "Zapisz się",
+        "unenroll": "Wypisz się",
+        "full": "Brak miejsc"
+    },
+    "errors": {
+        "title": "Błąd",
+        "action_failed": "Nie udało się wykonać operacji"
+    }
 }

@@ -7,6 +7,7 @@ import { colors } from "@/theme/tokens";
 
 const TAB_ICONS: Record<string, { active: keyof typeof Ionicons.glyphMap; inactive: keyof typeof Ionicons.glyphMap }> = {
   index: { active: "grid", inactive: "grid-outline" },
+  calendar: { active: "calendar", inactive: "calendar-outline" },
   profile: { active: "person", inactive: "person-outline" },
 };
 

@@ -30,5 +30,25 @@
     "empty_workshops": "Currently there are no workshops.",
     "workshop_not_found": "Workshop not found",
     "workshop_one": "{{count}} workshop",
-    "workshop_other": "{{count}} workshops"
+    "workshop_other": "{{count}} workshops",
+    "calendar": {
+        "title": "Calendar",
+        "month": "Month",
+        "week": "Week",
+        "day": "Day",
+        "today": "Today",
+        "no_events": "No workshops on this day",
+        "load_error": "Failed to load calendar",
+        "legend_owner": "My workshops",
+        "legend_enrolled": "Enrolled"
+    },
+    "workshop": {
+        "enroll": "Enroll",
+        "unenroll": "Unenroll",
+        "full": "Full"
+    },
+    "errors": {
+        "title": "Error",
+        "action_failed": "Action failed"
+    }
 }

@@ -350,3 +350,129 @@ Why: simple, predictable autocomplete with low query cost and good relevance.
 - Add trend analytics (most-used tags over time) for product insights.
 
 ---
+
+## Calendar & Enrollment
+
+**Status:** shipped (2026-05-27) — v1: participant calendar with month/week/day
+views, scoped to workshops the viewer owns or has enrolled in. Lightweight
+pre-event enrollment (separate from live-session participation).
+
+### Overview
+
+A new **Calendar** tab gives every user a personal schedule: workshops they
+created (as trainer) and workshops they signed up for (as participant). Three
+views — month, week, day — with a switcher at the top and tap-through to the
+existing workshop detail screen.
+
+Enrollment is a new first-class concept: a user can sign up for a workshop
+ahead of time via a button on the workshop detail screen. Capacity is enforced
+by `Workshop.max_participants`. This is distinct from `WorkshopParticipant`,
+which is created only when a user actually joins the live Daily.co room.
+
+### Decisions
+
+#### Enrollment as a separate concept from live participation
+
+Two reasons:
+1. Semantics: "I signed up" and "I joined the live call" are different events
+   with different timing (the first happens days before, the second during the
+   workshop). Mixing them under one record obscures both.
+2. Forward compatibility: enrollment is the natural anchor for future features
+   (waitlists, payment-on-signup, participant push reminders) that don't apply
+   to live-room presence.
+
+Schema:
+```
+workshop_enrollment
+  id            UUID PK
+  user_id       FK -> user.id           (CASCADE)
+  workshop_id   FK -> workshop.id       (CASCADE)
+  enrolled_at   TIMESTAMP
+  UNIQUE(user_id, workshop_id)
+```
+
+Active enrollment = row exists. Unenrolling is a hard delete — no audit trail
+in v1; can be added if churn becomes interesting.
+
+#### Endpoints
+
+- `POST /workshops/{id}/enroll` — idempotent; rejects when the workshop has
+  already started (400), when the caller is the trainer (400), and when the
+  workshop is full (409). UNIQUE constraint serializes concurrent enrolls.
+- `DELETE /workshops/{id}/enroll` — idempotent (returns 204 even if not
+  enrolled).
+- `GET /workshops/mine?role={trainer|enrolled|all}&from=&to=` — single endpoint
+  feeding the calendar; combines owned + enrolled workshops, with optional
+  range filter on `start_time`.
+
+`WorkshopRead` carries three caller-context fields populated by handlers:
+`is_owner`, `is_enrolled`, `enrolled_count`. The list endpoint
+(`GET /workshops/`) and the detail endpoint accept optional auth so these
+fields are filled when the caller is known.
+
+#### Calendar library — `react-native-calendars` for month only
+
+The month view uses `react-native-calendars` (`<Calendar />` + `markedDates`
+multi-dot mode). Week and day views are custom — a vertical time grid (6:00 –
+23:00) with events absolutely positioned by `start_time` and
+`duration_minutes`. The library's week/day modes are weak; custom code keeps
+us in control of styling and gesture handling.
+
+Dots are colored: `primary` (sage) for workshops the user owns, `accent`
+(taupe) for workshops the user is enrolled in. Same scheme on time-grid
+events.
+
+#### View switcher at the top, not the bottom
+
+The user (product) initially proposed a bottom switcher. We have a
+`FloatingTabBar` already at the bottom; stacking two pills there gets crowded,
+so v1 puts a segmented control under the page title. Can be moved if feedback
+suggests it.
+
+#### Range — fetch all "my" workshops, filter client-side
+
+`useMyWorkshops()` fetches everything the user is involved in (no `from`/`to`
+filter today) and the view components filter to the visible window. For the
+expected count per user (tens, not thousands) this is cheaper than
+re-querying every month/week change. Server-side range support exists in the
+endpoint and can be wired up if a user crosses ~500 workshops.
+
+#### Time zone
+
+Backend stores `start_time` UTC-naive + `timezone` IANA. The calendar renders
+in the **viewer's device timezone** (consistent with `formatTime`,
+`formatWeekdayShort`, etc. in `src/lib/date.ts`). The original event timezone
+remains visible on the detail screen via `formatTimeWithTZ`.
+
+### Current limitations
+
+- No filters yet (trainer, category, day-of-week, time-of-day). The endpoint
+  doesn't accept these; the UI has no filter affordance.
+- No view of "all available workshops" inside the calendar — only the user's
+  own (created or enrolled). Discovery still happens on the Workshops tab.
+- No dedicated trainer profile screen — tapping a calendar event goes to the
+  workshop detail; trainer info is currently only `trainer_id`.
+- No waitlist when a workshop is full — the button just disables.
+- No payment integration on enroll; free for now regardless of
+  `Workshop.price`.
+- No participant push reminders — push notifications today are trainer-only.
+- View switcher is at the top. Bottom-bar placement was considered (user
+  suggestion) but deferred.
+- Day/week grids cover 06:00 – 23:00. Workshops outside that window currently
+  clip off the top/bottom of the visible grid.
+
+### Future improvements
+
+- Filter by trainer, category, weekday, time-of-day (and persist user's
+  default filter).
+- Surface "all available workshops" as a third overlay/source on the calendar
+  (toggle: my / all / available-only).
+- Trainer profile screen (bio, upcoming workshops, follow). Make the
+  calendar event tap a two-step: workshop OR trainer.
+- Waitlist + auto-promote on cancellation; participant push reminders before
+  enrolled workshops.
+- Payment on enroll (Stripe checkout).
+- Move the view switcher to a bottom strip if user feedback prefers it.
+- Configurable day grid bounds, or auto-fit to the events present.
+
+---

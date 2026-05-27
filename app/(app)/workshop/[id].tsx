@@ -11,12 +11,14 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { useTranslation } from "react-i18next";
 import type { AxiosError } from "axios";
 
 import { DescriptionWithHashtags } from "@/components/DescriptionWithHashtags";
 import { useWorkshopDetail } from "@/hooks/useWorkshopDetail";
 import { useJoinWorkshop } from "@/hooks/useJoinWorkshop";
 import { useDeleteWorkshop } from "@/hooks/useDeleteWorkshop";
+import { useEnrollWorkshop, useUnenrollWorkshop } from "@/hooks/useEnrollment";
 import { useAuthStore } from "@/store/auth";
 import { formatWeekdayLong, formatMonthDayYear, formatTime, formatTimeWithTZ } from "@/lib/date";
 import { colors } from "@/theme/tokens";
@@ -30,10 +32,13 @@ function formatPrice(price: string | number): string {
 export default function WorkshopDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: workshop, isLoading } = useWorkshopDetail(id!);
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const joinMutation = useJoinWorkshop();
   const deleteMutation = useDeleteWorkshop();
+  const enrollMutation = useEnrollWorkshop();
+  const unenrollMutation = useUnenrollWorkshop();
   const user = useAuthStore((s) => s.user);
 
   const handleJoin = () => {
@@ -110,6 +115,24 @@ export default function WorkshopDetailScreen() {
   }
 
   const isOwner = user?.id === workshop.trainer_id;
+  const isEnrolled = workshop.is_enrolled === true;
+  const enrolledCount = workshop.enrolled_count ?? 0;
+  const isFull = enrolledCount >= workshop.max_participants;
+  const enrollmentBusy = enrollMutation.isPending || unenrollMutation.isPending;
+  const handleEnrollToggle = () => {
+    const mutation = isEnrolled ? unenrollMutation : enrollMutation;
+    mutation.mutate(id!, {
+      onError: (err) => {
+        const axiosErr = err as AxiosError<{ detail?: string }>;
+        const msg = axiosErr.response?.data?.detail ?? t("errors.action_failed");
+        if (Platform.OS === "web") {
+          window.alert(msg);
+        } else {
+          Alert.alert(t("errors.title"), msg);
+        }
+      },
+    });
+  };
   const weekday = formatWeekdayLong(workshop.start_time);
   const monthDay = formatMonthDayYear(workshop.start_time);
   const time = formatTime(workshop.start_time);
@@ -163,7 +186,11 @@ export default function WorkshopDetailScreen() {
           <Text style={s.sectionLabel}>Details</Text>
           <View style={s.detailCard}>
             <DetailRow icon="time-outline" label="Duration" value={`${workshop.duration_minutes} min`} />
-            <DetailRow icon="people-outline" label="Spots" value={`${workshop.max_participants} max`} />
+            <DetailRow
+              icon="people-outline"
+              label="Spots"
+              value={`${enrolledCount} / ${workshop.max_participants}`}
+            />
             <DetailRow icon="pricetag-outline" label="Price" value={formatPrice(workshop.price)} />
             {showOriginalTZ && (
               <DetailRow icon="globe-outline" label="Event timezone" value={originalTZTime} last />
@@ -205,8 +232,58 @@ export default function WorkshopDetailScreen() {
         )}
       </ScrollView>
 
-      {/* Sticky join button */}
+      {/* Sticky actions */}
       <View style={[s.stickyBar, { paddingBottom: Math.max(insets.bottom, 20) }]}>
+        {!isOwner && (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={isEnrolled ? "Unenroll from workshop" : "Enroll in workshop"}
+            style={({ pressed }) => [
+              s.enrollButton,
+              isEnrolled ? s.enrollButtonUnenroll : s.enrollButtonEnroll,
+              (isFull && !isEnrolled) && s.enrollButtonDisabled,
+              { transform: [{ scale: pressed ? 0.97 : 1 }], opacity: pressed ? 0.92 : 1 },
+            ]}
+            onPress={handleEnrollToggle}
+            disabled={enrollmentBusy || (isFull && !isEnrolled)}
+          >
+            {enrollmentBusy ? (
+              <ActivityIndicator color={isEnrolled ? colors.danger : colors.primary} />
+            ) : (
+              <>
+                <Ionicons
+                  name={
+                    isEnrolled
+                      ? "close-circle-outline"
+                      : isFull
+                        ? "lock-closed-outline"
+                        : "add-circle-outline"
+                  }
+                  size={18}
+                  color={isEnrolled ? colors.danger : isFull ? colors.inkMuted : colors.primary}
+                />
+                <Text
+                  style={[
+                    s.enrollButtonText,
+                    {
+                      color: isEnrolled
+                        ? colors.danger
+                        : isFull
+                          ? colors.inkMuted
+                          : colors.primary,
+                    },
+                  ]}
+                >
+                  {isEnrolled
+                    ? t("workshop.unenroll")
+                    : isFull
+                      ? t("workshop.full")
+                      : t("workshop.enroll")}
+                </Text>
+              </>
+            )}
+          </Pressable>
+        )}
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Join workshop"
@@ -333,4 +410,27 @@ const s = StyleSheet.create({
     gap: 10,
   },
   joinButtonText: { fontSize: 16, fontWeight: "500", letterSpacing: 0.5, color: "#FAF8F4" },
+  enrollButton: {
+    height: 50,
+    borderRadius: 999,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    marginBottom: 10,
+    borderWidth: 1.5,
+  },
+  enrollButtonEnroll: {
+    borderColor: "rgba(86,107,82,0.45)",
+    backgroundColor: "#FAF8F4",
+  },
+  enrollButtonUnenroll: {
+    borderColor: "rgba(196,131,110,0.45)",
+    backgroundColor: "#FAF8F4",
+  },
+  enrollButtonDisabled: {
+    borderColor: "rgba(140,138,130,0.3)",
+    backgroundColor: "#F2EFE9",
+  },
+  enrollButtonText: { fontSize: 15, fontWeight: "500", letterSpacing: 0.3 },
 });
