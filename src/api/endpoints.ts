@@ -5,6 +5,9 @@ import type {
   HostActionResponse,
   HostActionType,
   JoinWorkshopResponse,
+  MyKalbaDashboard,
+  MyKalbaGoal,
+  MyKalbaNotification,
   MyWorkshopsQuery,
   PushTokenRegister,
   PushTokenUnregister,
@@ -149,4 +152,58 @@ export async function suggestTags(
     params: { q: prefix, limit },
   });
   return data;
+}
+
+export async function fetchMyKalbaDashboard(): Promise<MyKalbaDashboard> {
+  const { data } = await apiClient.get<MyKalbaDashboard>("/users/me/my-kalba/dashboard");
+  return data;
+}
+
+export async function updateMyKalbaGoal(monthlyTarget: number): Promise<MyKalbaGoal> {
+  const { data } = await apiClient.put<MyKalbaGoal>("/users/me/my-kalba/goal", {
+    monthly_target: monthlyTarget,
+  });
+  return data;
+}
+
+export async function fetchMyKalbaSchedule(limit = 12): Promise<Workshop[]> {
+  const { data } = await apiClient.get<Workshop[]>("/users/me/my-kalba/schedule", {
+    params: { limit },
+  });
+  return data;
+}
+
+export async function fetchMyKalbaNotifications(
+  unreadOnly: boolean,
+  limit = 50,
+): Promise<MyKalbaNotification[]> {
+  const { data } = await apiClient.get<MyKalbaNotification[]>(
+    "/users/me/my-kalba/notifications",
+    {
+      params: {
+        unread_only: unreadOnly,
+        limit,
+      },
+    },
+  );
+  return data;
+}
+
+export async function updateMyKalbaNotificationRead(
+  id: string,
+  isRead: boolean,
+): Promise<MyKalbaNotification> {
+  const { data } = await apiClient.patch<MyKalbaNotification>(
+    `/users/me/my-kalba/notifications/${id}/read`,
+    { is_read: isRead },
+  );
+  return data;
+}
+
+export async function deleteMyKalbaNotification(id: string): Promise<void> {
+  await apiClient.delete(`/users/me/my-kalba/notifications/${id}`);
+}
+
+export async function markAllMyKalbaNotificationsRead(): Promise<void> {
+  await apiClient.post("/users/me/my-kalba/notifications/mark-all-read");
 }

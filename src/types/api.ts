@@ -96,3 +96,37 @@ export interface PushTokenRegister {
 export interface PushTokenUnregister {
   token: string;
 }
+
+export type MyKalbaNotificationType =
+  | "workshop_rescheduled"
+  | "workshop_reminder";
+
+export interface MyKalbaGoal {
+  user_id: string;
+  monthly_target: number;
+  updated_at: string;
+}
+
+export interface MyKalbaStats {
+  completed_this_week: number;
+  completed_this_month: number;
+  monthly_target: number;
+  monthly_progress_percent: number;
+}
+
+export interface MyKalbaDashboard {
+  goal: MyKalbaGoal;
+  stats: MyKalbaStats;
+  unread_notifications: number;
+}
+
+export interface MyKalbaNotification {
+  id: string;
+  type: MyKalbaNotificationType;
+  title: string;
+  body: string;
+  payload: Record<string, string>;
+  is_read: boolean;
+  read_at: string | null;
+  created_at: string;
+}
