@@ -61,14 +61,17 @@ React Native + Expo mobile app for discovering and booking workshops. Connects t
 For EAS cloud build and release workflows (iOS/Android, development/production), use the source-of-truth runbook:
 - [docs/BUILDING_WITH_EAS.md](docs/BUILDING_WITH_EAS.md)
 
-All scripts have a `:dev` variant that targets the deployed backend (`https://backend-kalba.fly.dev`) instead of localhost.
+All scripts with a `:dev` variant target the deployed backend (`https://backend-kalba.fly.dev`) instead of localhost.
+Android additionally has explicit aliases for clarity:
+- `npm run android:local` -> local backend
+- `npm run android:remote` -> deployed backend
 
 | Platform | Local backend | Deployed backend |
 |----------|--------------|-----------------|
 | Dev server (native) | `npm start` | `npm run start:dev` |
 | iOS simulator | `npm run ios` | `npm run ios:dev` |
 | iOS real device | `npm run ios:device` | `npm run ios:dev:device` |
-| Android build + run | `npm run android` | `npm run android:dev` |
+| Android build + run | `npm run android:local` (or `npm run android`) | `npm run android:remote` (or `npm run android:dev`) |
 | Web | `npm run web` | `npm run web:dev` |
 
 > **How env switching works:** The API URL is read from `Constants.expoConfig.extra` (set in `app.config.js`), which is evaluated by the Expo CLI process at startup — before the bundle is served. The `:dev` scripts copy `.env.dev` to `.env.development.local` (highest-priority dotenv file) so Expo's env loader picks up the remote URL. The file is auto-deleted when the script exits. Switching backends requires a **full Metro restart**.
