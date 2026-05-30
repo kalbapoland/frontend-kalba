@@ -47,9 +47,33 @@ Zakres: frontend Kalba (Expo), flow dla roli `user` i `trainer`, web + mobile (A
 4. Pull-to-refresh:
 - odswiez dane
 - brak duplikatow na liscie
-5. Dla roli `user` potwierdz brak przycisku tworzenia (FAB).
+5. Dla roli `user` potwierdz brak akcji administracyjnych (create/edit/delete workshop).
 
-### Ekran 4: Workshop Detail
+### Ekran 4: Groups (tab)
+
+1. Otworz zakladke Groups.
+2. Sprawdz sekcje:
+- My Groups
+- Discover Groups
+3. Subscribe flow:
+- kliknij Subscribe w Discover
+- grupa znika z Discover i pojawia sie w My Groups
+4. Otworz Group Detail po kliknieciu kafelka grupy.
+
+### Ekran 5: Group Detail (member)
+
+1. Zweryfikuj naglowek grupy: tytul, opis, licznik memberow.
+2. Sprawdz akcje dla czlonka:
+- Unsubscribe jest dostepny
+- Edit group nie jest dostepny (dla nie-ownera)
+3. Sekcja Workshops:
+- po byciu czlonkiem widac liste warsztatow grupy
+- klik warsztatu przechodzi do Workshop Detail
+4. Sekcja Members:
+- widoczni sa czlonkowie
+- brak akcji Remove member dla nie-ownera
+
+### Ekran 6: Workshop Detail
 
 1. Otworz warsztat z listy.
 2. Zweryfikuj sekcje:
@@ -66,7 +90,7 @@ Zakres: frontend Kalba (Expo), flow dla roli `user` i `trainer`, web + mobile (A
 6. Join flow:
 - kliknij Join -> przejscie do ekranu Call
 
-### Ekran 5: Workshop Call (user)
+### Ekran 7: Workshop Call (user)
 
 1. Sprawdz ekran laczenia (Connecting...).
 2. Po dolaczeniu sprawdz:
@@ -83,7 +107,7 @@ Zakres: frontend Kalba (Expo), flow dla roli `user` i `trainer`, web + mobile (A
 - host wysyla `cameras off all` -> user traci video
 5. Leave call -> powrot do poprzedniego ekranu bez zawieszenia.
 
-### Ekran 6: My Kalba
+### Ekran 8: My Kalba
 
 1. Otworz zakladke My Kalba.
 2. Goal:
@@ -101,7 +125,7 @@ Zakres: frontend Kalba (Expo), flow dla roli `user` i `trainer`, web + mobile (A
 - mark pojedynczego jako read/unread
 - usuniecie pojedynczego powiadomienia
 
-### Ekran 7: Calendar
+### Ekran 9: Calendar
 
 1. Otworz zakladke Calendar.
 2. Sprawdz przelacznik widoku Month / Week / Day.
@@ -114,7 +138,7 @@ Zakres: frontend Kalba (Expo), flow dla roli `user` i `trainer`, web + mobile (A
 5. Week -> tap dzien -> automatyczne przejscie do Day.
 6. Stan bledu i stan pusty.
 
-### Ekran 8: Profile
+### Ekran 10: Profile
 
 1. Otworz zakladke Profile.
 2. Zweryfikuj dane usera: initials, full name, email, role.
@@ -125,15 +149,42 @@ Zakres: frontend Kalba (Expo), flow dla roli `user` i `trainer`, web + mobile (A
 
 ## 3. Scenariusz E2E: TRAINER (kolejnosc ekranow)
 
-### Ekran 1-3: Login + Home
+### Ekran 1-4: Login + Home + Groups
 
 1. Zaloguj konto `trainer`.
-2. Na Home zweryfikuj obecny FAB `Create`.
-3. Zweryfikuj przycisk `Create a workshop` w stanie pustej listy (jesli wystepuje).
+2. Na Home zweryfikuj brak bezposredniego tworzenia warsztatu.
+3. Przejdz do zakladki Groups.
+4. Zweryfikuj obecny FAB dodawania grupy.
 
-### Ekran 4: Create Workshop
+### Ekran 5: Create Group
 
-1. Wejdz przez FAB lub CTA.
+1. Wejdz przez FAB z zakladki Groups.
+2. Walidacje:
+- pusty title -> blad
+- title + opcjonalny description -> poprawny submit
+3. Utworz grupe i sprawdz automatyczne przejscie do Group Detail nowej grupy.
+
+### Ekran 6: Group Detail (trainer-owner)
+
+1. Zweryfikuj badge/stan ownera.
+2. Zweryfikuj sekcje owner actions:
+- Edit group
+- Remove member (dla innych czlonkow)
+3. Subscribe/Unsubscribe nie powinno byc pokazane dla ownera.
+4. Zweryfikuj przycisk `Create workshop` w sekcji Workshops.
+
+### Ekran 7: Edit Group (trainer-owner)
+
+1. Z Group Detail kliknij `Edit group`.
+2. Walidacje:
+- wyczysc title -> blad walidacji
+- description moze byc puste
+3. Zmien title i description, zapisz zmiany.
+4. Po zapisie sprawdz powrot do Group Detail i odswiezone dane grupy.
+
+### Ekran 8: Create Workshop (z Group Detail)
+
+1. Wejdz przez `Create workshop` z Group Detail.
 2. Walidacje:
 - pusty title -> blad
 - brak daty/godziny -> blad
@@ -147,7 +198,7 @@ Zakres: frontend Kalba (Expo), flow dla roli `user` i `trainer`, web + mobile (A
 - dodaj tagi i zweryfikuj limit (do 5)
 5. Utworz poprawny warsztat -> powrot do poprzedniego ekranu i widocznosc nowego rekordu.
 
-### Ekran 5: Workshop Detail (trainer-owner)
+### Ekran 9: Workshop Detail (trainer-owner)
 
 1. Otworz wlasny warsztat.
 2. Zweryfikuj sekcje Manage: Edit + Delete.
@@ -160,7 +211,7 @@ Zakres: frontend Kalba (Expo), flow dla roli `user` i `trainer`, web + mobile (A
 - potwierdz kasowanie -> powrot i brak warsztatu na liscie
 5. Join jako host -> przejscie do Call.
 
-### Ekran 6: Workshop Call (trainer-host)
+### Ekran 10: Workshop Call (trainer-host)
 
 1. Dolacz jako host.
 2. Sprawdz host controls:
@@ -197,17 +248,22 @@ Zakres: frontend Kalba (Expo), flow dla roli `user` i `trainer`, web + mobile (A
 3. Join/Call dziala dla hosta i uczestnika oraz reaguje na host controls.
 4. Stany loading/error/empty sa obsluzone i czytelne.
 5. Sign out zawsze czysci sesje i wraca do Sign In.
+6. Flow Groups (create/edit/subscribe/unsubscribe/member list) dziala zgodnie z rola.
 
 ## 6. Szybki checklist do odhaczania (1 linia na ekran)
 
 - [ ] Sign In / Sign Up (email + Google, walidacje)
 - [ ] OAuth Redirect (przekierowanie + timeout fallback)
 - [ ] Home / Workshops List (load/error/refresh/open detail)
+- [ ] Groups tab (my/discover, subscribe, open detail)
+- [ ] Group Detail (workshops, members, role-based actions)
 - [ ] Workshop Detail (details, enroll/unenroll, join)
 - [ ] Call (mic/cam/leave, host controls)
 - [ ] My Kalba (goal, stats, schedule, notifications)
 - [ ] Calendar (month/week/day, nawigacja, eventy)
 - [ ] Profile (dane, sign out)
-- [ ] Create Workshop (trainer)
+- [ ] Create Group (trainer)
+- [ ] Edit Group (trainer-owner)
+- [ ] Create Workshop from Group Detail (trainer-owner)
 - [ ] Edit Workshop (trainer)
 - [ ] Delete Workshop (trainer)

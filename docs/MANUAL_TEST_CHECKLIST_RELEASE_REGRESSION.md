@@ -25,19 +25,28 @@ Zakres: frontend Kalba (web + mobile), role `user` i `trainer`.
 - [ ] P0-7: User moze Enroll i Unenroll.
 - [ ] P0-8: Full workshop blokuje Enroll (stan Full).
 
+### Groups Core
+
+- [ ] P0-9: Groups tab laduje sekcje My Groups i Discover Groups.
+- [ ] P0-10: User moze Subscribe i Unsubscribe grupy.
+- [ ] P0-11: Group Detail otwiera sie i pokazuje poprawne dane grupy.
+- [ ] P0-12: Dla ownera grupy widoczne sa akcje admina (Edit group, Create workshop).
+
 ### Video Call
 
-- [ ] P0-9: Join przechodzi do Call i laczy pokoj.
-- [ ] P0-10: Leave zawsze dziala i wraca do app.
-- [ ] P0-11: Host controls Mute All/Unmute All dzialaja.
-- [ ] P0-12: Host controls Cameras Off/On dzialaja.
+- [ ] P0-13: Join przechodzi do Call i laczy pokoj.
+- [ ] P0-14: Leave zawsze dziala i wraca do app.
+- [ ] P0-15: Host controls Mute All/Unmute All dzialaja.
+- [ ] P0-16: Host controls Cameras Off/On dzialaja.
 
 ### Trainer CRUD
 
-- [ ] P0-13: Trainer moze Create workshop.
-- [ ] P0-14: Trainer moze Edit workshop.
-- [ ] P0-15: Trainer moze Delete workshop.
-- [ ] P0-16: User bez roli trainer nie moze create/edit/delete.
+- [ ] P0-17: Trainer moze Create group.
+- [ ] P0-18: Trainer-owner moze Edit group.
+- [ ] P0-19: Trainer-owner moze Create workshop w kontekscie grupy.
+- [ ] P0-20: Trainer moze Edit workshop.
+- [ ] P0-21: Trainer moze Delete workshop.
+- [ ] P0-22: User bez roli trainer nie moze create/edit/delete group/workshop.
 
 ## P1 - Wazne
 
@@ -46,29 +55,36 @@ Zakres: frontend Kalba (web + mobile), role `user` i `trainer`.
 - [ ] P1-1: Home ma poprawny loading state.
 - [ ] P1-2: Home error state + Retry dziala.
 - [ ] P1-3: Detail not found / error pokazuje czytelny stan.
-- [ ] P1-4: My Kalba loading/error/empty sa czytelne.
-- [ ] P1-5: Calendar loading/error/empty sa czytelne.
+- [ ] P1-4: Groups loading/error/empty sa czytelne.
+- [ ] P1-5: Group Detail loading/error/empty sa czytelne.
+- [ ] P1-6: My Kalba loading/error/empty sa czytelne.
+- [ ] P1-7: Calendar loading/error/empty sa czytelne.
 
 ### My Kalba
 
-- [ ] P1-6: Zmiana monthly goal (+/- i presety) dziala.
-- [ ] P1-7: Stats i progress sa spojne z danymi.
-- [ ] P1-8: Schedule item otwiera Workshop Detail.
-- [ ] P1-9: Notifications: unread/all, mark read/unread, delete.
-- [ ] P1-10: Mark all as read dziala.
+- [ ] P1-8: Zmiana monthly goal (+/- i presety) dziala.
+- [ ] P1-9: Stats i progress sa spojne z danymi.
+- [ ] P1-10: Schedule item otwiera Workshop Detail.
+- [ ] P1-11: Notifications: unread/all, mark read/unread, delete.
+- [ ] P1-12: Mark all as read dziala.
 
 ### Calendar
 
-- [ ] P1-11: Przelaczanie Month/Week/Day dziala.
-- [ ] P1-12: Nawigacja poprzedni/nastepny okres dziala.
-- [ ] P1-13: Today resetuje widok do aktualnej daty.
-- [ ] P1-14: Eventy owner/enrolled sa widoczne i rozroznialne.
+- [ ] P1-13: Przelaczanie Month/Week/Day dziala.
+- [ ] P1-14: Nawigacja poprzedni/nastepny okres dziala.
+- [ ] P1-15: Today resetuje widok do aktualnej daty.
+- [ ] P1-16: Eventy owner/enrolled sa widoczne i rozroznialne.
+
+### Group Management
+
+- [ ] P1-17: Remove member przez ownera grupy dziala.
+- [ ] P1-18: Nie-owner nie widzi akcji Remove member.
 
 ### Platform Specific
 
-- [ ] P1-15: Mobile permissions camera/mic (allow/deny) obsluzone.
-- [ ] P1-16: Web call (iframe) dziala i poprawnie wychodzi z meetingu.
-- [ ] P1-17: Mobile DateTimePicker dziala poprawnie dla create.
+- [ ] P1-19: Mobile permissions camera/mic (allow/deny) obsluzone.
+- [ ] P1-20: Web call (iframe) dziala i poprawnie wychodzi z meetingu.
+- [ ] P1-21: Mobile DateTimePicker dziala poprawnie dla create workshop.
 
 ## P2 - Uzupelniajace / Edge Cases
 
@@ -77,7 +93,7 @@ Zakres: frontend Kalba (web + mobile), role `user` i `trainer`.
 - [ ] P2-1: Brak przyciec podczas szybkiego przechodzenia miedzy tabami.
 - [ ] P2-2: Teksty, etykiety i placeholdery sa spojne jezykowo.
 - [ ] P2-3: Przyciski sa disabled podczas pending mutation.
-- [ ] P2-4: Pull-to-refresh nie dubluje rekordow.
+- [ ] P2-4: Pull-to-refresh nie dubluje rekordow (Home i Groups).
 
 ### Web Confirm/Alert
 
@@ -91,8 +107,8 @@ Zakres: frontend Kalba (web + mobile), role `user` i `trainer`.
 ## Sugerowana kolejnosc testu release
 
 1. Auth P0 (login/logout).
-2. User P0 (home -> detail -> enroll -> call).
-3. Trainer P0 (create -> edit -> delete -> call host controls).
+2. User P0 (home -> groups -> group detail -> workshop detail -> enroll -> call).
+3. Trainer P0 (create/edit group -> create/edit/delete workshop -> call host controls).
 4. P1 (my kalba, calendar, states, platform-specific).
 5. P2 (edge, UX, a11y).
 
