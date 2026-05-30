@@ -15,12 +15,14 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { useTranslation } from "react-i18next";
 
 import { useCreateGroup } from "@/hooks/useGroups";
 import { useAuthStore } from "@/store/auth";
 import { colors } from "@/theme/tokens";
 
 export default function CreateGroupScreen() {
+  const { t } = useTranslation();
   const user = useAuthStore((state) => state.user);
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -35,26 +37,26 @@ export default function CreateGroupScreen() {
     return (
       <View style={[s.centered, { backgroundColor: colors.canvas }]}>
         <Ionicons name="lock-closed-outline" size={48} color={colors.line} />
-        <Text style={s.lockedText}>Only trainers can create groups</Text>
+        <Text style={s.lockedText}>{t("group.only_trainers")}</Text>
       </View>
     );
   }
 
   const showAlert = (msg: string) => {
     if (Platform.OS === "web") window.alert(msg);
-    else Alert.alert("Error", msg);
+    else Alert.alert(t("errors.title"), msg);
   };
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      showAlert("Title is required");
+      showAlert(t("group.title_required"));
       return;
     }
     mutate(
       { title: title.trim(), description: description.trim() },
       {
         onSuccess: (group) => router.replace(`/(app)/group/${group.id}`),
-        onError: () => showAlert("Failed to create group"),
+        onError: () => showAlert(t("group.failed_create")),
       },
     );
   };
@@ -76,12 +78,12 @@ export default function CreateGroupScreen() {
           <Pressable
             onPress={() => router.back()}
             accessibilityRole="button"
-            accessibilityLabel="Go back"
+            accessibilityLabel={t("workshop.go_back")}
             style={({ pressed }) => [s.backButton, { opacity: pressed ? 0.5 : 1 }]}
           >
             <Ionicons name="chevron-back" size={24} color={colors.ink} />
           </Pressable>
-          <Text style={s.pageTitle}>New Group</Text>
+          <Text style={s.pageTitle}>{t("group.new_group")}</Text>
         </View>
 
         <ScrollView
@@ -91,11 +93,11 @@ export default function CreateGroupScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={s.fieldContainer}>
-            <Text style={s.fieldLabel}>Title</Text>
+            <Text style={s.fieldLabel}>{t("group.field_title")}</Text>
             <TextInput
               value={title}
               onChangeText={setTitle}
-              placeholder="e.g. Morning Movement Crew"
+              placeholder={t("group.placeholder_title")}
               onFocus={() => setTitleFocused(true)}
               onBlur={() => setTitleFocused(false)}
               style={[s.fieldInput, titleFocused && s.fieldInputFocused]}
@@ -104,11 +106,11 @@ export default function CreateGroupScreen() {
           </View>
 
           <View style={s.fieldContainer}>
-            <Text style={s.fieldLabel}>Description (optional)</Text>
+            <Text style={s.fieldLabel}>{t("group.field_description_optional")}</Text>
             <TextInput
               value={description}
               onChangeText={setDescription}
-              placeholder="What is this group about? What do you do here?"
+              placeholder={t("group.placeholder_description")}
               multiline
               onFocus={() => setDescFocused(true)}
               onBlur={() => setDescFocused(false)}
@@ -127,7 +129,9 @@ export default function CreateGroupScreen() {
             onPress={handleSubmit}
             disabled={isPending}
             accessibilityRole="button"
-            accessibilityLabel={isPending ? "Creating group" : "Create group"}
+            accessibilityLabel={
+              isPending ? t("group.creating_group_a11y") : t("group.create_group_a11y")
+            }
             style={({ pressed }) => [
               s.submitButton,
               {
@@ -141,7 +145,7 @@ export default function CreateGroupScreen() {
             ) : (
               <View style={s.submitInner}>
                 <Ionicons name="add-circle-outline" size={18} color={colors.surface} />
-                <Text style={s.submitText}>Create Group</Text>
+                <Text style={s.submitText}>{t("group.create_group")}</Text>
               </View>
             )}
           </Pressable>

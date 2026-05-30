@@ -15,11 +15,13 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { useTranslation } from "react-i18next";
 
 import { useGroup, useUpdateGroup } from "@/hooks/useGroups";
 import { colors } from "@/theme/tokens";
 
 export default function EditGroupScreen() {
+  const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -44,19 +46,19 @@ export default function EditGroupScreen() {
 
   const showAlert = (msg: string) => {
     if (Platform.OS === "web") window.alert(msg);
-    else Alert.alert("Error", msg);
+    else Alert.alert(t("errors.title"), msg);
   };
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      showAlert("Title is required");
+      showAlert(t("group.title_required"));
       return;
     }
     mutate(
       { title: title.trim(), description: description.trim() },
       {
         onSuccess: () => router.back(),
-        onError: () => showAlert("Failed to update group"),
+        onError: () => showAlert(t("group.failed_update")),
       },
     );
   };
@@ -86,12 +88,12 @@ export default function EditGroupScreen() {
           <Pressable
             onPress={() => router.back()}
             accessibilityRole="button"
-            accessibilityLabel="Go back"
+            accessibilityLabel={t("workshop.go_back")}
             style={({ pressed }) => [s.backButton, { opacity: pressed ? 0.5 : 1 }]}
           >
             <Ionicons name="chevron-back" size={24} color={colors.ink} />
           </Pressable>
-          <Text style={s.pageTitle}>Edit Group</Text>
+          <Text style={s.pageTitle}>{t("group.edit_group")}</Text>
         </View>
 
         <ScrollView
@@ -101,11 +103,11 @@ export default function EditGroupScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={s.fieldContainer}>
-            <Text style={s.fieldLabel}>Title</Text>
+            <Text style={s.fieldLabel}>{t("group.field_title")}</Text>
             <TextInput
               value={title}
               onChangeText={setTitle}
-              placeholder="Group title"
+              placeholder={t("group.placeholder_group_title")}
               onFocus={() => setTitleFocused(true)}
               onBlur={() => setTitleFocused(false)}
               style={[s.fieldInput, titleFocused && s.fieldInputFocused]}
@@ -114,11 +116,11 @@ export default function EditGroupScreen() {
           </View>
 
           <View style={s.fieldContainer}>
-            <Text style={s.fieldLabel}>Description</Text>
+            <Text style={s.fieldLabel}>{t("group.field_description")}</Text>
             <TextInput
               value={description}
               onChangeText={setDescription}
-              placeholder="What is this group about? What do you do here?"
+              placeholder={t("group.placeholder_description")}
               multiline
               onFocus={() => setDescFocused(true)}
               onBlur={() => setDescFocused(false)}
@@ -137,7 +139,7 @@ export default function EditGroupScreen() {
             onPress={handleSubmit}
             disabled={isPending}
             accessibilityRole="button"
-            accessibilityLabel={isPending ? "Saving group" : "Save group"}
+            accessibilityLabel={isPending ? t("group.saving_group") : t("group.save_group")}
             style={({ pressed }) => [
               s.submitButton,
               {
@@ -151,7 +153,7 @@ export default function EditGroupScreen() {
             ) : (
               <View style={s.submitInner}>
                 <Ionicons name="checkmark-circle-outline" size={18} color={colors.surface} />
-                <Text style={s.submitText}>Save Changes</Text>
+                <Text style={s.submitText}>{t("group.save_changes")}</Text>
               </View>
             )}
           </Pressable>

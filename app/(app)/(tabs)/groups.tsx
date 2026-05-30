@@ -14,6 +14,7 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { useTranslation } from "react-i18next";
 
 import { useGroups, useMyGroups, useSubscribeGroup } from "@/hooks/useGroups";
 import { useAuthStore } from "@/store/auth";
@@ -35,6 +36,7 @@ function EmptyHint({ text }: { text: string }) {
 }
 
 export default function GroupsScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const user = useAuthStore((state) => state.user);
@@ -59,9 +61,9 @@ export default function GroupsScreen() {
   const handleSubscribe = (group: Group) => {
     subscribe.mutate(group.id, {
       onError: () => {
-        const msg = "Could not subscribe. Please try again.";
+        const msg = t("group.subscribe_failed");
         if (Platform.OS === "web") window.alert(msg);
-        else Alert.alert("Error", msg);
+        else Alert.alert(t("errors.title"), msg);
       },
     });
   };
@@ -78,17 +80,17 @@ export default function GroupsScreen() {
     return (
       <View className="flex-1 items-center justify-center bg-canvas px-12">
         <Ionicons name="cloud-offline-outline" size={48} color={colors.line} />
-        <Text style={s.emptyTitle}>Unable to load</Text>
-        <Text style={s.emptySubtitle}>Check your connection and try again</Text>
+        <Text style={s.emptyTitle}>{t("group.unable_to_load")}</Text>
+        <Text style={s.emptySubtitle}>{t("group.check_connection")}</Text>
         <Pressable
           onPress={refetch}
           accessibilityRole="button"
-          accessibilityLabel="Retry loading groups"
+          accessibilityLabel={t("group.retry_loading_groups")}
           className="mt-7 rounded-full border border-primary px-8 py-4"
           style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
         >
           <Text className="text-sm font-medium tracking-wide text-primary">
-            Try again
+            {t("group.try_again")}
           </Text>
         </Pressable>
       </View>
@@ -120,22 +122,22 @@ export default function GroupsScreen() {
           />
         }
       >
-        <Text style={s.pageTitle}>Groups</Text>
+        <Text style={s.pageTitle}>{t("groups")}</Text>
 
         {/* Section A: My Groups */}
-        <SectionLabel>My Groups</SectionLabel>
+        <SectionLabel>{t("group.my_groups")}</SectionLabel>
         {myGroups.length === 0 ? (
-          <EmptyHint text="You haven't joined any groups yet. Discover one below." />
+          <EmptyHint text={t("group.empty_my_groups")} />
         ) : (
           myGroups.map((g) => <GroupCard key={g.id} group={g} />)
         )}
 
         {/* Section B: Discover */}
         <View style={{ marginTop: 28 }}>
-          <SectionLabel>Discover Groups</SectionLabel>
+          <SectionLabel>{t("group.discover_groups")}</SectionLabel>
         </View>
         {discover.length === 0 ? (
-          <EmptyHint text="No other groups available right now." />
+          <EmptyHint text={t("group.empty_discover_groups")} />
         ) : (
           discover.map((g) => (
             <GroupCard
@@ -152,7 +154,7 @@ export default function GroupsScreen() {
         <Pressable
           onPress={() => router.push("/(app)/create-group")}
           accessibilityRole="button"
-          accessibilityLabel="Create new group"
+          accessibilityLabel={t("group.create_new_group")}
           style={[s.fab, { bottom: insets.bottom + 80 }]}
         >
           <Ionicons name="add" size={26} color={colors.surface} />

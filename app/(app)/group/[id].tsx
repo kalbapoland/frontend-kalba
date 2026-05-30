@@ -13,6 +13,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { useTranslation } from "react-i18next";
 
 import {
   useGroup,
@@ -69,6 +70,7 @@ function WorkshopRow({ workshop }: { workshop: Workshop }) {
 }
 
 export default function GroupDetailScreen() {
+  const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -83,7 +85,7 @@ export default function GroupDetailScreen() {
 
   const showError = (msg: string) => {
     if (Platform.OS === "web") window.alert(msg);
-    else Alert.alert("Error", msg);
+    else Alert.alert(t("errors.title"), msg);
   };
 
   const refetch = () => {
@@ -104,13 +106,15 @@ export default function GroupDetailScreen() {
     return (
       <View className="flex-1 items-center justify-center bg-canvas px-12">
         <Ionicons name="cloud-offline-outline" size={48} color={colors.line} />
-        <Text style={s.errorTitle}>Group not found</Text>
+        <Text style={s.errorTitle}>{t("group.group_not_found")}</Text>
         <Pressable
           onPress={() => router.back()}
           className="mt-7 rounded-full border border-primary px-8 py-4"
           style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
         >
-          <Text className="text-sm font-medium tracking-wide text-primary">Go back</Text>
+          <Text className="text-sm font-medium tracking-wide text-primary">
+            {t("workshop.go_back")}
+          </Text>
         </Pressable>
       </View>
     );
@@ -122,14 +126,14 @@ export default function GroupDetailScreen() {
   const confirmRemove = (memberUserId: string, name: string) => {
     const doRemove = () =>
       removeMember.mutate(memberUserId, {
-        onError: () => showError("Could not remove member."),
+        onError: () => showError(t("group.remove_member_failed")),
       });
     if (Platform.OS === "web") {
-      if (window.confirm(`Remove ${name} from this group?`)) doRemove();
+      if (window.confirm(t("group.remove_member_confirm", { name }))) doRemove();
     } else {
-      Alert.alert("Remove member", `Remove ${name} from this group?`, [
-        { text: "Cancel", style: "cancel" },
-        { text: "Remove", style: "destructive", onPress: doRemove },
+      Alert.alert(t("group.remove_member_title"), t("group.remove_member_confirm", { name }), [
+        { text: t("cancel"), style: "cancel" },
+        { text: t("group.remove"), style: "destructive", onPress: doRemove },
       ]);
     }
   };
@@ -148,7 +152,7 @@ export default function GroupDetailScreen() {
         <Pressable
           onPress={() => router.back()}
           accessibilityRole="button"
-          accessibilityLabel="Go back"
+          accessibilityLabel={t("workshop.go_back")}
           style={({ pressed }) => [s.backButton, { opacity: pressed ? 0.5 : 1 }]}
         >
           <Ionicons name="chevron-back" size={24} color={colors.ink} />
@@ -159,11 +163,11 @@ export default function GroupDetailScreen() {
               router.push({ pathname: "/(app)/group/edit", params: { id: g.id } })
             }
             accessibilityRole="button"
-            accessibilityLabel="Edit group"
+            accessibilityLabel={t("group.edit_group")}
             style={({ pressed }) => [s.editButton, { opacity: pressed ? 0.6 : 1 }]}
           >
             <Ionicons name="create-outline" size={16} color={colors.primary} />
-            <Text style={s.editButtonText}>Edit</Text>
+            <Text style={s.editButtonText}>{t("edit")}</Text>
           </Pressable>
         )}
       </View>
@@ -183,22 +187,20 @@ export default function GroupDetailScreen() {
           {g.is_owner && (
             <View style={s.adminBadge}>
               <Ionicons name="shield-checkmark" size={11} color={colors.primary} />
-              <Text style={s.adminBadgeText}>Admin</Text>
+              <Text style={s.adminBadgeText}>{t("group.admin")}</Text>
             </View>
           )}
         </View>
 
         <View style={s.metaRow}>
           <Ionicons name="people-outline" size={14} color={colors.inkMuted} />
-          <Text style={s.metaText}>
-            {memberCount} {memberCount === 1 ? "member" : "members"}
-          </Text>
+          <Text style={s.metaText}>{t("group.member_count", { count: memberCount })}</Text>
         </View>
 
         {g.description ? (
           <Text style={s.description}>{g.description}</Text>
         ) : (
-          <Text style={s.descriptionMuted}>No description yet.</Text>
+          <Text style={s.descriptionMuted}>{t("group.no_description")}</Text>
         )}
 
         {/* Subscribe / Unsubscribe — hidden for the owner */}
@@ -207,38 +209,38 @@ export default function GroupDetailScreen() {
             <Pressable
               onPress={() =>
                 unsubscribe.mutate(g.id, {
-                  onError: () => showError("Could not unsubscribe."),
+                  onError: () => showError(t("group.unsubscribe_failed")),
                 })
               }
               disabled={unsubscribe.isPending}
               accessibilityRole="button"
-              accessibilityLabel="Unsubscribe from group"
+              accessibilityLabel={t("group.unsubscribe_from_group")}
               style={({ pressed }) => [
                 s.secondaryButton,
                 { opacity: pressed || unsubscribe.isPending ? 0.7 : 1 },
               ]}
             >
               <Text style={s.secondaryButtonText}>
-                {unsubscribe.isPending ? "Leaving…" : "Unsubscribe"}
+                {unsubscribe.isPending ? t("group.leaving") : t("group.unsubscribe")}
               </Text>
             </Pressable>
           ) : (
             <Pressable
               onPress={() =>
                 subscribe.mutate(g.id, {
-                  onError: () => showError("Could not subscribe."),
+                  onError: () => showError(t("group.subscribe_failed")),
                 })
               }
               disabled={subscribe.isPending}
               accessibilityRole="button"
-              accessibilityLabel="Subscribe to group"
+              accessibilityLabel={t("group.subscribe_to_group")}
               style={({ pressed }) => [
                 s.primaryButton,
                 { opacity: pressed || subscribe.isPending ? 0.85 : 1 },
               ]}
             >
               <Text style={s.primaryButtonText}>
-                {subscribe.isPending ? "Joining…" : "Subscribe"}
+                {subscribe.isPending ? t("group.joining") : t("group.subscribe")}
               </Text>
             </Pressable>
           ))}
@@ -246,7 +248,7 @@ export default function GroupDetailScreen() {
         {/* Workshops in this group — members and the owner only */}
         {canSeeWorkshops ? (
           <>
-            <SectionLabel>Workshops</SectionLabel>
+            <SectionLabel>{t("workshops")}</SectionLabel>
             {g.is_owner && (
               <Pressable
                 onPress={() =>
@@ -256,36 +258,36 @@ export default function GroupDetailScreen() {
                   })
                 }
                 accessibilityRole="button"
-                accessibilityLabel="Create workshop in this group"
+                accessibilityLabel={t("group.create_workshop_in_group")}
                 style={({ pressed }) => [s.createWorkshopBtn, { opacity: pressed ? 0.85 : 1 }]}
               >
                 <Ionicons name="add" size={18} color={colors.primary} />
-                <Text style={s.createWorkshopText}>Create workshop</Text>
+                <Text style={s.createWorkshopText}>{t("create_workshop")}</Text>
               </Pressable>
             )}
             {workshops.isLoading ? (
               <ActivityIndicator color={colors.primary} style={{ marginVertical: 12 }} />
             ) : (workshops.data ?? []).length === 0 ? (
-              <Text style={s.emptyHint}>No workshops in this group yet.</Text>
+              <Text style={s.emptyHint}>{t("group.no_workshops_in_group")}</Text>
             ) : (
               (workshops.data ?? []).map((w) => <WorkshopRow key={w.id} workshop={w} />)
             )}
           </>
         ) : (
           <>
-            <SectionLabel>Workshops</SectionLabel>
+            <SectionLabel>{t("workshops")}</SectionLabel>
             <Text style={s.emptyHint}>
-              Subscribe to this group to see and join its workshops.
+              {t("group.subscribe_to_see_workshops")}
             </Text>
           </>
         )}
 
         {/* Members */}
-        <SectionLabel>Members</SectionLabel>
+        <SectionLabel>{t("group.members")}</SectionLabel>
         {members.isLoading ? (
           <ActivityIndicator color={colors.primary} style={{ marginVertical: 12 }} />
         ) : (members.data ?? []).length === 0 ? (
-          <Text style={s.emptyHint}>No members yet.</Text>
+          <Text style={s.emptyHint}>{t("group.no_members")}</Text>
         ) : (
           (members.data ?? []).map((m) => (
             <View key={m.id} style={s.memberRow}>
@@ -293,13 +295,17 @@ export default function GroupDetailScreen() {
                 <Ionicons name="person" size={14} color={colors.primary} />
               </View>
               <Text style={s.memberName} numberOfLines={1}>
-                {m.full_name || "Member"}
+                {m.full_name || t("group.member_fallback")}
               </Text>
               {g.is_owner && (
                 <Pressable
-                  onPress={() => confirmRemove(m.user_id, m.full_name || "this member")}
+                  onPress={() =>
+                    confirmRemove(m.user_id, m.full_name || t("group.member_fallback"))
+                  }
                   accessibilityRole="button"
-                  accessibilityLabel={`Remove ${m.full_name}`}
+                  accessibilityLabel={t("group.remove_member_a11y", {
+                    name: m.full_name || t("group.member_fallback"),
+                  })}
                   style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, padding: 6 })}
                 >
                   <Ionicons name="close-circle-outline" size={20} color={colors.danger} />
