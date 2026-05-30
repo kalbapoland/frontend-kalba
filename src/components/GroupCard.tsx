@@ -1,6 +1,7 @@
 import { View, Text, Pressable, ActivityIndicator, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { useTranslation } from "react-i18next";
 
 import type { Group } from "@/types/api";
 import { colors } from "@/theme/tokens";
@@ -15,10 +16,9 @@ export function GroupCard({
   onSubscribe?: () => void;
   subscribing?: boolean;
 }) {
+  const { t } = useTranslation();
   const router = useRouter();
-  const memberLabel = `${group.member_count ?? 0} ${
-    (group.member_count ?? 0) === 1 ? "member" : "members"
-  }`;
+  const memberLabel = t("group.member_count", { count: group.member_count ?? 0 });
 
   return (
     <Pressable
@@ -40,7 +40,7 @@ export function GroupCard({
           {group.is_owner && (
             <View style={s.adminBadge}>
               <Ionicons name="shield-checkmark" size={11} color={colors.primary} />
-              <Text style={s.adminBadgeText}>Admin</Text>
+              <Text style={s.adminBadgeText}>{t("group.admin")}</Text>
             </View>
           )}
         </View>
@@ -62,13 +62,13 @@ export function GroupCard({
           onPress={onSubscribe}
           disabled={subscribing}
           accessibilityRole="button"
-          accessibilityLabel={`Subscribe to ${group.title}`}
+          accessibilityLabel={t("group.subscribe_to_name", { title: group.title })}
           style={({ pressed }) => [s.subscribeBtn, { opacity: pressed || subscribing ? 0.7 : 1 }]}
         >
           {subscribing ? (
             <ActivityIndicator size="small" color={colors.primary} />
           ) : (
-            <Text style={s.subscribeText}>Subscribe</Text>
+            <Text style={s.subscribeText}>{t("group.subscribe")}</Text>
           )}
         </Pressable>
       ) : (
