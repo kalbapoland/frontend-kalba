@@ -77,6 +77,15 @@ export default function AppLayout() {
           animation: "fade",
         }}
       />
+      <Stack.Screen
+        name="create-group"
+        options={{ presentation: "modal", headerShown: false }}
+      />
+      <Stack.Screen name="group/[id]" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="group/edit"
+        options={{ presentation: "modal", headerShown: false }}
+      />
     </Stack>
   );
 }

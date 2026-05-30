@@ -95,8 +95,7 @@ function WorkshopCard({ workshop }: { workshop: Workshop }) {
   );
 }
 
-function ListHeader({ name, isTrainer }: { name?: string; isTrainer: boolean }) {
-  const router = useRouter();
+function ListHeader({ name }: { name?: string }) {
   const firstName = name?.split(" ")[0];
 
   return (
@@ -117,7 +116,6 @@ export default function WorkshopListScreen() {
   const user = useAuthStore((s) => s.user);
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const isTrainer = user?.role === "trainer";
 
   if (isLoading) {
     return (
@@ -166,7 +164,7 @@ export default function WorkshopListScreen() {
           paddingTop: insets.top + 32,
           paddingBottom: 140,
         }}
-        ListHeaderComponent={<ListHeader name={user?.full_name} isTrainer={isTrainer} />}
+        ListHeaderComponent={<ListHeader name={user?.full_name} />}
         refreshControl={
           <RefreshControl
             refreshing={isRefetching}
@@ -178,38 +176,23 @@ export default function WorkshopListScreen() {
           <View style={s.emptyContainer}>
             <Ionicons name="calendar-outline" size={48} color={colors.line} />
             <Text style={s.emptyTitle}>Your schedule is clear</Text>
-            <Text style={s.emptySubtitle}>New workshops will appear here</Text>
-            {isTrainer && (
-              <Pressable
-                onPress={() => router.push("/(app)/create-workshop")}
-                accessibilityRole="button"
-                accessibilityLabel="Create a workshop"
-                className="mt-7 rounded-full border border-primary px-8 py-4"
-                style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-              >
-                <Text className="text-sm font-medium tracking-wide text-primary">
-                  Create a workshop
-                </Text>
-              </Pressable>
-            )}
+            <Text style={s.emptySubtitle}>
+              Join a group to see its upcoming workshops here
+            </Text>
+            <Pressable
+              onPress={() => router.push("/(app)/(tabs)/groups")}
+              accessibilityRole="button"
+              accessibilityLabel="Browse groups"
+              className="mt-7 rounded-full border border-primary px-8 py-4"
+              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+            >
+              <Text className="text-sm font-medium tracking-wide text-primary">
+                Browse groups
+              </Text>
+            </Pressable>
           </View>
         }
       />
-      {isTrainer && (
-        <Pressable
-          onPress={() => router.push("/(app)/create-workshop")}
-          accessibilityRole="button"
-          accessibilityLabel="Create new workshop"
-          style={[
-            s.fab,
-            {
-              bottom: insets.bottom + 80,
-            },
-          ]}
-        >
-          <Ionicons name="add" size={26} color={colors.surface} />
-        </Pressable>
-      )}
     </View>
   );
 }

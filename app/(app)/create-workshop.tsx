@@ -12,7 +12,7 @@ import {
   KeyboardAvoidingView,
   StyleSheet,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -22,6 +22,7 @@ import DateTimePicker, {
 
 import { HashtagTextInput } from "@/components/HashtagTextInput";
 import { useCreateWorkshop } from "@/hooks/useCreateWorkshop";
+import { useGroup } from "@/hooks/useGroups";
 import { useAuthStore } from "@/store/auth";
 import {
   getDeviceTimezone,
@@ -38,6 +39,8 @@ export default function CreateWorkshopScreen() {
   const user = useAuthStore((s) => s.user);
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { groupId } = useLocalSearchParams<{ groupId: string }>();
+  const group = useGroup(groupId ?? "");
   const { mutate, isPending } = useCreateWorkshop();
 
   const [title, setTitle] = useState("");
@@ -58,6 +61,17 @@ export default function CreateWorkshopScreen() {
       <View style={[s.centered, { backgroundColor: colors.canvas }]}>
         <Ionicons name="lock-closed-outline" size={48} color={colors.line} />
         <Text style={s.lockedText}>Only trainers can create workshops</Text>
+      </View>
+    );
+  }
+
+  if (!groupId) {
+    return (
+      <View style={[s.centered, { backgroundColor: colors.canvas }]}>
+        <Ionicons name="people-outline" size={48} color={colors.line} />
+        <Text style={s.lockedText}>
+          Open a group you own and tap “Create workshop” to add one.
+        </Text>
       </View>
     );
   }
@@ -154,6 +168,7 @@ export default function CreateWorkshopScreen() {
         duration_minutes: Number(duration),
         price: price.trim() || "0.00",
         max_participants: Number(maxParticipants),
+        group_id: groupId,
       },
       {
         onSuccess: () => router.back(),
@@ -208,6 +223,15 @@ export default function CreateWorkshopScreen() {
               onChangeText={setDescription}
               placeholder="What will participants experience? Use #hashtags (up to 5)."
             />
+          </View>
+          <View style={s.fieldContainer}>
+            <Text style={s.fieldLabel}>Group</Text>
+            <View style={s.groupBanner}>
+              <Ionicons name="people" size={16} color={colors.primary} />
+              <Text style={s.groupBannerText} numberOfLines={1}>
+                {group.data?.title ?? "This group"}
+              </Text>
+            </View>
           </View>
           <View style={s.fieldContainer}>
             <Text style={s.fieldLabel}>Schedule ({timezone})</Text>
@@ -518,6 +542,21 @@ const s = StyleSheet.create({
   },
   fieldInputFocused: {
     borderColor: "#8A9A7E",
+  },
+  groupBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "#E8EDE5",
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  groupBannerText: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: "500",
+    color: "#566B52",
   },
   footer: {
     paddingHorizontal: 24,
