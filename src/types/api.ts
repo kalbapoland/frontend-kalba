@@ -9,6 +9,7 @@ export interface User {
 export interface Workshop {
   id: string;
   trainer_id: string;
+  group_id: string;
   title: string;
   description: string;
   start_time: string;
@@ -21,6 +22,35 @@ export interface Workshop {
   is_owner?: boolean;
   is_enrolled?: boolean;
   enrolled_count?: number;
+}
+
+export interface Group {
+  id: string;
+  trainer_id: string;
+  title: string;
+  description: string;
+  created_at: string;
+  // Caller-context fields populated by the groups endpoints.
+  member_count?: number;
+  is_owner?: boolean;
+  is_member?: boolean;
+}
+
+export interface GroupMember {
+  id: string;
+  user_id: string;
+  full_name: string;
+  role: string;
+}
+
+export interface GroupCreatePayload {
+  title: string;
+  description?: string;
+}
+
+export interface GroupUpdatePayload {
+  title?: string;
+  description?: string;
 }
 
 export type MyWorkshopsRole = "trainer" | "enrolled" | "all";
@@ -46,6 +76,7 @@ export interface WorkshopCreatePayload {
   timezone?: string;
   price?: string;
   max_participants: number;
+  group_id: string;
 }
 
 export interface WorkshopUpdatePayload {

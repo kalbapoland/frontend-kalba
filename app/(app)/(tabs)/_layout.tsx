@@ -14,6 +14,7 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen name="index" options={{ title: t("workshops") }} />
+      <Tabs.Screen name="groups" options={{ title: t("groups") }} />
       <Tabs.Screen name="my-kalba" options={{ title: t("my_kalba.title") }} />
       <Tabs.Screen name="calendar" options={{ title: t("calendar.title") }} />
       <Tabs.Screen name="profile" options={{ title: t("profile") }} />

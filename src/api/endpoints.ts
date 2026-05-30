@@ -2,6 +2,10 @@ import { apiClient } from "./client";
 import { normalizeAuthResponse } from "./auth-response";
 import type {
   AuthResponse,
+  Group,
+  GroupCreatePayload,
+  GroupMember,
+  GroupUpdatePayload,
   HostActionResponse,
   HostActionType,
   JoinWorkshopResponse,
@@ -110,6 +114,68 @@ export async function enrollWorkshop(id: string): Promise<Workshop> {
 
 export async function unenrollWorkshop(id: string): Promise<void> {
   await apiClient.delete(`/workshops/${id}/enroll`);
+}
+
+// --- Groups ---
+
+export async function fetchGroups(): Promise<Group[]> {
+  const { data } = await apiClient.get<Group[]>("/groups/");
+  return data;
+}
+
+export async function fetchMyGroups(): Promise<Group[]> {
+  const { data } = await apiClient.get<Group[]>("/groups/mine");
+  return data;
+}
+
+export async function fetchGroupById(id: string): Promise<Group> {
+  const { data } = await apiClient.get<Group>(`/groups/${id}`);
+  return data;
+}
+
+export async function createGroup(
+  payload: GroupCreatePayload,
+): Promise<Group> {
+  const { data } = await apiClient.post<Group>("/groups/", payload);
+  return data;
+}
+
+export async function updateGroup(
+  id: string,
+  payload: GroupUpdatePayload,
+): Promise<Group> {
+  const { data } = await apiClient.patch<Group>(`/groups/${id}`, payload);
+  return data;
+}
+
+export async function deleteGroup(id: string): Promise<void> {
+  await apiClient.delete(`/groups/${id}`);
+}
+
+export async function subscribeToGroup(id: string): Promise<Group> {
+  const { data } = await apiClient.post<Group>(`/groups/${id}/subscribe`);
+  return data;
+}
+
+export async function unsubscribeFromGroup(id: string): Promise<void> {
+  await apiClient.post(`/groups/${id}/unsubscribe`);
+}
+
+export async function fetchGroupMembers(id: string): Promise<GroupMember[]> {
+  const { data } = await apiClient.get<GroupMember[]>(`/groups/${id}/members`);
+  return data;
+}
+
+export async function removeGroupMember(
+  id: string,
+  memberUserId: string,
+): Promise<void> {
+  await apiClient.delete(`/groups/${id}/members/${memberUserId}`);
+}
+
+export async function fetchGroupWorkshops(id: string): Promise<Workshop[]> {
+  const { data } = await apiClient.get<Workshop[]>(`/groups/${id}/workshops`);
+  return data;
 }
 
 export async function joinWorkshop(
