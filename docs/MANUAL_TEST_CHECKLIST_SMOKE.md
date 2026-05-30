@@ -11,6 +11,9 @@ Zakres: najwazniejsze flow end-to-end (user + trainer).
 - `user`
 - `trainer`
 3. Miej co najmniej 1 warsztat aktywny.
+4. Miej przygotowane dane Groups:
+- co najmniej 1 grupa w sekcji Discover dla konta `user`
+- co najmniej 1 grupa ownerowana przez konto `trainer`
 
 ## 1. Smoke USER
 
@@ -25,31 +28,41 @@ Zakres: najwazniejsze flow end-to-end (user + trainer).
 - [ ] Lista warsztatow laduje sie bez bledu.
 - [ ] Klik warsztatu otwiera detail.
 
-### 1.3 Enrollment
+### 1.3 Groups
+
+- [ ] Groups laduje sekcje My Groups i Discover Groups.
+- [ ] Subscribe z Discover dziala i przenosi grupe do My Groups.
+- [ ] Klik grupy otwiera Group Detail.
+
+### 1.4 Enrollment
 
 - [ ] Enroll dziala.
 - [ ] Unenroll dziala.
 - [ ] Licznik miejsc aktualizuje sie po akcji.
 
-### 1.4 Join Call
+### 1.5 Join Call
 
 - [ ] Join przenosi do ekranu call.
 - [ ] Mic on/off dziala.
 - [ ] Leave wraca do aplikacji bez zawieszenia.
 
-### 1.5 Profile / Sign Out
+### 1.6 Profile / Sign Out
 
 - [ ] Sign Out dziala i wraca do Sign In.
 
 ## 2. Smoke TRAINER
 
-### 2.1 Home / Create
+### 2.1 Groups / Create
 
-- [ ] Trainer widzi przycisk/FAB Create.
+- [ ] Trainer widzi FAB tworzenia grupy w zakladce Groups.
+- [ ] Create group z poprawnymi danymi dziala.
+- [ ] Po create group app przechodzi do Group Detail.
+- [ ] W Group Detail owner widzi przycisk Create Workshop.
 - [ ] Create workshop z poprawnymi danymi dziala.
 
 ### 2.2 Detail Owner Actions
 
+- [ ] Edit group dziala i zapisuje zmiany.
 - [ ] Edit warsztatu dziala i zapisuje zmiany.
 - [ ] Delete warsztatu dziala.
 
@@ -68,5 +81,5 @@ Zakres: najwazniejsze flow end-to-end (user + trainer).
 Smoke przechodzi, jesli:
 
 1. Brak crashy i freeze.
-2. Login, list/detail, enroll, join call, sign out dzialaja.
-3. Trainer moze create/edit/delete i sterowac host controls.
+2. Login, list/detail, groups, enroll, join call, sign out dzialaja.
+3. Trainer moze create/edit group, create/edit/delete workshop i sterowac host controls.
