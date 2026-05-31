@@ -155,6 +155,7 @@ export default function GroupsScreen() {
           onPress={() => router.push("/(app)/create-group")}
           accessibilityRole="button"
           accessibilityLabel={t("group.create_new_group")}
+          testID="trainer.create.group.button"
           style={[s.fab, { bottom: insets.bottom + 80 }]}
         >
           <Ionicons name="add" size={26} color={colors.surface} />

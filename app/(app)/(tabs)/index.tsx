@@ -23,6 +23,14 @@ import {
 } from "@/lib/date";
 import { colors } from "@/theme/tokens";
 
+function toAutomationSlug(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 function getGreeting(): string {
   const hour = new Date().getHours();
   if (hour < 12) return "Good morning";
@@ -48,6 +56,7 @@ function WorkshopCard({ workshop }: { workshop: Workshop }) {
       onPress={() => router.push(`/(app)/workshop/${workshop.id}`)}
       accessibilityRole="button"
       accessibilityLabel={`${workshop.title}, ${weekday} ${day} ${month} at ${time}, ${formatPrice(workshop.price)}`}
+      testID={`home.workshop.card.${toAutomationSlug(workshop.title)}`}
       className="mb-5 flex-row overflow-hidden rounded-2xl border border-line-whisper bg-surface"
       style={({ pressed }) => ({
         transform: [{ scale: pressed ? 0.98 : 1 }],
@@ -159,6 +168,7 @@ export default function WorkshopListScreen() {
         data={data}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <WorkshopCard workshop={item} />}
+        testID="home.workshops.list"
         contentContainerStyle={{
           paddingHorizontal: 24,
           paddingTop: insets.top + 32,

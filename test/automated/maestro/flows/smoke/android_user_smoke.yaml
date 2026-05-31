@@ -1,0 +1,21 @@
+appId: com.kalba.app
+---
+# Android USER smoke flow.
+
+- launchApp:
+      clearState: true
+
+- runFlow: ../common/register_user.yaml
+
+- tapOn:
+      id: home.workshop.card.e2e-owner-workshop-smoke
+- extendedWaitUntil:
+      visible:
+          id: workshop.enroll.button
+      timeout: 15000
+- tapOn:
+      id: workshop.enroll.button
+- extendedWaitUntil:
+      visible:
+          id: workshop.unenroll.button
+      timeout: 10000

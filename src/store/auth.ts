@@ -31,8 +31,22 @@ function getConfiguredApiUrl(): string {
   );
 }
 
+function normalizeAndroidEmulatorUrl(apiUrl: string): string {
+  try {
+    const parsed = new URL(apiUrl);
+    if (Platform.OS === "android" && (parsed.hostname === "10.0.2.2" || parsed.hostname === "10.0.3.2")) {
+      parsed.hostname = "127.0.0.1";
+      return parsed.toString();
+    }
+  } catch {
+    // Keep the original value if it is not a valid URL.
+  }
+
+  return apiUrl;
+}
+
 function buildScopedKey(baseKey: string): string {
-  const apiUrl = getConfiguredApiUrl();
+  const apiUrl = normalizeAndroidEmulatorUrl(getConfiguredApiUrl());
 
   try {
     const parsed = new URL(apiUrl);

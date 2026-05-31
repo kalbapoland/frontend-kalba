@@ -38,6 +38,14 @@ type ValidationErrorDetail = {
   msg?: string;
 };
 
+const AUTH_TEST_IDS = {
+  emailInput: "signin.email.input",
+  passwordInput: "signin.password.input",
+  submitButton: "signin.submit.button",
+  loginModeButton: "signin.mode.login.button",
+  registerModeButton: "signin.mode.register.button",
+} as const;
+
 function normalizeModeParam(value: string | string[] | undefined): AuthMode | null {
   const candidate = Array.isArray(value) ? value[0] : value;
   return candidate === "register" || candidate === "login" ? candidate : null;
@@ -260,6 +268,7 @@ export default function AuthScreen() {
           <View style={s.modeSwitch}>
             <Pressable
               onPress={() => setMode("login")}
+              testID={AUTH_TEST_IDS.loginModeButton}
               style={[s.modeButton, mode === "login" && s.modeButtonActive]}
             >
               <Text style={[s.modeButtonText, mode === "login" && s.modeButtonTextActive]}>
@@ -268,6 +277,7 @@ export default function AuthScreen() {
             </Pressable>
             <Pressable
               onPress={() => setMode("register")}
+              testID={AUTH_TEST_IDS.registerModeButton}
               style={[s.modeButton, mode === "register" && s.modeButtonActive]}
             >
               <Text style={[s.modeButtonText, mode === "register" && s.modeButtonTextActive]}>
@@ -294,6 +304,7 @@ export default function AuthScreen() {
                 placeholder="you@example.com"
                 placeholderTextColor={colors.inkMuted}
                 style={s.input}
+                testID={AUTH_TEST_IDS.emailInput}
                 value={email}
               />
             </View>
@@ -316,6 +327,7 @@ export default function AuthScreen() {
                 returnKeyType={isRegister ? "done" : "go"}
                 secureTextEntry
                 style={s.input}
+                testID={AUTH_TEST_IDS.passwordInput}
                 value={password}
               />
             </View>
@@ -325,6 +337,7 @@ export default function AuthScreen() {
               accessibilityState={{ busy: loading, disabled: loading || googleLoading }}
               disabled={loading || googleLoading}
               onPress={handleNativeAuth}
+              testID={AUTH_TEST_IDS.submitButton}
               style={({ pressed }) => [
                 s.primaryButton,
                 { opacity: loading || googleLoading ? 0.6 : pressed ? 0.86 : 1 },

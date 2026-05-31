@@ -32,6 +32,14 @@ import {
 } from "@/lib/date";
 import { colors } from "@/theme/tokens";
 
+function toAutomationSlug(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 function SectionLabel({ children }: { children: string }) {
   return (
     <View style={s.sectionLabelRow}>
@@ -48,6 +56,7 @@ function WorkshopRow({ workshop }: { workshop: Workshop }) {
       onPress={() => router.push(`/(app)/workshop/${workshop.id}`)}
       accessibilityRole="button"
       accessibilityLabel={workshop.title}
+      testID={`group.workshop.row.${toAutomationSlug(workshop.title)}`}
       style={({ pressed }) => [s.workshopRow, { opacity: pressed ? 0.85 : 1 }]}
     >
       <View style={{ flex: 1 }}>
@@ -164,6 +173,7 @@ export default function GroupDetailScreen() {
             }
             accessibilityRole="button"
             accessibilityLabel={t("group.edit_group")}
+            testID="group.edit.button"
             style={({ pressed }) => [s.editButton, { opacity: pressed ? 0.6 : 1 }]}
           >
             <Ionicons name="create-outline" size={16} color={colors.primary} />
@@ -215,6 +225,7 @@ export default function GroupDetailScreen() {
               disabled={unsubscribe.isPending}
               accessibilityRole="button"
               accessibilityLabel={t("group.unsubscribe_from_group")}
+              testID="group.unsubscribe.button"
               style={({ pressed }) => [
                 s.secondaryButton,
                 { opacity: pressed || unsubscribe.isPending ? 0.7 : 1 },
@@ -234,6 +245,7 @@ export default function GroupDetailScreen() {
               disabled={subscribe.isPending}
               accessibilityRole="button"
               accessibilityLabel={t("group.subscribe_to_group")}
+              testID="group.subscribe.button"
               style={({ pressed }) => [
                 s.primaryButton,
                 { opacity: pressed || subscribe.isPending ? 0.85 : 1 },
@@ -259,6 +271,7 @@ export default function GroupDetailScreen() {
                 }
                 accessibilityRole="button"
                 accessibilityLabel={t("group.create_workshop_in_group")}
+                testID="trainer.create.workshop.button"
                 style={({ pressed }) => [s.createWorkshopBtn, { opacity: pressed ? 0.85 : 1 }]}
               >
                 <Ionicons name="add" size={18} color={colors.primary} />

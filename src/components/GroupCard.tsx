@@ -6,6 +6,14 @@ import { useTranslation } from "react-i18next";
 import type { Group } from "@/types/api";
 import { colors } from "@/theme/tokens";
 
+function toAutomationSlug(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 export function GroupCard({
   group,
   onSubscribe,
@@ -25,6 +33,7 @@ export function GroupCard({
       onPress={() => router.push(`/(app)/group/${group.id}`)}
       accessibilityRole="button"
       accessibilityLabel={`${group.title}, ${memberLabel}`}
+      testID={`group.card.${toAutomationSlug(group.title)}`}
       className="mb-4 flex-row overflow-hidden rounded-2xl border border-line-whisper bg-surface"
       style={({ pressed }) => ({
         transform: [{ scale: pressed ? 0.98 : 1 }],
@@ -63,6 +72,7 @@ export function GroupCard({
           disabled={subscribing}
           accessibilityRole="button"
           accessibilityLabel={t("group.subscribe_to_name", { title: group.title })}
+          testID={`group.subscribe.button.${toAutomationSlug(group.title)}`}
           style={({ pressed }) => [s.subscribeBtn, { opacity: pressed || subscribing ? 0.7 : 1 }]}
         >
           {subscribing ? (

@@ -80,6 +80,7 @@ export default function ProfileScreen() {
         onPress={handleSignOut}
         accessibilityRole="button"
         accessibilityLabel="Sign out"
+        testID="profile.signout.button"
         style={({ pressed }) => [
           s.signOutButton,
           {

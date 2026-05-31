@@ -1,0 +1,40 @@
+appId: com.kalba.app
+---
+# Login using deterministic E2E trainer account.
+
+# If Expo Development Launcher is shown, open one of local dev servers.
+- tapOn:
+        text: http://10.0.2.2:8081
+        optional: true
+- tapOn:
+        text: http://10.0.2.2:8082
+        optional: true
+- tapOn:
+        text: http://10.0.2.2:8083
+        optional: true
+
+# If app is already authenticated, sign out first.
+- tapOn:
+        id: tab.profile.button
+        optional: true
+- tapOn:
+        id: profile.signout.button
+        optional: true
+- tapOn:
+        text: Sign Out
+        optional: true
+
+- tapOn:
+        id: signin.email.input
+- inputText: e2e.trainer@kalba.dev
+
+- tapOn:
+        id: signin.password.input
+- inputText: Pass1234
+
+- pressKey: Enter
+
+- extendedWaitUntil:
+        visible:
+              id: home.workshops.list
+        timeout: 20000

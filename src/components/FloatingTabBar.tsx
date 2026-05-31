@@ -53,6 +53,7 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
               accessibilityRole="button"
               accessibilityLabel={options.title ?? route.name}
               accessibilityState={{ selected: isFocused }}
+              testID={`tab.${route.name}.button`}
               style={({ pressed }) => [
                 styles.tab,
                 { opacity: pressed ? 0.7 : 1 },

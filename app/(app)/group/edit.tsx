@@ -20,6 +20,12 @@ import { useTranslation } from "react-i18next";
 import { useGroup, useUpdateGroup } from "@/hooks/useGroups";
 import { colors } from "@/theme/tokens";
 
+const EDIT_GROUP_TEST_IDS = {
+  titleInput: "group.edit.title.input",
+  descriptionInput: "group.edit.description.input",
+  submitButton: "group.edit.submit.button",
+} as const;
+
 export default function EditGroupScreen() {
   const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -112,6 +118,7 @@ export default function EditGroupScreen() {
               onBlur={() => setTitleFocused(false)}
               style={[s.fieldInput, titleFocused && s.fieldInputFocused]}
               placeholderTextColor="#8C8A82"
+              testID={EDIT_GROUP_TEST_IDS.titleInput}
             />
           </View>
 
@@ -130,6 +137,7 @@ export default function EditGroupScreen() {
                 { minHeight: 120, textAlignVertical: "top" },
               ]}
               placeholderTextColor="#8C8A82"
+              testID={EDIT_GROUP_TEST_IDS.descriptionInput}
             />
           </View>
         </ScrollView>
@@ -140,6 +148,7 @@ export default function EditGroupScreen() {
             disabled={isPending}
             accessibilityRole="button"
             accessibilityLabel={isPending ? t("group.saving_group") : t("group.save_group")}
+            testID={EDIT_GROUP_TEST_IDS.submitButton}
             style={({ pressed }) => [
               s.submitButton,
               {
