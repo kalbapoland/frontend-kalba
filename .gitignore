@@ -46,8 +46,6 @@ yarn-error.*
 *.tsbuildinfo
 
 # generated native folders
-/ios
-
 # Android: keep only main manifest versioned for OAuth callback consistency.
 /android/*
 !/android/app/
@@ -57,6 +55,17 @@ yarn-error.*
 !/android/app/src/main/
 /android/app/src/main/*
 !/android/app/src/main/AndroidManifest.xml
+
+# iOS is versioned to keep native config consistent across developers.
+ios/**/build/
+ios/Pods/
+ios/.symlinks/
+ios/local.properties
+ios/**/*.xcworkspace/xcuserdata/
+ios/**/*.xcodeproj/xcuserdata/
+ios/**/*.xcuserstate
+ios/**/.DS_Store
+ios/GoogleService-Info.plist
 
 # JetBrains IDEs
 .idea/
