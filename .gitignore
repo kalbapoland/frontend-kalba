@@ -48,18 +48,15 @@ yarn-error.*
 # generated native folders
 /ios
 
-# Android is versioned to keep native config consistent across developers.
-android/**/build/
-android/.gradle/
-android/.kotlin/
-android/**/.cxx/
-android/local.properties
-android/**/*.iml
-android/**/*.hprof
-android/**/.DS_Store
-android/app/google-services.json
-android/app/debug.keystore
-android/app/debug.keystore.bk
+# Android: keep only main manifest versioned for OAuth callback consistency.
+/android/*
+!/android/app/
+/android/app/*
+!/android/app/src/
+/android/app/src/*
+!/android/app/src/main/
+/android/app/src/main/*
+!/android/app/src/main/AndroidManifest.xml
 
 # JetBrains IDEs
 .idea/
