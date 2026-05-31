@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -17,7 +18,6 @@ import { exchangeCodeAsync, makeRedirectUri } from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
 import Constants, { ExecutionEnvironment } from "expo-constants";
 import { LinearGradient } from "expo-linear-gradient";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import axios from "axios";
 import { useEffect } from "react";
 
@@ -380,7 +380,12 @@ export default function AuthScreen() {
               <ActivityIndicator color={colors.primary} />
             ) : (
               <View style={s.secondaryButtonInner}>
-                <Ionicons name="logo-google" size={18} color={colors.primary} />
+                <Image
+                  source={require("../../assets/google-g.png")}
+                  style={s.googleIcon}
+                  resizeMode="contain"
+                  accessibilityIgnoresInvertColors
+                />
                 <Text style={s.secondaryButtonText}>{t("continue_with_google", "Continue with Google")}</Text>
               </View>
             )}
@@ -556,6 +561,10 @@ const s = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     gap: 10,
+  },
+  googleIcon: {
+    height: 18,
+    width: 18,
   },
   secondaryButtonText: {
     color: colors.primary,
