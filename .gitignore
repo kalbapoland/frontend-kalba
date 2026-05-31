@@ -46,8 +46,18 @@ yarn-error.*
 *.tsbuildinfo
 
 # generated native folders
-/ios
 /android
+
+# iOS is versioned to keep native config consistent across developers.
+ios/**/build/
+ios/Pods/
+ios/.symlinks/
+ios/local.properties
+ios/**/*.xcworkspace/xcuserdata/
+ios/**/*.xcodeproj/xcuserdata/
+ios/**/*.xcuserstate
+ios/**/.DS_Store
+ios/GoogleService-Info.plist
 
 # JetBrains IDEs
 .idea/
