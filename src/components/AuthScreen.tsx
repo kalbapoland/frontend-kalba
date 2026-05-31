@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { Redirect, useLocalSearchParams } from "expo-router";
 import * as Google from "expo-auth-session/providers/google";
-import { exchangeCodeAsync } from "expo-auth-session";
+import { exchangeCodeAsync, makeRedirectUri } from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
 import { LinearGradient } from "expo-linear-gradient";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -40,6 +40,35 @@ type ValidationErrorDetail = {
 function normalizeModeParam(value: string | string[] | undefined): AuthMode | null {
   const candidate = Array.isArray(value) ? value[0] : value;
   return candidate === "register" || candidate === "login" ? candidate : null;
+}
+
+// Google's native OAuth clients (iOS/Android) require the redirect URI to use
+// the reverse of the client ID as a custom scheme — e.g.
+// `com.googleusercontent.apps.<ID>:/oauthredirect`. expo-auth-session v7
+// defaults the native redirect to `<applicationId>:/oauthredirect`
+// (`com.kalba.app:/oauthredirect`), which is NOT registered in the native
+// manifests and is NOT accepted by Google for native clients, so the browser
+// has nowhere to redirect back to after sign-in (it strands on google.com).
+// Build the reverse-client-id redirect that matches the registered schemes
+// (Android intentFilters / iOS CFBundleURLSchemes in app.config.js).
+function googleNativeRedirectUri(): string | undefined {
+  if (Platform.OS === "web") {
+    return undefined; // let the provider derive the web redirect from the URL
+  }
+
+  const clientId =
+    Platform.OS === "ios"
+      ? process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID
+      : process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID;
+
+  if (!clientId) {
+    return undefined;
+  }
+
+  const reversed = clientId.replace(/\.apps\.googleusercontent\.com$/, "");
+  return makeRedirectUri({
+    native: `com.googleusercontent.apps.${reversed}:/oauthredirect`,
+  });
 }
 
 function showAuthAlert(title: string, message: string) {
@@ -114,6 +143,7 @@ export default function AuthScreen() {
     androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
     iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
     webClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
+    redirectUri: googleNativeRedirectUri(),
   });
 
   const handleNativeAuth = useCallback(async () => {
