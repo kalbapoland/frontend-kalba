@@ -5,6 +5,7 @@ Creates links from the AI-agent tool-expected locations to the source-of-truth
 files in scripts/AIAgents/.
 
 Run once after cloning:
+    set KALBA_FRONTEND_DIR=E:\\Projects\\Kalba\\frontend
     python scripts/AIAgents/setup.py
 
 Windows: creates hardlinks for files, junction points for directories.
@@ -22,10 +23,30 @@ import sys
 from pathlib import Path
 
 
+def required_env_dir(var_name: str) -> Path:
+    """Return a required directory path from environment or raise a clear error."""
+    raw_value = os.getenv(var_name, "").strip()
+    if not raw_value:
+        raise RuntimeError(f"Missing required environment variable: {var_name}")
+
+    path = Path(raw_value).expanduser().resolve()
+    if not path.exists() or not path.is_dir():
+        raise RuntimeError(
+            f"Environment variable {var_name} must point to an existing directory: {path}"
+        )
+    return path
+
+
 def repo_root() -> Path:
-    """Return the repository root (three levels up from this file:
-    setup.py → AIAgents/ → scripts/ → repo root)."""
-    return Path(__file__).resolve().parent.parent.parent
+    """Return frontend repository root from environment configuration."""
+    root = required_env_dir("KALBA_FRONTEND_DIR")
+    expected = (Path(__file__).resolve().parent.parent.parent).resolve()
+    if root != expected:
+        raise RuntimeError(
+            "KALBA_FRONTEND_DIR does not match this repository root: "
+            f"expected {expected}, got {root}"
+        )
+    return root
 
 
 def _is_junction(path: Path) -> bool:
