@@ -37,13 +37,29 @@ function getMetroHost(): string | null {
   return hostUri.split(":")[0] ?? null;
 }
 
+function normalizeAndroidEmulatorUrl(configuredUrl: string): string {
+  try {
+    const parsed = new URL(configuredUrl);
+    if (Platform.OS === "android" && ANDROID_EMULATOR_HOSTS.has(parsed.hostname)) {
+      parsed.hostname = "127.0.0.1";
+      return parsed.toString();
+    }
+  } catch {
+    // Keep configured URL if parsing fails.
+  }
+
+  return configuredUrl;
+}
+
 function resolveApiUrl(): string {
   if (Platform.OS === "web") {
     return bundledApiUrlWeb ?? extra?.apiUrlWeb ?? "http://localhost:8000/api/v1";
   }
 
   const configuredNativeUrl =
-    bundledApiUrlNative ?? extra?.apiUrlNative ?? "http://localhost:8000/api/v1";
+    normalizeAndroidEmulatorUrl(
+      bundledApiUrlNative ?? extra?.apiUrlNative ?? "http://localhost:8000/api/v1",
+    );
 
   if (!__DEV__) {
     return configuredNativeUrl;
@@ -58,10 +74,6 @@ function resolveApiUrl(): string {
     const parsed = new URL(configuredNativeUrl);
     const configuredHost = parsed.hostname;
     if (configuredHost === metroHost) {
-      return configuredNativeUrl;
-    }
-
-    if (ANDROID_EMULATOR_HOSTS.has(configuredHost)) {
       return configuredNativeUrl;
     }
 

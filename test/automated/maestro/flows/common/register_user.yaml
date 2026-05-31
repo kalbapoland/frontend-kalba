@@ -1,0 +1,41 @@
+appId: com.kalba.app
+---
+# Register a deterministic E2E user account via the UI.
+
+- tapOn:
+    text: http://10.0.2.2:8081
+    optional: true
+- tapOn:
+    text: http://10.0.2.2:8082
+    optional: true
+- tapOn:
+    text: http://10.0.2.2:8083
+    optional: true
+
+- extendedWaitUntil:
+    visible:
+      id: signin.email.input
+    timeout: 15000
+
+- tapOn:
+    text: Sign Up
+
+- extendedWaitUntil:
+    visible:
+      text: Create your account
+    timeout: 10000
+
+- tapOn:
+    id: signin.email.input
+- inputText: e2e.user@kalba.dev
+
+- tapOn:
+    id: signin.password.input
+- inputText: Pass1234
+
+- pressKey: Enter
+
+- extendedWaitUntil:
+    visible:
+      id: home.workshops.list
+    timeout: 20000

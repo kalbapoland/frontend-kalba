@@ -21,6 +21,12 @@ import { useCreateGroup } from "@/hooks/useGroups";
 import { useAuthStore } from "@/store/auth";
 import { colors } from "@/theme/tokens";
 
+const CREATE_GROUP_TEST_IDS = {
+  titleInput: "group.create.title.input",
+  descriptionInput: "group.create.description.input",
+  submitButton: "group.create.submit.button",
+} as const;
+
 export default function CreateGroupScreen() {
   const { t } = useTranslation();
   const user = useAuthStore((state) => state.user);
@@ -102,6 +108,7 @@ export default function CreateGroupScreen() {
               onBlur={() => setTitleFocused(false)}
               style={[s.fieldInput, titleFocused && s.fieldInputFocused]}
               placeholderTextColor="#8C8A82"
+              testID={CREATE_GROUP_TEST_IDS.titleInput}
             />
           </View>
 
@@ -120,6 +127,7 @@ export default function CreateGroupScreen() {
                 { minHeight: 120, textAlignVertical: "top" },
               ]}
               placeholderTextColor="#8C8A82"
+              testID={CREATE_GROUP_TEST_IDS.descriptionInput}
             />
           </View>
         </ScrollView>
@@ -132,6 +140,7 @@ export default function CreateGroupScreen() {
             accessibilityLabel={
               isPending ? t("group.creating_group_a11y") : t("group.create_group_a11y")
             }
+            testID={CREATE_GROUP_TEST_IDS.submitButton}
             style={({ pressed }) => [
               s.submitButton,
               {

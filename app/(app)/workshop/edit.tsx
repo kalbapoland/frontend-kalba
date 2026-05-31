@@ -34,6 +34,16 @@ import {
 
 type PickerMode = "date" | "time" | null;
 
+const EDIT_WORKSHOP_TEST_IDS = {
+  titleInput: "workshop.edit.title.input",
+  dateButton: "workshop.edit.date.button",
+  timeButton: "workshop.edit.time.button",
+  durationInput: "workshop.edit.duration.input",
+  priceInput: "workshop.edit.price.input",
+  maxParticipantsInput: "workshop.edit.max-participants.input",
+  submitButton: "workshop.edit.submit.button",
+} as const;
+
 export default function EditWorkshopScreen() {
   const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -221,6 +231,7 @@ export default function EditWorkshopScreen() {
             value={title}
             onChangeText={setTitle}
             placeholder={t("workshop.title_placeholder")}
+            testID={EDIT_WORKSHOP_TEST_IDS.titleInput}
           />
 
           <View style={s.fieldContainer}>
@@ -249,6 +260,7 @@ export default function EditWorkshopScreen() {
                     onPress={() => setPickerMode("date")}
                     accessibilityRole="button"
                     accessibilityLabel={t("workshop.pick_date")}
+                    testID={EDIT_WORKSHOP_TEST_IDS.dateButton}
                     style={({ pressed }) => [s.scheduleButton, { opacity: pressed ? 0.7 : 1 }]}
                   >
                     <Ionicons name="calendar" size={16} color={colors.primary} />
@@ -258,6 +270,7 @@ export default function EditWorkshopScreen() {
                     onPress={() => setPickerMode("time")}
                     accessibilityRole="button"
                     accessibilityLabel={t("workshop.pick_time")}
+                    testID={EDIT_WORKSHOP_TEST_IDS.timeButton}
                     style={({ pressed }) => [s.scheduleButton, { opacity: pressed ? 0.7 : 1 }]}
                   >
                     <Ionicons name="time" size={16} color={colors.primary} />
@@ -299,6 +312,7 @@ export default function EditWorkshopScreen() {
                 onChangeText={setDuration}
                 placeholder="60"
                 keyboardType="numeric"
+                testID={EDIT_WORKSHOP_TEST_IDS.durationInput}
               />
             </View>
             <View style={{ flex: 1 }}>
@@ -308,6 +322,7 @@ export default function EditWorkshopScreen() {
                 onChangeText={setPrice}
                 placeholder="0.00"
                 keyboardType="decimal-pad"
+                testID={EDIT_WORKSHOP_TEST_IDS.priceInput}
               />
             </View>
           </View>
@@ -318,6 +333,7 @@ export default function EditWorkshopScreen() {
             onChangeText={setMaxParticipants}
             placeholder="20"
             keyboardType="numeric"
+            testID={EDIT_WORKSHOP_TEST_IDS.maxParticipantsInput}
           />
         </ScrollView>
 
@@ -329,6 +345,7 @@ export default function EditWorkshopScreen() {
             accessibilityLabel={
               isPending ? t("workshop.saving") : t("workshop.save_changes_a11y")
             }
+            testID={EDIT_WORKSHOP_TEST_IDS.submitButton}
             style={({ pressed }) => [
               s.submitButton,
               {
@@ -409,6 +426,7 @@ function FormField({
   placeholder,
   multiline = false,
   keyboardType = "default",
+  testID,
 }: {
   label: string;
   value: string;
@@ -416,6 +434,7 @@ function FormField({
   placeholder?: string;
   multiline?: boolean;
   keyboardType?: "default" | "numeric" | "decimal-pad";
+  testID?: string;
 }) {
   const [focused, setFocused] = useState(false);
 
@@ -430,6 +449,7 @@ function FormField({
         keyboardType={keyboardType}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
+        testID={testID}
         style={[
           s.fieldInput,
           focused && s.fieldInputFocused,

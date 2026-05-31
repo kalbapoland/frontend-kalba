@@ -35,6 +35,16 @@ import { colors } from "@/theme/tokens";
 
 type PickerMode = "date" | "time" | null;
 
+const CREATE_WORKSHOP_TEST_IDS = {
+  titleInput: "workshop.create.title.input",
+  dateButton: "workshop.create.date.button",
+  timeButton: "workshop.create.time.button",
+  durationInput: "workshop.create.duration.input",
+  priceInput: "workshop.create.price.input",
+  maxParticipantsInput: "workshop.create.max-participants.input",
+  submitButton: "workshop.create.submit.button",
+} as const;
+
 export default function CreateWorkshopScreen() {
   const user = useAuthStore((s) => s.user);
   const router = useRouter();
@@ -215,6 +225,7 @@ export default function CreateWorkshopScreen() {
             value={title}
             onChangeText={setTitle}
             placeholder="e.g. Morning Yoga Flow"
+            testID={CREATE_WORKSHOP_TEST_IDS.titleInput}
           />
           <View style={s.fieldContainer}>
             <Text style={s.fieldLabel}>Description (optional)</Text>
@@ -250,6 +261,7 @@ export default function CreateWorkshopScreen() {
                     onPress={() => setPickerMode("date")}
                     accessibilityRole="button"
                     accessibilityLabel="Pick workshop date"
+                    testID={CREATE_WORKSHOP_TEST_IDS.dateButton}
                     style={({ pressed }) => [
                       s.scheduleButton,
                       { opacity: pressed ? 0.7 : 1 },
@@ -262,6 +274,7 @@ export default function CreateWorkshopScreen() {
                     onPress={() => setPickerMode("time")}
                     accessibilityRole="button"
                     accessibilityLabel="Pick workshop time"
+                    testID={CREATE_WORKSHOP_TEST_IDS.timeButton}
                     style={({ pressed }) => [
                       s.scheduleButton,
                       { opacity: pressed ? 0.7 : 1 },
@@ -299,10 +312,10 @@ export default function CreateWorkshopScreen() {
           </View>
           <View style={s.row}>
             <View style={{ flex: 1 }}>
-              <FormField label="Duration (min)" value={duration} onChangeText={setDuration} placeholder="60" keyboardType="numeric" />
+              <FormField label="Duration (min)" value={duration} onChangeText={setDuration} placeholder="60" keyboardType="numeric" testID={CREATE_WORKSHOP_TEST_IDS.durationInput} />
             </View>
             <View style={{ flex: 1 }}>
-              <FormField label="Price ($)" value={price} onChangeText={setPrice} placeholder="0.00" keyboardType="decimal-pad" />
+              <FormField label="Price ($)" value={price} onChangeText={setPrice} placeholder="0.00" keyboardType="decimal-pad" testID={CREATE_WORKSHOP_TEST_IDS.priceInput} />
             </View>
           </View>
           <FormField
@@ -311,6 +324,7 @@ export default function CreateWorkshopScreen() {
             onChangeText={setMaxParticipants}
             placeholder="20"
             keyboardType="numeric"
+            testID={CREATE_WORKSHOP_TEST_IDS.maxParticipantsInput}
           />
         </ScrollView>
 
@@ -321,6 +335,7 @@ export default function CreateWorkshopScreen() {
             disabled={isPending}
             accessibilityRole="button"
             accessibilityLabel={isPending ? "Creating workshop" : "Create workshop"}
+            testID={CREATE_WORKSHOP_TEST_IDS.submitButton}
             style={({ pressed }) => [
               s.submitButton,
               {
@@ -397,6 +412,7 @@ function FormField({
   placeholder,
   multiline = false,
   keyboardType = "default",
+  testID,
 }: {
   label: string;
   value: string;
@@ -404,6 +420,7 @@ function FormField({
   placeholder?: string;
   multiline?: boolean;
   keyboardType?: "default" | "numeric" | "decimal-pad";
+  testID?: string;
 }) {
   const [focused, setFocused] = useState(false);
 
@@ -418,6 +435,7 @@ function FormField({
         keyboardType={keyboardType}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
+        testID={testID}
         style={[
           s.fieldInput,
           focused && s.fieldInputFocused,

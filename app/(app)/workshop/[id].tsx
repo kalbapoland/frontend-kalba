@@ -209,6 +209,7 @@ export default function WorkshopDetailScreen() {
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={t("edit")}
+                testID="trainer.edit.workshop.button"
                 style={({ pressed }) => [s.ghostButton, s.editButton, { opacity: pressed ? 0.7 : 1, transform: [{ scale: pressed ? 0.97 : 1 }] }]}
                 onPress={() => router.push({ pathname: "/(app)/workshop/edit", params: { id: id! } })}
               >
@@ -218,6 +219,7 @@ export default function WorkshopDetailScreen() {
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={t("delete")}
+                testID="trainer.delete.workshop.button"
                 style={({ pressed }) => [s.ghostButton, s.deleteButton, { opacity: pressed ? 0.7 : 1, transform: [{ scale: pressed ? 0.97 : 1 }] }]}
                 onPress={handleDelete}
                 disabled={deleteMutation.isPending}
@@ -238,6 +240,7 @@ export default function WorkshopDetailScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={isEnrolled ? "Unenroll from workshop" : "Enroll in workshop"}
+            testID={isEnrolled ? "workshop.unenroll.button" : "workshop.enroll.button"}
             style={({ pressed }) => [
               s.enrollButton,
               isEnrolled ? s.enrollButtonUnenroll : s.enrollButtonEnroll,
@@ -287,6 +290,7 @@ export default function WorkshopDetailScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t("workshop.join")}
+          testID="workshop.join.button"
           style={({ pressed }) => [s.joinButton, { transform: [{ scale: pressed ? 0.97 : 1 }], opacity: pressed ? 0.92 : 1 }]}
           onPress={handleJoin}
           disabled={joinMutation.isPending}
