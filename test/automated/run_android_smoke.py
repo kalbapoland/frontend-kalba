@@ -8,6 +8,8 @@ from pathlib import Path
 
 APP_ID = "com.kalba.app"
 BACKEND_CLEANUP_SCRIPT = Path("tests/automated/seed_mobile_e2e_fixtures.py")
+BACKEND_ENSURE_TRAINER_SCRIPT = Path("tests/automated/ensure_smoke_trainer.py")
+AUTOFILL_SERVICE_SETTING = "autofill_service"
 
 
 def run(command: list[str], cwd: Path) -> None:
@@ -53,6 +55,41 @@ def cleanup_backend_fixtures(backend_root: Path, python_exe: str) -> None:
     run([python_exe, "run", "python", str(BACKEND_CLEANUP_SCRIPT), "--cleanup"], cwd=backend_root)
 
 
+def ensure_smoke_trainer_account(backend_root: Path, python_exe: str) -> None:
+    run(
+        [python_exe, "run", "python", str(BACKEND_ENSURE_TRAINER_SCRIPT), "--reset-password"],
+        cwd=backend_root,
+    )
+
+
+def get_secure_setting(adb: str, setting_name: str, cwd: Path) -> str | None:
+    result = subprocess.run(
+        [adb, "shell", "settings", "get", "secure", setting_name],
+        cwd=str(cwd),
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    value = result.stdout.strip()
+    if not value or value.lower() == "null":
+        return None
+    return value
+
+
+def disable_android_autofill(adb: str, cwd: Path) -> str | None:
+    previous_value = get_secure_setting(adb, AUTOFILL_SERVICE_SETTING, cwd)
+    run([adb, "shell", "settings", "put", "secure", AUTOFILL_SERVICE_SETTING, "null"], cwd=cwd)
+    return previous_value
+
+
+def restore_android_autofill(adb: str, cwd: Path, previous_value: str | None) -> None:
+    if previous_value is None:
+        run([adb, "shell", "settings", "delete", "secure", AUTOFILL_SERVICE_SETTING], cwd=cwd)
+        return
+
+    run([adb, "shell", "settings", "put", "secure", AUTOFILL_SERVICE_SETTING, previous_value], cwd=cwd)
+
+
 def install_release_build(frontend_root: Path) -> None:
     gradlew = frontend_root / "android" / ("gradlew.bat" if os.name == "nt" else "gradlew")
     if not gradlew.exists():
@@ -69,10 +106,13 @@ def main() -> None:
 
     maestro = resolve_tool("maestro")
     adb = resolve_adb()
+    previous_autofill_service = get_secure_setting(adb, AUTOFILL_SERVICE_SETTING, frontend_root)
 
     primary_error: BaseException | None = None
     try:
+        disable_android_autofill(adb, frontend_root)
         run([adb, "reverse", "tcp:8000", "tcp:8000"], cwd=frontend_root)
+        ensure_smoke_trainer_account(backend_root, uv_exe)
         install_release_build(frontend_root)
         run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
         run(
@@ -102,7 +142,12 @@ def main() -> None:
             cleanup_errors.append(cleanup_err)
 
         try:
-            run([adb, "reverse", "--remove-all"], cwd=frontend_root)
+            run([adb, "reverse", "--remove", "tcp:8000"], cwd=frontend_root)
+        except Exception as cleanup_err:
+            cleanup_errors.append(cleanup_err)
+
+        try:
+            restore_android_autofill(adb, frontend_root, previous_autofill_service)
         except Exception as cleanup_err:
             cleanup_errors.append(cleanup_err)
 

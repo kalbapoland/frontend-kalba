@@ -3,208 +3,98 @@ appId: com.kalba.app
 # iOS smoke flow for the blank-slate trainer-first, then user-verification path.
 # Run on macOS only (iOS Simulator).
 - launchApp:
-      clearState: true
+        clearState: true
 
 # TRAINER account setup and owner-flow smoke.
-- runFlow: ../common/register_trainer.yaml
+- runFlow: ../common/login_trainer.yaml
 
 - tapOn:
-      id: tab.groups.button
+        id: tab.groups.button
 - extendedWaitUntil:
-      visible:
-          id: trainer.create.group.button
-      timeout: 15000
+        visible:
+              id: trainer.create.group.button
+        timeout: 15000
 - tapOn:
-      id: trainer.create.group.button
+        id: trainer.create.group.button
 - extendedWaitUntil:
-      visible:
-          id: group.create.title.input
-      timeout: 10000
+        visible:
+              id: group.create.title.input
+        timeout: 10000
 - tapOn:
-      id: group.create.title.input
+        id: group.create.title.input
 - inputText: E2E Trainer Group Smoke
 - tapOn:
-      id: group.create.submit.button
+        id: group.create.submit.button
 - extendedWaitUntil:
-      visible:
-          id: trainer.create.workshop.button
-      timeout: 15000
+        visible:
+              id: trainer.create.workshop.button
+        timeout: 15000
 - tapOn:
-      id: trainer.create.workshop.button
+        id: trainer.create.workshop.button
 - extendedWaitUntil:
-      visible:
-          id: workshop.create.title.input
-      timeout: 10000
+        visible:
+              id: workshop.create.title.input
+        timeout: 10000
 - tapOn:
-      id: workshop.create.title.input
+        id: workshop.create.title.input
 - inputText: E2E Owner Workshop Smoke
 - tapOn:
-      id: workshop.create.duration.input
+        id: workshop.create.duration.input
 - inputText: 45
 - tapOn:
-      id: workshop.create.price.input
+        id: workshop.create.price.input
 - inputText: 0
 - tapOn:
-      id: workshop.create.max-participants.input
+        id: workshop.create.max-participants.input
 - inputText: 12
 - tapOn:
-      id: workshop.create.submit.button
+        id: workshop.create.submit.button
 - extendedWaitUntil:
-      visible:
-          id: group.workshop.row.e2e-owner-workshop-smoke
-      timeout: 15000
+        visible:
+              id: group.workshop.row.e2e-owner-workshop-smoke
+        timeout: 15000
 - tapOn:
-      id: group.workshop.row.e2e-owner-workshop-smoke
+        id: group.workshop.row.e2e-owner-workshop-smoke
 - extendedWaitUntil:
-      visible:
-          id: trainer.edit.workshop.button
-      timeout: 10000
+        visible:
+              id: trainer.edit.workshop.button
+        timeout: 10000
 - tapOn:
-      id: trainer.edit.workshop.button
+        id: trainer.edit.workshop.button
 - extendedWaitUntil:
-      visible:
-          id: workshop.edit.submit.button
-      timeout: 10000
+        visible:
+              id: workshop.edit.submit.button
+        timeout: 10000
 - tapOn:
-      id: workshop.edit.submit.button
+        id: workshop.edit.submit.button
 - extendedWaitUntil:
-      visible:
-          id: trainer.edit.workshop.button
-      timeout: 15000
+        visible:
+              id: trainer.edit.workshop.button
+        timeout: 15000
 
 # Explicit sign-out before user verification.
 - tapOn:
-      id: tab.profile.button
+        id: tab.profile.button
 - tapOn:
-      id: profile.signout.button
+        id: profile.signout.button
 - tapOn: Sign Out
 - extendedWaitUntil:
-      visible:
-          id: signin.email.input
-      timeout: 15000
+        visible:
+              id: signin.email.input
+        timeout: 15000
 
 # USER account setup and verification against trainer-created data.
 - runFlow: ../common/register_user.yaml
 
 - tapOn:
-      id: home.workshop.card.e2e-owner-workshop-smoke
+        id: home.workshop.card.e2e-owner-workshop-smoke
 - extendedWaitUntil:
-      visible:
-          id: workshop.enroll.button
-      timeout: 15000
+        visible:
+              id: workshop.enroll.button
+        timeout: 15000
 - tapOn:
-      id: workshop.enroll.button
+        id: workshop.enroll.button
 - extendedWaitUntil:
-      visible:
-          id: workshop.unenroll.button
-      timeout: 10000
-appId: com.kalba.app
----
-# iOS smoke flow for deterministic USER and TRAINER happy paths.
-# Run on macOS only (iOS Simulator).
-
-- launchApp:
-      clearState: true
-
-# TRAINER account setup
-- runFlow: ../common/register_trainer.yaml
-
-# TRAINER owner-flow smoke
-- tapOn:
-      id: tab.profile.button
-- tapOn:
-      id: profile.signout.button
-- tapOn: Sign Out
-
-# USER account setup
-- runFlow: ../common/register_user.yaml
-
-# USER basic smoke
-- tapOn:
-      id: home.workshop.card.e2e-owner-workshop-smoke
-- extendedWaitUntil:
-      visible:
-          id: workshop.enroll.button
-      timeout: 15000
-- tapOn:
-      id: workshop.enroll.button
-- extendedWaitUntil:
-      visible:
-          id: workshop.unenroll.button
-      timeout: 10000
-
- # Explicit sign-out to ensure user login screen is shown.
-- tapOn:
-      id: tab.profile.button
-- tapOn:
-      id: profile.signout.button
-- tapOn: Sign Out
-- extendedWaitUntil:
-      visible:
-          id: signin.email.input
-      timeout: 15000
-
-# TRAINER smoke already completed above; nothing else to do.
-- tapOn:
-      id: tab.groups.button
-- extendedWaitUntil:
-      visible:
-          id: trainer.create.group.button
-      timeout: 15000
-- tapOn:
-      id: trainer.create.group.button
-- extendedWaitUntil:
-      visible:
-          id: group.create.title.input
-      timeout: 10000
-- tapOn:
-      id: group.create.title.input
-- inputText: E2E Trainer Group Smoke
-- tapOn:
-      id: group.create.submit.button
-- extendedWaitUntil:
-      visible:
-          id: trainer.create.workshop.button
-      timeout: 15000
-- tapOn:
-      id: trainer.create.workshop.button
-- extendedWaitUntil:
-      visible:
-          id: workshop.create.title.input
-      timeout: 10000
-- tapOn:
-      id: workshop.create.title.input
-- inputText: E2E Owner Workshop Smoke
-- tapOn:
-      id: workshop.create.duration.input
-- inputText: 45
-- tapOn:
-      id: workshop.create.price.input
-- inputText: 0
-- tapOn:
-      id: workshop.create.max-participants.input
-- inputText: 12
-- tapOn:
-      id: workshop.create.submit.button
-- extendedWaitUntil:
-      visible:
-          id: group.workshop.row.e2e-owner-workshop-smoke
-      timeout: 15000
-- tapOn:
-      id: group.workshop.row.e2e-owner-workshop-smoke
-- extendedWaitUntil:
-      visible:
-          id: trainer.edit.workshop.button
-      timeout: 10000
-- tapOn:
-      id: trainer.edit.workshop.button
-- extendedWaitUntil:
-      visible:
-          id: workshop.edit.submit.button
-      timeout: 10000
-- tapOn:
-      id: workshop.edit.submit.button
-- extendedWaitUntil:
-      visible:
-          id: trainer.edit.workshop.button
-      timeout: 15000
+        visible:
+              id: workshop.unenroll.button
+        timeout: 10000

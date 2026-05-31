@@ -1,3 +1,40 @@
+const nativeApiUrl =
+  process.env.EXPO_PUBLIC_API_URL_NATIVE ?? "http://localhost:8000/api/v1";
+const appEnv = (process.env.APP_ENV ?? "local").toLowerCase();
+const allowAndroidCleartextFlag =
+  (process.env.EXPO_PUBLIC_ALLOW_ANDROID_CLEARTEXT ?? "false").toLowerCase() === "true";
+
+function isPrivateIpv4(hostname) {
+  return /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[0-1])\.)/.test(hostname);
+}
+
+function shouldAllowAndroidCleartext(apiUrl) {
+  const explicitAllow = appEnv === "local" || allowAndroidCleartextFlag;
+  if (!explicitAllow) {
+    return false;
+  }
+
+  try {
+    const parsed = new URL(apiUrl);
+    const hostname = parsed.hostname;
+
+    if (parsed.protocol !== "http:") {
+      return false;
+    }
+
+    return (
+      hostname === "localhost"
+      || hostname === "127.0.0.1"
+      || hostname === "0.0.0.0"
+      || hostname === "10.0.2.2"
+      || hostname === "10.0.3.2"
+      || isPrivateIpv4(hostname)
+    );
+  } catch {
+    return false;
+  }
+}
+
 module.exports = {
   expo: {
     name: "Kalba",
@@ -50,6 +87,7 @@ module.exports = {
         backgroundColor: "#ffffff",
       },
       edgeToEdgeEnabled: true,
+      usesCleartextTraffic: shouldAllowAndroidCleartext(nativeApiUrl),
       package: "com.kalba.app",
       googleServicesFile:
         process.env.GOOGLE_SERVICES_JSON ?? "./android/app/google-services.json",
@@ -92,8 +130,7 @@ module.exports = {
     extra: {
       apiUrlWeb:
         process.env.EXPO_PUBLIC_API_URL_WEB ?? "http://localhost:8000/api/v1",
-      apiUrlNative:
-        process.env.EXPO_PUBLIC_API_URL_NATIVE ?? "http://localhost:8000/api/v1",
+      apiUrlNative: nativeApiUrl,
       easProjectId:
         process.env.EXPO_PUBLIC_EAS_PROJECT_ID ??
         "349675a2-5bd0-4464-9464-b3d4499a10e3",

@@ -7,6 +7,7 @@ from pathlib import Path
 
 APP_ID = "com.kalba.app"
 BACKEND_CLEANUP_SCRIPT = Path("tests/automated/seed_mobile_e2e_fixtures.py")
+BACKEND_ENSURE_TRAINER_SCRIPT = Path("tests/automated/ensure_smoke_trainer.py")
 
 
 def run(command: list[str], cwd: Path) -> None:
@@ -15,6 +16,13 @@ def run(command: list[str], cwd: Path) -> None:
 
 def cleanup_backend_fixtures(backend_root: Path, uv_exe: str) -> None:
     run([uv_exe, "run", "python", str(BACKEND_CLEANUP_SCRIPT), "--cleanup"], cwd=backend_root)
+
+
+def ensure_smoke_trainer_account(backend_root: Path, uv_exe: str) -> None:
+    run(
+        [uv_exe, "run", "python", str(BACKEND_ENSURE_TRAINER_SCRIPT), "--reset-password"],
+        cwd=backend_root,
+    )
 
 
 def resolve_tool(name: str) -> str:
@@ -38,6 +46,7 @@ def main() -> None:
 
     primary_error: BaseException | None = None
     try:
+        ensure_smoke_trainer_account(backend_root, uv_exe)
         run([maestro, "test", "test/automated/maestro/flows/smoke/ios_smoke.yaml"], cwd=frontend_root)
     except BaseException as err:
         primary_error = err
