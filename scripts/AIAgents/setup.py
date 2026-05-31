@@ -120,8 +120,8 @@ def main() -> int:
     required_paths = [
         agents / "Claude" / "CLAUDE.md",
         agents / "CoPilot" / "copilot-instructions.md",
-        agents / "CoPilot" / "skills" / "ship-code-change-frontend" / "SKILL.md",
-        agents / "Claude" / "skills" / "ship-code-change-frontend" / "SKILL.md",
+        agents / "CoPilot" / "skills" / "ship-code-change" / "SKILL.md",
+        agents / "Claude" / "skills" / "ship-code-change" / "SKILL.md",
         agents / "CoPilot" / "skills" / "ios-testflight-build" / "SKILL.md",
         agents / "Claude" / "skills" / "ios-testflight-build" / "SKILL.md",
         agents / "CoPilot" / "skills" / "android-eas-build" / "SKILL.md",
@@ -169,7 +169,22 @@ def main() -> int:
         print(f"Done with {errors} error(s).")
         return 1
 
-    print("Done. All AI agent files are linked.")
+    sync_script = agents / "sync_shared_content.py"
+    if not sync_script.exists():
+        print(f"[error] Sync script not found: {sync_script.relative_to(root)}")
+        return 1
+
+    print("Running shared wrapper sync...")
+    sync_result = subprocess.run(
+        [sys.executable, str(sync_script)],
+        cwd=str(root),
+        check=False,
+    )
+    if sync_result.returncode != 0:
+        print(f"[error] Wrapper sync failed with exit code {sync_result.returncode}.")
+        return sync_result.returncode
+
+    print("Done. All AI agent files are linked and wrappers are synced.")
     return 0
 
 

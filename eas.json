@@ -8,6 +8,13 @@
             "developmentClient": true,
             "distribution": "internal"
         },
+        "tester": {
+            "distribution": "internal",
+            "environment": "production",
+            "android": {
+                "buildType": "apk"
+            }
+        },
         "production": {
             "distribution": "store",
             "autoIncrement": true
