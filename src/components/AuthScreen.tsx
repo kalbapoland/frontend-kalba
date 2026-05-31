@@ -15,6 +15,7 @@ import { Redirect, useLocalSearchParams } from "expo-router";
 import * as Google from "expo-auth-session/providers/google";
 import { exchangeCodeAsync, makeRedirectUri } from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
+import Constants, { ExecutionEnvironment } from "expo-constants";
 import { LinearGradient } from "expo-linear-gradient";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import axios from "axios";
@@ -54,6 +55,12 @@ function normalizeModeParam(value: string | string[] | undefined): AuthMode | nu
 function googleNativeRedirectUri(): string | undefined {
   if (Platform.OS === "web") {
     return undefined; // let the provider derive the web redirect from the URL
+  }
+
+  // Expo Go uses a proxy-based auth flow and cannot handle app-defined
+  // native URL schemes from app config.
+  if (Constants.executionEnvironment === ExecutionEnvironment.StoreClient) {
+    return undefined;
   }
 
   const clientId =

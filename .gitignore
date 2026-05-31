@@ -46,7 +46,15 @@ yarn-error.*
 *.tsbuildinfo
 
 # generated native folders
-/android
+# Android: keep only main manifest versioned for OAuth callback consistency.
+/android/*
+!/android/app/
+/android/app/*
+!/android/app/src/
+/android/app/src/*
+!/android/app/src/main/
+/android/app/src/main/*
+!/android/app/src/main/AndroidManifest.xml
 
 # iOS is versioned to keep native config consistent across developers.
 ios/**/build/
