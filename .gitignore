@@ -47,7 +47,19 @@ yarn-error.*
 
 # generated native folders
 /ios
-/android
+
+# Android is versioned to keep native config consistent across developers.
+android/**/build/
+android/.gradle/
+android/.kotlin/
+android/**/.cxx/
+android/local.properties
+android/**/*.iml
+android/**/*.hprof
+android/**/.DS_Store
+android/app/google-services.json
+android/app/debug.keystore
+android/app/debug.keystore.bk
 
 # JetBrains IDEs
 .idea/
