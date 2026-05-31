@@ -61,10 +61,19 @@ yarn-error.*
 !/android/app/src/main/AndroidManifest.xml
 
 # iOS is versioned to keep native config consistent across developers.
+# Build artifacts are excluded here directly — don't rely on the Expo-generated
+# ios/.gitignore, which is regenerated/removed on a clean prebuild.
 ios/**/build/
+ios/build/
+ios/DerivedData/
 ios/Pods/
 ios/.symlinks/
+ios/.xcode.env.local
 ios/local.properties
+ios/**/*.jsbundle
+ios/**/*.hmap
+ios/**/*.ipa
+ios/**/project.xcworkspace/
 ios/**/*.xcworkspace/xcuserdata/
 ios/**/*.xcodeproj/xcuserdata/
 ios/**/*.xcuserstate
