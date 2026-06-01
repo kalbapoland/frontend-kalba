@@ -44,9 +44,9 @@
       }
     },
     {
-      "label": "npm run android",
+      "label": "npm run android:debug:local",
       "type": "shell",
-      "command": "npm run android",
+      "command": "npm run android:debug:local",
       "options": {
         "cwd": "${workspaceFolder}"
       },

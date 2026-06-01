@@ -53,6 +53,24 @@ the runner ensures deterministic trainer credentials in backend before tests.
 python test/automated/run_android_smoke_local.py
 ```
 
+Equivalent npm shortcut:
+
+```bash
+npm run android:smoke:local
+```
+
+3. Run Android smoke against remote backend:
+
+```bash
+python test/automated/run_android_smoke_remote.py
+```
+
+Equivalent npm shortcut:
+
+```bash
+npm run android:smoke:remote
+```
+
 Set these environment variables before running it:
 
 1. `KALBA_FRONTEND_DIR` - absolute path to the frontend repo root
@@ -75,13 +93,13 @@ UI after a successful signup.
 The wrapper always destroys the emulator, stops the backend, and removes the
 temporary database afterwards, even if a test fails.
 
-3. Run iOS smoke on macOS:
+4. Run iOS smoke on macOS:
 
 ```bash
 python test/automated/run_ios_smoke.py
 ```
 
-4. Create or destroy a clean Android simulator:
+5. Create or destroy a clean Android simulator:
 
 ```bash
 python test/automated/create_android_simulator.py

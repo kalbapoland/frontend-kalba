@@ -26,7 +26,7 @@ Use the frontend-specific review prompt and validation steps.
 - Review with `.github/prompts/code-reviewer.prompt.md` using the staged diff.
 - Validate with `npm test -- --runInBand` and `npx tsc --noEmit`.
 - If the change affects web/shared UI, run `npm run web`.
-- If the change affects native-specific behavior, run at least one of `npm run ios` or `npm run android`.
+- If the change affects native-specific behavior, run at least one of `npm run ios` or `npm run android:debug:local`.
 
 ## Backend Workflow
 
