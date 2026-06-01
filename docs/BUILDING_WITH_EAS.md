@@ -14,6 +14,7 @@ Konfiguracja profili build jest w:
 
 Aktualnie:
 - `development`: `developmentClient: true`, `distribution: internal`
+- `tester`: `distribution: internal`, Android `buildType: apk`
 - `production`: `distribution: store`
 
 Konfiguracja natywna Expo jest w:
@@ -30,8 +31,9 @@ Wazne:
 |---|---|---|---|---|
 | iOS | Developerski | `development` | dev client (internal) | Tak (na zarejestrowanym urzadzeniu / dev flow) |
 | iOS | Produkcyjny | `production` | store/TestFlight | Przez TestFlight (nie bezposrednio z pliku jak APK) |
-| Android | Developerski | `development` | internal build | Tak |
-| Android | Produkcyjny | `production` | store build (pod publikacje) | Zwykle nie jako prosty sideload; do sklepu |
+| Android | Debug (remote) | `development` | dev client (internal) | Tak |
+| Android | Release APK (remote) | `tester` | standalone APK (internal) | Tak |
+| Android | Store release (remote) | `production` | AAB (store) | Do sklepu |
 
 ## 3. Komendy EAS (podstawowe)
 
@@ -56,13 +58,19 @@ Uwaga:
 ### 3.3 Android developerski
 
 ```bash
-npx eas-cli build -p android --profile development
+npm run android:eas:debug:remote
 ```
 
-### 3.4 Android produkcyjny
+### 3.4 Android release APK (tester)
 
 ```bash
-npx eas-cli build -p android --profile production
+npm run android:eas:release:remote
+```
+
+### 3.5 Android store release
+
+```bash
+npm run android:eas:store:remote
 ```
 
 ## 4. Wymagane env vars
@@ -91,13 +99,14 @@ npx eas-cli env:create production --name GOOGLE_SERVICES_JSON --type file --valu
 ## 5. Kiedy uzyc jakiego flow
 
 - Chcesz testowac appke na telefonie szybko (bez sklepu):
-  - Android: `development`
+  - Android dev client: `android:eas:debug:remote`
+  - Android standalone APK: `android:eas:release:remote`
   - iOS: `development`
 - Chcesz wyslac iOS do testerow businessowych:
   - iOS `production` + submit do TestFlight
 - Chcesz przygotowac release store:
   - iOS `production`
-  - Android `production`
+  - Android `android:eas:store:remote`
 
 ## 6. Skills i dokumenty szczegolowe
 

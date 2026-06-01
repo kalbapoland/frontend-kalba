@@ -7,35 +7,18 @@ import traceback
 from pathlib import Path
 
 from run_android_smoke import (
+    APP_ID,
     AUTOFILL_SERVICE_SETTING,
     disable_android_autofill,
     get_secure_setting,
     restore_android_autofill,
     resolve_adb,
 )
-from run_android_smoke_ephemeral_db import (
-    resolve_tool,
-    start_backend_process,
-    start_ephemeral_postgres,
-    stop_backend_process,
-    stop_ephemeral_postgres,
-    wait_for_backend_health,
-)
+from run_android_smoke_ephemeral_db import resolve_tool
+
 
 TIMEZONE = "Europe/Warsaw"
-ANDROID_SMOKE_BUILD_SCRIPT = "android:release:local"
-
-
-def require_directory_env(name: str) -> Path:
-    value = os.getenv(name)
-    if not value:
-        raise RuntimeError(f"{name} is required. Set it to the repository root path.")
-
-    directory = Path(value).expanduser().resolve()
-    if not directory.is_dir():
-        raise RuntimeError(f"{name} must point to an existing directory: {directory}")
-
-    return directory
+ANDROID_SMOKE_BUILD_SCRIPT = "android:release:remote"
 
 
 def run(command: list[str], *, cwd: Path, env: dict[str, str] | None = None) -> None:
@@ -57,22 +40,17 @@ def resolve_npm() -> str:
 
 
 def main() -> None:
-    frontend_root = require_directory_env("KALBA_FRONTEND_DIR")
-    backend_root = require_directory_env("KALBA_BACKEND_DIR")
+    script_dir = Path(__file__).resolve().parent
+    frontend_root = script_dir.parent.parent
 
-    script_dir = frontend_root / "test" / "automated"
     create_avd_script = script_dir / "create_android_simulator.py"
     start_avd_script = script_dir / "start_android_simulator.py"
     destroy_avd_script = script_dir / "destroy_android_simulator.py"
 
-    docker = resolve_tool("docker")
-    uv = resolve_tool("uv")
     npm = resolve_npm()
     maestro = resolve_tool("maestro")
     adb = resolve_adb()
 
-    ephemeral_db = None
-    backend_process = None
     avd_created = False
     previous_autofill_service = None
     primary_error: BaseException | None = None
@@ -84,59 +62,29 @@ def main() -> None:
 
         run_script(start_avd_script, "--timezone", TIMEZONE)
 
-        ephemeral_db = start_ephemeral_postgres(docker)
-
-        backend_env = dict(os.environ)
-        backend_env["DATABASE_URL"] = ephemeral_db.database_url
-        backend_env["APP_ENV"] = "local"
-
-        run([uv, "run", "alembic", "upgrade", "head"], cwd=backend_root, env=backend_env)
-        run(
-            [uv, "run", "python", "tests/automated/ensure_smoke_trainer.py", "--reset-password"],
-            cwd=backend_root,
-            env=backend_env,
-        )
-
-        backend_process = start_backend_process(backend_root, ephemeral_db.database_url, uv)
-
         previous_autofill_service = get_secure_setting(
             adb, AUTOFILL_SERVICE_SETTING, frontend_root
         )
         disable_android_autofill(adb, frontend_root)
-        run([adb, "reverse", "tcp:8000", "tcp:8000"], cwd=frontend_root)
 
         run([npm, "run", ANDROID_SMOKE_BUILD_SCRIPT], cwd=frontend_root)
 
-        wait_for_backend_health()
-
-        frontend_env = dict(os.environ)
-        frontend_env["DATABASE_URL"] = ephemeral_db.database_url
-        frontend_env["APP_ENV"] = "local"
-
+        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
         run(
-            [
-                maestro,
-                "test",
-                "test/automated/maestro/flows/smoke/android_trainer_smoke.yaml",
-            ],
+            [maestro, "test", "test/automated/maestro/flows/smoke/android_trainer_smoke.yaml"],
             cwd=frontend_root,
-            env=frontend_env,
         )
+
+        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
         run(
             [maestro, "test", "test/automated/maestro/flows/smoke/android_user_smoke.yaml"],
             cwd=frontend_root,
-            env=frontend_env,
         )
     except BaseException as err:
         primary_error = err
     finally:
         try:
-            stop_backend_process(backend_process)
-        except Exception as cleanup_err:
-            cleanup_errors.append(cleanup_err)
-
-        try:
-            run([adb, "reverse", "--remove", "tcp:8000"], cwd=frontend_root)
+            run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
         except Exception as cleanup_err:
             cleanup_errors.append(cleanup_err)
 
@@ -144,12 +92,6 @@ def main() -> None:
             restore_android_autofill(adb, frontend_root, previous_autofill_service)
         except Exception as cleanup_err:
             cleanup_errors.append(cleanup_err)
-
-        if ephemeral_db is not None:
-            try:
-                stop_ephemeral_postgres(docker, ephemeral_db.container_name)
-            except Exception as cleanup_err:
-                cleanup_errors.append(cleanup_err)
 
         if avd_created:
             try:

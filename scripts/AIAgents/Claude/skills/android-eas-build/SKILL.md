@@ -1,7 +1,7 @@
 ---
 name: android-eas-build
-description: 'Create Android EAS builds for tester, development, or production. Version code is managed automatically by EAS (remote source + autoIncrement on production). Use when shipping a tester APK, Play Console release, or local dev client.'
-argument-hint: 'profile (tester|development|production) and optional note about local install vs store release'
+description: 'Build Android tester release over EAS (remote) using android:eas:release:remote.'
+argument-hint: 'no args'
 user-invocable: true
 ---
 

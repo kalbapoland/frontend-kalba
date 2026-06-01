@@ -70,13 +70,15 @@ src/
 ```bash
 npm install                  # install dependencies
 npm run start                # start Expo dev server
-npm run android              # run on Android emulator/device
+npm run android:debug:local  # run Android debug build (local backend)
+npm run android:debug:remote # run Android debug build (remote backend)
+npm run android:release:local
+npm run android:release:remote
 npm run ios                  # run on iOS simulator/device
 npm run web                  # run in browser
 
 # dev environment (uses .env.dev)
 npm run start:dev
-npm run android:dev
 npm run ios:dev
 npm run web:dev
 ```
