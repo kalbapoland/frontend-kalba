@@ -5,6 +5,8 @@
   "scripts": {
     "start": "node -e \"try{require('fs').unlinkSync('.env.development.local')}catch(e){}\" && expo start",
     "start:dev": "node -e \"require('fs').copyFileSync('.env.dev','.env.development.local')\" && expo start",
+    "android": "npm run android:debug:local",
+    "android:dev": "npm run android:debug:remote",
     "android:debug:local": "node -e \"try{require('fs').unlinkSync('.env.development.local')}catch(e){}\" && expo run:android",
     "android:debug:remote": "node -e \"require('fs').copyFileSync('.env.dev','.env.development.local')\" && expo run:android",
     "android:release:local": "node -e \"try{require('fs').unlinkSync('.env.development.local')}catch(e){}\" && expo run:android --variant release --no-bundler",
