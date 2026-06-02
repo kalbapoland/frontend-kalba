@@ -12,7 +12,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { Redirect, useLocalSearchParams } from "expo-router";
+import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 import * as Google from "expo-auth-session/providers/google";
 import { exchangeCodeAsync, makeRedirectUri } from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
@@ -39,11 +39,13 @@ type ValidationErrorDetail = {
 };
 
 const AUTH_TEST_IDS = {
+  nameInput: "signin.name.input",
   emailInput: "signin.email.input",
   passwordInput: "signin.password.input",
   submitButton: "signin.submit.button",
   loginModeButton: "signin.mode.login.button",
   registerModeButton: "signin.mode.register.button",
+  forgotPasswordButton: "signin.forgot.button",
 } as const;
 
 function normalizeModeParam(value: string | string[] | undefined): AuthMode | null {
@@ -136,12 +138,14 @@ function resolveAuthError(error: unknown, mode: AuthMode): string {
 
 export default function AuthScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
   const token = useAuthStore((s) => s.token);
   const signIn = useAuthStore((s) => s.signIn);
   const { mode: modeParam } = useLocalSearchParams<{ mode?: string | string[] }>();
   const initialMode = normalizeModeParam(modeParam) ?? "login";
 
   const [mode, setMode] = useState<AuthMode>(initialMode);
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -163,9 +167,21 @@ export default function AuthScreen() {
 
   const handleNativeAuth = useCallback(async () => {
     const normalizedEmail = email.trim().toLowerCase();
+    const trimmedName = name.trim();
 
     if (!normalizedEmail || !password) {
-      showAuthAlert("Missing details", "Email and password are required.");
+      showAuthAlert(
+        t("missing_details_title", "Missing details"),
+        t("missing_details_body", "Email and password are required."),
+      );
+      return;
+    }
+
+    if (mode === "register" && !trimmedName) {
+      showAuthAlert(
+        t("missing_details_title", "Missing details"),
+        t("name_required", "Please enter your name."),
+      );
       return;
     }
 
@@ -173,7 +189,7 @@ export default function AuthScreen() {
     try {
       const authResponse =
         mode === "register"
-          ? await registerWithEmail(normalizedEmail, password)
+          ? await registerWithEmail(normalizedEmail, password, trimmedName)
           : await loginWithEmail(normalizedEmail, password);
 
       await signIn(authResponse.access_token, authResponse.refresh_token);
@@ -185,7 +201,7 @@ export default function AuthScreen() {
     } finally {
       setLoading(false);
     }
-  }, [email, mode, password, signIn]);
+  }, [email, mode, name, password, signIn, t]);
 
   const handleGoogleAuth = useCallback(async () => {
     setGoogleLoading(true);
@@ -294,6 +310,22 @@ export default function AuthScreen() {
           </Text>
 
           <View style={s.form}>
+            {isRegister && (
+              <View style={s.inputGroup}>
+                <Text style={s.label}>{t("name_label", "Name")}</Text>
+                <TextInput
+                  autoCapitalize="words"
+                  autoComplete="name"
+                  onChangeText={setName}
+                  placeholder={t("name_placeholder", "Your name")}
+                  placeholderTextColor={colors.inkMuted}
+                  style={s.input}
+                  testID={AUTH_TEST_IDS.nameInput}
+                  value={name}
+                />
+              </View>
+            )}
+
             <View style={s.inputGroup}>
               <Text style={s.label}>{t("email_label", "Email")}</Text>
               <TextInput
@@ -331,6 +363,18 @@ export default function AuthScreen() {
                 value={password}
               />
             </View>
+
+            {!isRegister && (
+              <Pressable
+                onPress={() => router.push("/forgot-password")}
+                testID={AUTH_TEST_IDS.forgotPasswordButton}
+                style={s.forgotPasswordRow}
+              >
+                <Text style={s.forgotPasswordText}>
+                  {t("forgot_password", "Forgot password?")}
+                </Text>
+              </Pressable>
+            )}
 
             <Pressable
               accessibilityRole="button"
@@ -513,6 +557,15 @@ const s = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
     letterSpacing: 0.4,
+  },
+  forgotPasswordRow: {
+    alignSelf: "flex-end",
+    marginTop: -4,
+  },
+  forgotPasswordText: {
+    color: colors.accent,
+    fontSize: 13,
+    fontWeight: "600",
   },
   footerRow: {
     alignItems: "center",
