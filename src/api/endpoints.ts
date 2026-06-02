@@ -79,6 +79,10 @@ export async function fetchCurrentUser(): Promise<User> {
   return data;
 }
 
+export async function deleteAccount(): Promise<void> {
+  await apiClient.delete("/users/me");
+}
+
 export async function fetchWorkshops(): Promise<Workshop[]> {
   const { data } = await apiClient.get<Workshop[]>("/workshops/");
   return data;

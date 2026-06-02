@@ -59,6 +59,8 @@ Zakres: najwazniejsze flow end-to-end (user + trainer).
 ### 1.6 Profile / Sign Out
 
 - [ ] Sign Out dziala i wraca do Sign In.
+- [ ] Link "Privacy Policy" otwiera strone polityki (po polsku).
+- [ ] "Delete account" (podwojne potwierdzenie) usuwa konto i wylogowuje; logowanie tymi danymi juz nie dziala.
 
 ## 2. Smoke TRAINER
 
