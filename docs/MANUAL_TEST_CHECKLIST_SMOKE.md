@@ -22,6 +22,16 @@ Zakres: najwazniejsze flow end-to-end (user + trainer).
 - [ ] Login email+haslo dziala (happy path).
 - [ ] Google login dziala (happy path).
 - [ ] Niepoprawne dane pokazuja blad (bez crasha).
+- [ ] Sign Up email+haslo wymaga pola Name (puste imie -> blad).
+- [ ] Po Google login w apce widac imie z konta Google (nie email).
+
+### 1.1b Reset hasla (tylko konta email+haslo)
+
+- [ ] Na ekranie Login jest link "Forgot password?".
+- [ ] Po podaniu emaila widac komunikat "jesli konto istnieje, wyslalismy link".
+- [ ] Mail "Reset your Kalba password" dochodzi (UWAGA: sprawdz SPAM, szukaj "Kalba").
+- [ ] Link otwiera strone resetu, ustawienie nowego hasla dziala.
+- [ ] Po resecie: nowe haslo dziala, stare NIE dziala.
 
 ### 1.2 Home -> Detail
 

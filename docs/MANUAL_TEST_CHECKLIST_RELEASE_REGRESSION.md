@@ -17,6 +17,8 @@ Zakres: frontend Kalba (web + mobile), role `user` i `trainer`.
 - [ ] P0-2: Sign In Google (happy path).
 - [ ] P0-3: Sign Out zawsze czysci sesje i wraca do Sign In.
 - [ ] P0-4: Bez tokena nie da sie wejsc do strefy chronionej.
+- [ ] P0-4a: Sign Up email+haslo wymaga imienia (Name); puste imie blokuje rejestracje.
+- [ ] P0-4b: Reset hasla E2E: Forgot password -> mail z linkiem -> nowe haslo -> stare haslo NIE dziala.
 
 ### Workshop Core
 
@@ -49,6 +51,15 @@ Zakres: frontend Kalba (web + mobile), role `user` i `trainer`.
 - [ ] P0-22: User bez roli trainer nie moze create/edit/delete group/workshop.
 
 ## P1 - Wazne
+
+### Auth / Reset hasla / Imie
+
+- [ ] P1-A1: Strona resetu (web) - rozne hasla -> "Passwords don't match.".
+- [ ] P1-A2: Token nieprawidlowy / wygasly (>60 min) / uzyty -> komunikat o blednym/wygaslym linku.
+- [ ] P1-A3: Forgot password dla nieistniejacego / Google-only konta -> ten sam komunikat, brak maila (bez wycieku informacji).
+- [ ] P1-A4: Reset wylogowuje inne sesje (refresh tokeny uniewaznione).
+- [ ] P1-A5: Imie wyswietla sie poprawnie (Profile + powitanie na Home); fallback do czesci emaila gdy brak imienia.
+- [ ] P1-A6 (znane ryzyko): mail resetu moze trafic do spamu (wysylka z adresu Gmail przez Brevo) - zanotuj gdzie dotarl (Inbox/Spam) i na jakiej skrzynce.
 
 ### Error/Loading/Empty States
 

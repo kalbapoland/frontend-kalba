@@ -23,13 +23,42 @@ Zakres: frontend Kalba (Expo), flow dla roli `user` i `trainer`, web + mobile (A
 1. Otworz aplikacje bez aktywnej sesji.
 2. Zweryfikuj widok logowania (tryb Login domyslnie).
 3. Przelacz na Sign Up i z powrotem na Login.
-4. Walidacje formularza:
+4. W trybie Sign Up sprawdz pole Name:
+- pole Name jest widoczne tylko w Sign Up (nie w Login)
+- puste imie -> komunikat "Please enter your name." (rejestracja zablokowana)
+5. Walidacje formularza:
 - puste email/haslo -> komunikat o brakujacych danych
 - niepoprawny email -> komunikat walidacji
+- haslo za slabe (Sign Up) -> komunikat o wymaganiach (min 8 znakow, litery i cyfry)
 - bledne dane logowania -> komunikat o blednych danych
-5. Zaloguj sie poprawnie przez email+haslo.
-6. Wyloguj sie i zaloguj przez Google (happy path).
-7. Anuluj Google login (dismiss) i sprawdz, ze app nie wpada w crash.
+6. Zarejestruj nowe konto email+haslo z podanym imieniem (happy path).
+7. Zaloguj sie poprawnie przez email+haslo.
+8. Wyloguj sie i zaloguj przez Google (happy path) -> w apce widac imie z Google.
+9. Anuluj Google login (dismiss) i sprawdz, ze app nie wpada w crash.
+10. W trybie Login jest widoczny link "Forgot password?" (patrz Ekran 1b).
+
+### Ekran 1b: Forgot Password (tylko konta email+haslo)
+
+1. Z ekranu Login kliknij "Forgot password?".
+2. Walidacja: pusty email -> brak wyslania.
+3. Podaj email istniejacego konta email+haslo -> "Send reset link".
+4. Zweryfikuj komunikat potwierdzenia (zawsze taki sam, niezaleznie czy konto istnieje).
+5. Kliknij "Back to Log In" -> powrot do ekranu logowania.
+6. Sprawdz skrzynke (UWAGA: maila moze byc w SPAMIE; nadawca kalba.poland@gmail.com, temat "Reset your Kalba password"; szukaj "Kalba").
+   - Konto Google (bez hasla) NIE dostaje maila -> to oczekiwane.
+
+### Ekran 1c: Reset Password (strona w przegladarce)
+
+1. Otworz link "Reset password" z maila (link prowadzi do backend-kalba.fly.dev/reset-password).
+2. Walidacje:
+- haslo i potwierdzenie rozne -> "Passwords don't match."
+- haslo za slabe -> komunikat bledu z backendu
+3. Ustaw nowe poprawne haslo -> komunikat o sukcesie.
+4. Negatywne przypadki:
+- link bez tokena / zepsuty token -> komunikat "invalid or has expired"
+- link uzyty drugi raz -> "invalid or has expired"
+- link starszy niz 60 min -> "invalid or has expired"
+5. Wroc do apki i zaloguj sie NOWYM haslem; potwierdz, ze STARE haslo juz nie dziala.
 
 ### Ekran 2: OAuth Redirect
 
@@ -141,7 +170,10 @@ Zakres: frontend Kalba (Expo), flow dla roli `user` i `trainer`, web + mobile (A
 ### Ekran 10: Profile
 
 1. Otworz zakladke Profile.
-2. Zweryfikuj dane usera: initials, full name, email, role.
+2. Zweryfikuj dane usera: initials, full name (imie), email, role.
+- konto email+haslo: wyswietla sie podane przy rejestracji imie
+- konto Google: wyswietla sie imie z konta Google
+- konto starsze bez imienia: fallback do czesci emaila przed @ (nigdy pusty/surowy email w miejscu imienia)
 3. Kliknij Sign Out:
 - potwierdz modal (mobile) / confirm (web)
 - anuluj -> pozostan zalogowany
@@ -252,7 +284,9 @@ Zakres: frontend Kalba (Expo), flow dla roli `user` i `trainer`, web + mobile (A
 
 ## 6. Szybki checklist do odhaczania (1 linia na ekran)
 
-- [ ] Sign In / Sign Up (email + Google, walidacje)
+- [ ] Sign In / Sign Up (email + Google, walidacje, pole Name w Sign Up)
+- [ ] Forgot Password (link, komunikat, mail / sprawdz spam)
+- [ ] Reset Password (strona web, walidacje, nowe haslo dziala, stare nie)
 - [ ] OAuth Redirect (przekierowanie + timeout fallback)
 - [ ] Home / Workshops List (load/error/refresh/open detail)
 - [ ] Groups tab (my/discover, subscribe, open detail)
