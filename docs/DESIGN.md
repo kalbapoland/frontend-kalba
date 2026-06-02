@@ -223,7 +223,7 @@ Detailed runbook: `docs/IOS_PUSH_RUNBOOK.md`.
 
 ## Native Authentication
 
-**Status:** shipped (2026-04-27) — email/password registration and login now sit alongside the existing Google auth flow.
+**Status:** shipped (2026-04-27) — email/password registration and login now sit alongside the existing Google auth flow. Updated (2026-06-02): registration now collects a display name, and a password-reset flow shipped.
 
 ### Overview
 
@@ -251,6 +251,38 @@ nullable and `hashed_password` is optional, which allows:
 This avoids splitting profile data across multiple tables while keeping one
 stable user id across auth methods.
 
+#### Display name — collected at sign-up, derived from Google
+
+Native registration now requires a `full_name` (trimmed, non-empty). Google
+sign-in extracts the `name` claim from the verified ID token. The UI shows the
+name everywhere a user is identified (home greeting, profile, avatar initials)
+via a shared `displayName(user)` helper that falls back to the email local-part
+for legacy accounts that predate name collection — the raw email is never shown
+where a name belongs.
+
+#### Password reset — single-use hashed tokens, emailed via Brevo
+
+`POST /auth/forgot-password` always returns `202` regardless of whether the
+email maps to an eligible (native, password-bearing) account, so it never leaks
+account existence; it is IP rate-limited. For eligible accounts it issues a
+URL-safe random token, stores only its SHA-256 hash in `password_reset_token`
+with a 60-minute expiry, invalidates any outstanding tokens for that user, and
+emails a reset link through Brevo (`app/services/email.py`). Brevo's free tier
+supports single-sender verification, so the sender can be a plain address (a
+Gmail) verified by clicking a link — no domain ownership required. When
+`BREVO_API_KEY` is unset the service logs the link instead of sending, so the
+flow works end-to-end in local/dev. `POST /auth/reset-password` validates the
+token (unused + unexpired), sets the new password, marks the token used, revokes
+all active refresh tokens (logging out other sessions), and signs the user in.
+The reset link points at `PASSWORD_RESET_URL_BASE`. Because Kalba has no
+separately hosted web app, the **backend itself serves the reset page**
+(`app/api/web.py`, `GET /reset-password`) — a self-contained HTML/JS page on the
+same origin that reads the `token` query param and POSTs to
+`/api/v1/auth/reset-password`. Default is
+`https://backend-kalba.fly.dev/reset-password` (prod) /
+`http://localhost:8000/reset-password` (local). The frontend also ships a native
+`reset-password` screen for in-app/deep-link use.
+
 #### JWT handling — HTTPS transport, secure local storage
 
 JWTs should only be used over HTTPS outside local development. On native
@@ -260,14 +292,17 @@ an encrypted alternative should be chosen before falling back to plain storage.
 
 ### Current limitations
 
-- Native auth currently supports only email + password; there is no password
-  reset or email verification flow yet.
+- No email verification flow yet (addresses are trusted as entered at sign-up).
+- Password reset completes on the backend-served web page; it does not deep-link
+  back into the native app to auto-resume the session.
 - Web still relies on browser storage semantics for development sessions, so
   native SecureStore protections do not apply there.
 
 ### Future improvements
 
-- Add password reset and email verification.
+- Add email verification.
+- Optionally deep-link from the backend reset page back into the native app to
+  auto-resume the session after a reset.
 - Add explicit account-linking UI for users who want one account to support
   both Google and native credentials.
 

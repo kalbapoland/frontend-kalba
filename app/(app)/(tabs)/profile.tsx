@@ -5,6 +5,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
 import { useAuthStore } from "@/store/auth";
+import { displayName, initials as userInitials } from "@/lib/user";
 import { colors } from "@/theme/tokens";
 
 export default function ProfileScreen() {
@@ -33,12 +34,7 @@ export default function ProfileScreen() {
 
   if (!user) return null;
 
-  const initials = (user.full_name ?? "?")
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  const initials = userInitials(user);
 
   return (
     <View style={[s.screen, { paddingTop: insets.top + 32 }]}>
@@ -65,7 +61,7 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        <Text style={s.name}>{user.full_name}</Text>
+        <Text style={s.name}>{displayName(user)}</Text>
         <Text style={s.email}>{user.email}</Text>
 
         <View style={s.rolePill}>

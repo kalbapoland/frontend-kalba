@@ -31,9 +31,26 @@ export async function exchangeGoogleToken(idToken: string): Promise<AuthResponse
 export async function registerWithEmail(
   email: string,
   password: string,
+  fullName: string,
 ): Promise<AuthResponse> {
   const { data } = await apiClient.post<AuthResponse>("/auth/register", {
     email,
+    password,
+    full_name: fullName,
+  });
+  return normalizeAuthResponse(data);
+}
+
+export async function requestPasswordReset(email: string): Promise<void> {
+  await apiClient.post("/auth/forgot-password", { email });
+}
+
+export async function resetPassword(
+  token: string,
+  password: string,
+): Promise<AuthResponse> {
+  const { data } = await apiClient.post<AuthResponse>("/auth/reset-password", {
+    token,
     password,
   });
   return normalizeAuthResponse(data);

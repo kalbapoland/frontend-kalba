@@ -14,6 +14,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 
 import { useWorkshops } from "@/hooks/useWorkshops";
 import { useAuthStore } from "@/store/auth";
+import { displayName } from "@/lib/user";
 import type { Workshop } from "@/types/api";
 import {
   formatWeekdayShort,
@@ -174,7 +175,7 @@ export default function WorkshopListScreen() {
           paddingTop: insets.top + 32,
           paddingBottom: 140,
         }}
-        ListHeaderComponent={<ListHeader name={user?.full_name} />}
+        ListHeaderComponent={<ListHeader name={displayName(user)} />}
         refreshControl={
           <RefreshControl
             refreshing={isRefetching}
