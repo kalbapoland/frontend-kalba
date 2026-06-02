@@ -178,6 +178,13 @@ Zakres: frontend Kalba (Expo), flow dla roli `user` i `trainer`, web + mobile (A
 - potwierdz modal (mobile) / confirm (web)
 - anuluj -> pozostan zalogowany
 - potwierdz -> powrot do Sign In
+4. Link "Privacy Policy":
+- otwiera strone polityki prywatnosci (po polsku) w przegladarce
+5. "Delete account" (usuwanie konta, nieodwracalne):
+- podwojne potwierdzenie (dwa modale/confirm); anuluj na ktorejkolwiek -> konto zostaje
+- po potwierdzeniu obu: konto usuniete, automatyczne wylogowanie i powrot do Sign In
+- proba ponownego logowania tymi danymi -> blad (konto nie istnieje)
+- (trainer) usuniecie konta usuwa tez jego grupy i warsztaty
 
 ## 3. Scenariusz E2E: TRAINER (kolejnosc ekranow)
 
@@ -295,7 +302,7 @@ Zakres: frontend Kalba (Expo), flow dla roli `user` i `trainer`, web + mobile (A
 - [ ] Call (mic/cam/leave, host controls)
 - [ ] My Kalba (goal, stats, schedule, notifications)
 - [ ] Calendar (month/week/day, nawigacja, eventy)
-- [ ] Profile (dane, sign out)
+- [ ] Profile (dane, sign out, privacy policy, delete account)
 - [ ] Create Group (trainer)
 - [ ] Edit Group (trainer-owner)
 - [ ] Create Workshop from Group Detail (trainer-owner)

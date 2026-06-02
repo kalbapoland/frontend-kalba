@@ -19,6 +19,7 @@ Zakres: frontend Kalba (web + mobile), role `user` i `trainer`.
 - [ ] P0-4: Bez tokena nie da sie wejsc do strefy chronionej.
 - [ ] P0-4a: Sign Up email+haslo wymaga imienia (Name); puste imie blokuje rejestracje.
 - [ ] P0-4b: Reset hasla E2E: Forgot password -> mail z linkiem -> nowe haslo -> stare haslo NIE dziala.
+- [ ] P0-4c: Usuwanie konta (Profile -> Delete account, podwojne potwierdzenie) usuwa konto i dane oraz wylogowuje; ponowne logowanie tymi danymi NIE dziala.
 
 ### Workshop Core
 
@@ -60,6 +61,8 @@ Zakres: frontend Kalba (web + mobile), role `user` i `trainer`.
 - [ ] P1-A4: Reset wylogowuje inne sesje (refresh tokeny uniewaznione).
 - [ ] P1-A5: Imie wyswietla sie poprawnie (Profile + powitanie na Home); fallback do czesci emaila gdy brak imienia.
 - [ ] P1-A6 (znane ryzyko): mail resetu moze trafic do spamu (wysylka z adresu Gmail przez Brevo) - zanotuj gdzie dotarl (Inbox/Spam) i na jakiej skrzynce.
+- [ ] P1-A7: Link "Privacy Policy" w Profile otwiera strone polityki prywatnosci (po polsku) w przegladarce.
+- [ ] P1-A8: Usuwanie konta - "Cancel" na ktorymkolwiek z dwoch potwierdzen NIE usuwa konta; trainer z wlasnymi grupami/warsztatami tez moze usunac konto (jego tresci znikaja).
 
 ### Error/Loading/Empty States
 

@@ -127,6 +127,24 @@ decisions, current capabilities, known limitations, and future improvement
 ideas. **Consult it before designing new features and update it whenever a
 decision is made or a feature ships.** Keep entries concise and dated.
 
+## Test Documentation (Mandatory)
+
+**Whenever you implement a feature or change user-facing behavior, you MUST update
+the manual test checklists in `docs/` in the same change — this is not optional.**
+The release regression checklist is the source of truth for QA:
+
+- [`docs/MANUAL_TEST_CHECKLIST_RELEASE_REGRESSION.md`](docs/MANUAL_TEST_CHECKLIST_RELEASE_REGRESSION.md)
+  — **always** add/adjust P0/P1/P2 items for the new behavior (happy path + key
+  negative cases). This applies even when the feature is backend-only but
+  observable in the app.
+- Also update [`docs/MANUAL_TEST_CHECKLIST_SCREENS.md`](docs/MANUAL_TEST_CHECKLIST_SCREENS.md)
+  (screen-by-screen) and [`docs/MANUAL_TEST_CHECKLIST_SMOKE.md`](docs/MANUAL_TEST_CHECKLIST_SMOKE.md)
+  when a flow/screen is added or changed.
+
+Match the existing checklist style (Polish, no diacritics, `- [ ]` items, P0/P1/P2
+priorities). Treat "the feature isn't in the regression checklist yet" as
+incomplete work.
+
 ## Git Conventions
 
 - Branch names prefixed with developer name, e.g. `banaszki/feature-name`
