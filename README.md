@@ -62,6 +62,8 @@ For EAS cloud build and release workflows (iOS/Android), use the source-of-truth
 - [docs/BUILDING_WITH_EAS.md](docs/BUILDING_WITH_EAS.md)
 
 Android scripts use `platform:mode:backend` naming:
+- `npm run android` (alias for `android:debug:local`)
+- `npm run android:dev` (alias for `android:debug:remote`)
 - `npm run android:debug:local`
 - `npm run android:debug:remote`
 - `npm run android:release:local`
@@ -77,7 +79,7 @@ Android scripts use `platform:mode:backend` naming:
 | Dev server (native) | `npm start` | `npm run start:dev` |
 | iOS simulator | `npm run ios` | `npm run ios:dev` |
 | iOS real device | `npm run ios:device` | `npm run ios:dev:device` |
-| Android debug run | `npm run android:debug:local` | `npm run android:debug:remote` |
+| Android debug run | `npm run android` (or `android:debug:local`) | `npm run android:dev` (or `android:debug:remote`) |
 | Android release APK | `npm run android:release:local` | `npm run android:release:remote` |
 | Android smoke tests | `npm run android:smoke:local` | `npm run android:smoke:remote` |
 | Web | `npm run web` | `npm run web:dev` |
