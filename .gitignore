@@ -49,16 +49,16 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
-# generated native folders
-# Android: keep only main manifest versioned for OAuth callback consistency.
-/android/*
-!/android/app/
-/android/app/*
-!/android/app/src/
-/android/app/src/*
-!/android/app/src/main/
-/android/app/src/main/*
-!/android/app/src/main/AndroidManifest.xml
+# Android native project is versioned for EAS builds.
+# Keep generated artifacts and local secrets out of git.
+android/.gradle/
+android/**/build/
+android/.cxx/
+android/app/.cxx/
+android/local.properties
+android/app/google-services.json
+android/app/debug.keystore
+android/app/debug.keystore.bk
 
 # iOS is versioned to keep native config consistent across developers.
 # Build artifacts are excluded here directly — don't rely on the Expo-generated
