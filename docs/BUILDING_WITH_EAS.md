@@ -22,8 +22,12 @@ Konfiguracja natywna Expo jest w:
 
 Wazne:
 - iOS `buildNumber` jest kontrolowany lokalnie w `app.config.js`.
-- Android `googleServicesFile` wspiera EAS file env var:
-  - `process.env.GOOGLE_SERVICES_JSON ?? "./android/app/google-services.json"`
+- Android wlacza Google Services tylko gdy plik jest dostepny:
+  - `process.env.GOOGLE_SERVICES_JSON`
+  - lokalnie: `./android/app/google-services.json`
+  - przy buildzie cloud, jesli `GOOGLE_SERVICES_JSON` wskazuje na plik tymczasowy EAS,
+    skrypt Gradle kopiuje go automatycznie do `android/app/google-services.json`
+    przed aktywacja pluginu `com.google.gms.google-services`
 
 ## 2. Build matrix (co i po co)
 
@@ -87,7 +91,7 @@ Minimalnie utrzymuj:
 - `EXPO_PUBLIC_API_URL_WEB`
 - `EXPO_PUBLIC_EAS_PROJECT_ID`
 - Google OAuth client IDs (jesli logowanie Google jest wlaczone)
-- `GOOGLE_SERVICES_JSON` (type: file) dla Android cloud builds
+- `GOOGLE_SERVICES_JSON` (type: file) dla Android cloud builds, jesli chcesz wymusic Firebase/Google Services w EAS
 
 Przyklad dodania pliku Firebase do EAS env:
 
@@ -95,6 +99,10 @@ Przyklad dodania pliku Firebase do EAS env:
 npx eas-cli env:create development --name GOOGLE_SERVICES_JSON --type file --value "./android/app/google-services.json" --scope project --visibility secret --force --non-interactive
 npx eas-cli env:create production --name GOOGLE_SERVICES_JSON --type file --value "./android/app/google-services.json" --scope project --visibility secret --force --non-interactive
 ```
+
+Jesli nie ustawisz `GOOGLE_SERVICES_JSON` i nie masz lokalnego pliku,
+Android build nadal przejdzie, ale bez Google Services. Funkcje zalezne od
+niego musza wtedy byc wylaczone albo dzialac bez niego.
 
 ## 5. Kiedy uzyc jakiego flow
 

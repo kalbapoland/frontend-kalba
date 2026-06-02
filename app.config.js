@@ -1,3 +1,5 @@
+const fs = require("fs");
+
 const nativeApiUrl =
   process.env.EXPO_PUBLIC_API_URL_NATIVE ?? "http://localhost:8000/api/v1";
 const appEnv = (process.env.APP_ENV ?? "local").toLowerCase();
@@ -34,6 +36,24 @@ function shouldAllowAndroidCleartext(apiUrl) {
     return false;
   }
 }
+
+function resolveGoogleServicesFile() {
+  const envFile = process.env.GOOGLE_SERVICES_JSON;
+
+  if (envFile) {
+    return envFile;
+  }
+
+  const localFile = "./android/app/google-services.json";
+
+  if (fs.existsSync(localFile)) {
+    return localFile;
+  }
+
+  return undefined;
+}
+
+const googleServicesFile = resolveGoogleServicesFile();
 
 module.exports = {
   expo: {
@@ -89,8 +109,7 @@ module.exports = {
       edgeToEdgeEnabled: true,
       usesCleartextTraffic: shouldAllowAndroidCleartext(nativeApiUrl),
       package: "com.kalba.app",
-      googleServicesFile:
-        process.env.GOOGLE_SERVICES_JSON ?? "./android/app/google-services.json",
+      ...(googleServicesFile ? { googleServicesFile } : {}),
       permissions: [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
