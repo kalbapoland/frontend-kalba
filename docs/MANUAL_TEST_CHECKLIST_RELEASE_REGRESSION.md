@@ -41,6 +41,8 @@ Zakres: frontend Kalba (web + mobile), role `user` i `trainer`.
 - [ ] P0-14: Leave zawsze dziala i wraca do app.
 - [ ] P0-15: Host controls Mute All/Unmute All dzialaja.
 - [ ] P0-16: Host controls Cameras Off/On dzialaja.
+- [ ] P0-16a: Daily budzet — gdy miesieczny limit minut przekroczony, Join zwraca komunikat "video temporarily unavailable" (503) i NIE laczy pokoju (host i uczestnik). Sprawdz GET /api/v1/video/budget: used_minutes blisko cap_minutes.
+- [ ] P0-16b: Pokoj Daily jest prywatny — sam URL pokoju (bez tokenu) nie pozwala dolaczyc.
 
 ### Trainer CRUD
 
