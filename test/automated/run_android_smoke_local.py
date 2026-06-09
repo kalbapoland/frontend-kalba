@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import subprocess
 import sys
+import time
 import traceback
 import re
 from pathlib import Path
@@ -16,6 +17,7 @@ from run_android_smoke import (
     resolve_adb,
 )
 from run_android_smoke_ephemeral_db import (
+    BACKEND_PORT,
     resolve_tool,
     start_backend_process,
     start_ephemeral_postgres,
@@ -24,10 +26,10 @@ from run_android_smoke_ephemeral_db import (
     wait_for_backend_health,
 )
 
+EMULATOR_BACKEND_CONNECTIVITY_TIMEOUT = 30
 TIMEZONE = "Europe/Warsaw"
 ANDROID_SMOKE_BUILD_SCRIPT = "android:release:local"
 EPHEMERAL_DB_CONTAINER_PREFIX = "kalba-smoke-pg-"
-BACKEND_PORT = 8000
 SMOKE_WORKSHOP_OFFSET_MINUTES = "1440"
 
 
@@ -116,6 +118,35 @@ def kill_processes_on_backend_port(port: int) -> None:
         subprocess.run(["taskkill", "/PID", pid, "/F", "/T"], check=False, capture_output=True, text=True)
 
 
+def verify_emulator_backend_connectivity(adb: str, frontend_root: Path) -> None:
+    """Verify the emulator can reach the backend via adb reverse before the long APK build."""
+    health_url = f"http://127.0.0.1:{BACKEND_PORT}/health"
+    deadline = time.monotonic() + EMULATOR_BACKEND_CONNECTIVITY_TIMEOUT
+    last_stderr = ""
+    while time.monotonic() < deadline:
+        try:
+            result = subprocess.run(
+                [adb, "shell", "wget", "-q", "-O", "-", health_url],
+                cwd=str(frontend_root),
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+        except subprocess.TimeoutExpired:
+            time.sleep(2)
+            continue
+        if result.returncode == 0 and result.stdout.strip():
+            print(f"[smoke] preflight: emulator can reach backend at {health_url}")
+            return
+        last_stderr = result.stderr.strip()
+        time.sleep(2)
+    hint = f" (adb stderr: {last_stderr})" if last_stderr else ""
+    raise RuntimeError(
+        f"[smoke] preflight FAILED: emulator cannot reach backend at {health_url}. "
+        f"Check that adb reverse is configured and the backend is running on 0.0.0.0.{hint}"
+    )
+
+
 def main() -> None:
     frontend_root = require_directory_env("KALBA_FRONTEND_DIR")
     backend_root = require_directory_env("KALBA_BACKEND_DIR")
@@ -179,6 +210,9 @@ def main() -> None:
         print("[smoke] starting backend API server")
         backend_process = start_backend_process(backend_root, ephemeral_db.database_url, uv)
 
+        print("[smoke] waiting for backend health check")
+        wait_for_backend_health()
+
         print("[smoke] disabling Android autofill and configuring adb reverse")
         previous_autofill_service = get_secure_setting(
             adb, AUTOFILL_SERVICE_SETTING, frontend_root
@@ -186,13 +220,13 @@ def main() -> None:
         disable_android_autofill(adb, frontend_root)
         run([adb, "reverse", "tcp:8000", "tcp:8000"], cwd=frontend_root)
 
+        print("[smoke] preflight: verifying emulator can reach backend via adb reverse")
+        verify_emulator_backend_connectivity(adb, frontend_root)
+
         print("[smoke] building and installing release APK on emulator")
         build_env = dict(os.environ)
         build_env["EXPO_PUBLIC_SMOKE_WORKSHOP_OFFSET_MINUTES"] = SMOKE_WORKSHOP_OFFSET_MINUTES
         run([npm, "run", ANDROID_SMOKE_BUILD_SCRIPT], cwd=frontend_root, env=build_env)
-
-        print("[smoke] waiting for backend health check")
-        wait_for_backend_health()
 
         frontend_env = dict(os.environ)
         frontend_env["DATABASE_URL"] = ephemeral_db.database_url
