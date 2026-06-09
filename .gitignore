@@ -26,6 +26,8 @@ expo-env.d.ts
 *.key
 *.mobileprovision
 
+# Local build outputs — kalba-*.apk live under android/**/build/ which is already ignored
+
 # Metro
 .metro-health-check*
 
