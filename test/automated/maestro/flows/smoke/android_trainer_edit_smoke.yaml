@@ -1,0 +1,33 @@
+appId: com.kalba.app
+---
+# Android TRAINER edit-only smoke.
+
+- launchApp:
+    clearState: true
+
+- runFlow: ../common/login_trainer.yaml
+
+- tapOn:
+    id: tab.groups.button
+- extendedWaitUntil:
+    visible:
+      id: group.workshop.row.e2e-owner-workshop-smoke
+    timeout: 15000
+- tapOn:
+    id: group.workshop.row.e2e-owner-workshop-smoke
+- extendedWaitUntil:
+    visible:
+      id: trainer.edit.workshop.button
+    timeout: 10000
+- tapOn:
+    id: trainer.edit.workshop.button
+- extendedWaitUntil:
+    visible:
+      id: workshop.edit.submit.button
+    timeout: 10000
+- tapOn:
+    id: workshop.edit.submit.button
+- extendedWaitUntil:
+    visible:
+      id: trainer.edit.workshop.button
+    timeout: 15000

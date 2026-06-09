@@ -90,8 +90,11 @@ Before the Android smoke flows start, the wrapper temporarily disables the
 emulator autofill service so Google Password Manager prompts do not block the
 UI after a successful signup.
 
-The wrapper always destroys the emulator, stops the backend, and removes the
-temporary database afterwards, even if a test fails.
+The wrapper always cleans stale emulator/database state at startup.
+
+When a smoke run fails, the wrapper keeps the emulator and temporary database
+alive for debugging (logs, manual inspection). On the next run, stale state is
+cleaned automatically before a new execution starts.
 
 4. Run iOS smoke on macOS:
 

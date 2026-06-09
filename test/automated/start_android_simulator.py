@@ -77,10 +77,43 @@ def list_emulator_serials(adb: str) -> list[str]:
     return serials
 
 
-def wait_for_boot(adb: str, expected_name: str) -> None:
+def describe_emulator_devices(adb: str) -> str:
+    result = run([adb, "devices"], capture_output=True)
+    lines = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+    return " | ".join(lines)
+
+
+def parse_avd_name_output(raw_output: str) -> str:
+    # Emulator console output may append status lines like "OK" after the AVD name.
+    for line in raw_output.splitlines():
+        value = line.strip()
+        if not value or value.upper() == "OK":
+            continue
+        return value
+    return ""
+
+
+def wait_for_boot(adb: str, expected_name: str) -> str:
     print(f"Waiting for emulator {expected_name} to boot...")
-    deadline = time.monotonic() + 300
+    deadline = time.monotonic() + 600
+    last_progress_log = 0.0
+    last_device_log = 0.0
+    try:
+        run([adb, "wait-for-device"], timeout_seconds=120)
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+        pass
+
     while time.monotonic() < deadline:
+        now = time.monotonic()
+        if now - last_progress_log >= 30:
+            remaining = int(deadline - now)
+            print(f"Waiting for boot completion... {remaining}s remaining")
+            last_progress_log = now
+
+        if now - last_device_log >= 10:
+            print(f"[boot] adb devices: {describe_emulator_devices(adb)}")
+            last_device_log = now
+
         saw_any_emulator = False
         for serial in list_emulator_serials(adb):
             saw_any_emulator = True
@@ -93,19 +126,9 @@ def wait_for_boot(adb: str, expected_name: str) -> None:
             except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
                 continue
 
+            print(f"[boot] {serial} get-state -> {state.stdout.strip()}")
+
             if state.stdout.strip() != "device":
-                continue
-
-            try:
-                running_avd_name = run(
-                    [adb, "-s", serial, "emu", "avd", "name"],
-                    capture_output=True,
-                    timeout_seconds=2,
-                ).stdout.strip()
-            except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
-                continue
-
-            if running_avd_name != expected_name:
                 continue
 
             try:
@@ -117,9 +140,27 @@ def wait_for_boot(adb: str, expected_name: str) -> None:
             except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
                 continue
 
+            print(f"[boot] {serial} sys.boot_completed -> {result.stdout.strip()}")
+
             if result.stdout.strip() == "1":
+                try:
+                    running_avd_name = parse_avd_name_output(
+                        run(
+                        [adb, "-s", serial, "emu", "avd", "name"],
+                        capture_output=True,
+                        timeout_seconds=2,
+                        ).stdout
+                    )
+                except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+                    running_avd_name = expected_name
+
+                print(f"[boot] {serial} avd name -> {running_avd_name}")
+
+                if running_avd_name != expected_name:
+                    continue
+
                 print(f"Emulator boot completed on {serial}.")
-                return
+                return serial
 
         if not saw_any_emulator:
             time.sleep(2)
@@ -128,6 +169,29 @@ def wait_for_boot(adb: str, expected_name: str) -> None:
         time.sleep(2)
 
     raise RuntimeError("Timed out waiting for Android emulator boot completion.")
+
+
+def enforce_24h_time_format(adb: str, serial: str) -> None:
+    print(f"Enforcing 24h time format on {serial}...")
+    # Retry briefly because settings provider can be unavailable right after boot.
+    deadline = time.monotonic() + 30
+    while time.monotonic() < deadline:
+        try:
+            run([adb, "-s", serial, "shell", "settings", "put", "system", "time_12_24", "24"])
+            result = run(
+                [adb, "-s", serial, "shell", "settings", "get", "system", "time_12_24"],
+                capture_output=True,
+                timeout_seconds=3,
+            )
+            value = result.stdout.strip()
+            if value == "24":
+                print(f"24h time format enabled on {serial}.")
+                return
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+            pass
+        time.sleep(1)
+
+    raise RuntimeError("Failed to enforce 24h time format on emulator.")
 
 
 def parse_args() -> argparse.Namespace:
@@ -172,7 +236,8 @@ def main() -> None:
     print("Starting emulator with:")
     print(" ".join(command))
     subprocess.Popen(command)
-    wait_for_boot(adb, args.name)
+    serial = wait_for_boot(adb, args.name)
+    enforce_24h_time_format(adb, serial)
 
 
 if __name__ == "__main__":

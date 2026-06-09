@@ -21,7 +21,7 @@ import {
 } from "@/lib/hashtags";
 import { colors } from "@/theme/tokens";
 
-type Props = Pick<TextInputProps, "placeholder"> & {
+type Props = Pick<TextInputProps, "placeholder" | "testID"> & {
   value: string;
   onChangeText: (text: string) => void;
 };
@@ -37,7 +37,7 @@ type Props = Pick<TextInputProps, "placeholder"> & {
  * tag suggestions by prefix from the backend (sorted by popularity) and
  * render them as a tap-to-insert dropdown below the input.
  */
-export function HashtagTextInput({ value, onChangeText, placeholder }: Props) {
+export function HashtagTextInput({ value, onChangeText, placeholder, testID }: Props) {
   const inputRef = useRef<TextInput>(null);
   const [focused, setFocused] = useState(false);
   const [selection, setSelection] = useState<{ start: number; end: number }>({
@@ -124,6 +124,7 @@ export function HashtagTextInput({ value, onChangeText, placeholder }: Props) {
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
+          testID={testID}
           placeholderTextColor="transparent"
           multiline
           onFocus={() => setFocused(true)}
