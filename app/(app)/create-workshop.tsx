@@ -35,8 +35,21 @@ import { colors } from "@/theme/tokens";
 
 type PickerMode = "date" | "time" | null;
 
+// Smoke flows can take a long time on CI/emulator; keep the default workshop
+// start time far enough in the future to avoid timing flakiness.
+const DEV_DEFAULT_WORKSHOP_OFFSET_MS = 6 * 60 * 60 * 1000;
+// NOTE: This is intentionally production-bundled config used by automated
+// smoke tests. Smoke runs use release builds, so test-only schedule behavior
+// must be configurable from runtime env available in production code.
+const SMOKE_OFFSET_MINUTES_RAW = Number(process.env.EXPO_PUBLIC_SMOKE_WORKSHOP_OFFSET_MINUTES ?? "");
+const SMOKE_WORKSHOP_OFFSET_MS =
+  Number.isFinite(SMOKE_OFFSET_MINUTES_RAW) && SMOKE_OFFSET_MINUTES_RAW > 0
+    ? Math.trunc(SMOKE_OFFSET_MINUTES_RAW * 60 * 1000)
+    : null;
+
 const CREATE_WORKSHOP_TEST_IDS = {
   titleInput: "workshop.create.title.input",
+  descriptionInput: "workshop.create.description.input",
   dateButton: "workshop.create.date.button",
   timeButton: "workshop.create.time.button",
   durationInput: "workshop.create.duration.input",
@@ -55,9 +68,14 @@ export default function CreateWorkshopScreen() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  // Default to now + MIN_WORKSHOP_OFFSET_MS in the device timezone.
+  // Production code path used by tests: smoke can override schedule window
+  // while normal users keep default app behavior.
+  // Default to now + smoke offset (if configured) or app minimum offset.
   const [timezone] = useState(getDeviceTimezone);
-  const defaultIso = new Date(Date.now() + MIN_WORKSHOP_OFFSET_MS).toISOString();
+  const minimumOffsetMs = SMOKE_WORKSHOP_OFFSET_MS ?? MIN_WORKSHOP_OFFSET_MS;
+  const defaultOffsetMs = SMOKE_WORKSHOP_OFFSET_MS
+    ?? (__DEV__ ? Math.max(MIN_WORKSHOP_OFFSET_MS, DEV_DEFAULT_WORKSHOP_OFFSET_MS) : MIN_WORKSHOP_OFFSET_MS);
+  const defaultIso = new Date(Date.now() + defaultOffsetMs).toISOString();
   const [date, setDate] = useState(() => toLocalDateInput(defaultIso, getDeviceTimezone()));
   const [time, setTime] = useState(() => toLocalTimeInput(defaultIso, getDeviceTimezone()));
   const [duration, setDuration] = useState("");
@@ -113,9 +131,9 @@ export default function CreateWorkshopScreen() {
       return;
     }
 
-    // Clamp to minimum allowed time (now + 1h). On Android the time picker
+    // Clamp to minimum allowed time. On Android the time picker
     // does not enforce minimumDate in the UI, so we enforce it here.
-    const minAllowed = new Date(Date.now() + MIN_WORKSHOP_OFFSET_MS);
+    const minAllowed = new Date(Date.now() + minimumOffsetMs);
     const effective = selected < minAllowed ? minAllowed : selected;
 
     if (pickerMode === "date") {
@@ -162,7 +180,7 @@ export default function CreateWorkshopScreen() {
       return;
     }
 
-    if (parsedSchedule.value <= new Date(Date.now() + MIN_WORKSHOP_OFFSET_MS)) {
+    if (parsedSchedule.value <= new Date(Date.now() + minimumOffsetMs)) {
       showAlert(__DEV__
         ? "Start time must be at least 1 minute in the future."
         : "Start time must be in the future. Please choose a later date or time.");
@@ -233,6 +251,7 @@ export default function CreateWorkshopScreen() {
               value={description}
               onChangeText={setDescription}
               placeholder="What will participants experience? Use #hashtags (up to 5)."
+              testID={CREATE_WORKSHOP_TEST_IDS.descriptionInput}
             />
           </View>
           <View style={s.fieldContainer}>
@@ -361,7 +380,7 @@ export default function CreateWorkshopScreen() {
           value={resolveCurrentSchedule()}
           mode={pickerMode}
           is24Hour
-          minimumDate={new Date(Date.now() + MIN_WORKSHOP_OFFSET_MS)}
+          minimumDate={new Date(Date.now() + minimumOffsetMs)}
           onChange={onChangeSchedule}
         />
       ) : null}
@@ -394,7 +413,7 @@ export default function CreateWorkshopScreen() {
                 mode={pickerMode}
                 display="spinner"
                 is24Hour
-                minimumDate={new Date(Date.now() + MIN_WORKSHOP_OFFSET_MS)}
+                minimumDate={new Date(Date.now() + minimumOffsetMs)}
                 onChange={onChangeSchedule}
               />
             </View>

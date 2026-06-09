@@ -74,6 +74,16 @@ def list_avds(emulator: str) -> set[str]:
     return {line.strip() for line in result.stdout.splitlines() if line.strip()}
 
 
+def parse_avd_name_output(raw_output: str) -> str:
+    # adb emu avd name may include a trailing "OK" line from emulator console.
+    for line in raw_output.splitlines():
+        value = line.strip()
+        if not value or value.upper() == "OK":
+            continue
+        return value
+    return ""
+
+
 def kill_running_avd(adb: str, avd_name: str) -> None:
     devices = run([adb, "devices"], capture_output=True, sdk_root=None)
     for line in devices.stdout.splitlines()[1:]:
@@ -85,7 +95,8 @@ def kill_running_avd(adb: str, avd_name: str) -> None:
         if avd_result.returncode != 0:
             continue
 
-        if avd_result.stdout.strip() == avd_name:
+        running_avd_name = parse_avd_name_output(avd_result.stdout)
+        if running_avd_name == avd_name:
             print(f"Stopping running emulator {serial} for AVD {avd_name}")
             run([adb, "-s", serial, "emu", "kill"], check=False)
 
@@ -101,7 +112,7 @@ def wait_for_avd_shutdown(adb: str, avd_name: str, timeout_seconds: int = 30) ->
                 continue
 
             avd_result = run([adb, "-s", serial, "emu", "avd", "name"], capture_output=True, check=False)
-            if avd_result.returncode == 0 and avd_result.stdout.strip() == avd_name:
+            if avd_result.returncode == 0 and parse_avd_name_output(avd_result.stdout) == avd_name:
                 running_for_avd = True
                 break
 
@@ -113,7 +124,22 @@ def wait_for_avd_shutdown(adb: str, avd_name: str, timeout_seconds: int = 30) ->
     raise RuntimeError(f"Timed out waiting for AVD {avd_name} to shut down")
 
 
-def remove_with_retries(path: Path, retries: int = 20, delay_seconds: float = 0.5) -> None:
+def force_kill_emulator_processes() -> None:
+    if os.name == "nt":
+        for image_name in ("emulator.exe", "qemu-system-x86_64.exe"):
+            subprocess.run(
+                ["taskkill", "/IM", image_name, "/F", "/T"],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+        return
+
+    subprocess.run(["pkill", "-f", "emulator"], check=False, capture_output=True, text=True)
+    subprocess.run(["pkill", "-f", "qemu-system"], check=False, capture_output=True, text=True)
+
+
+def remove_with_retries(path: Path, retries: int = 60, delay_seconds: float = 0.5) -> None:
     last_error: Exception | None = None
     for _ in range(retries):
         try:
@@ -132,16 +158,23 @@ def remove_with_retries(path: Path, retries: int = 20, delay_seconds: float = 0.
         raise last_error
 
 
+def best_effort_remove(path: Path) -> None:
+    try:
+        remove_with_retries(path)
+    except PermissionError as err:
+        print(f"Warning: could not fully remove {path}: {err}")
+
+
 def delete_leftovers(avd_name: str) -> None:
     avd_root = Path.home() / ".android" / "avd"
     ini_path = avd_root / f"{avd_name}.ini"
     avd_dir = avd_root / f"{avd_name}.avd"
 
     if ini_path.exists():
-        remove_with_retries(ini_path)
+        best_effort_remove(ini_path)
 
     if avd_dir.exists():
-        remove_with_retries(avd_dir)
+        best_effort_remove(avd_dir)
 
 
 def parse_args() -> argparse.Namespace:
@@ -179,7 +212,15 @@ def main() -> None:
         return
 
     kill_running_avd(adb, args.name)
-    wait_for_avd_shutdown(adb, args.name)
+    try:
+        wait_for_avd_shutdown(adb, args.name)
+    except RuntimeError:
+        print(f"AVD {args.name} did not stop gracefully. Forcing emulator process termination.")
+        force_kill_emulator_processes()
+        time.sleep(2)
+
+        # After hard-kill, do one more short wait so locks can be released.
+        wait_for_avd_shutdown(adb, args.name, timeout_seconds=10)
     print(f"Deleting AVD {args.name}")
     run([avdmanager, "delete", "avd", "--name", args.name], sdk_root=sdk_root)
     delete_leftovers(args.name)

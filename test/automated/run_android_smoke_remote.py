@@ -19,6 +19,7 @@ from run_android_smoke_ephemeral_db import resolve_tool
 
 TIMEZONE = "Europe/Warsaw"
 ANDROID_SMOKE_BUILD_SCRIPT = "android:release:remote"
+SMOKE_WORKSHOP_OFFSET_MINUTES = "1440"
 
 
 def run(command: list[str], *, cwd: Path, env: dict[str, str] | None = None) -> None:
@@ -67,11 +68,19 @@ def main() -> None:
         )
         disable_android_autofill(adb, frontend_root)
 
-        run([npm, "run", ANDROID_SMOKE_BUILD_SCRIPT], cwd=frontend_root)
+        build_env = dict(os.environ)
+        build_env["EXPO_PUBLIC_SMOKE_WORKSHOP_OFFSET_MINUTES"] = SMOKE_WORKSHOP_OFFSET_MINUTES
+        run([npm, "run", ANDROID_SMOKE_BUILD_SCRIPT], cwd=frontend_root, env=build_env)
 
         run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
         run(
             [maestro, "test", "test/automated/maestro/flows/smoke/android_trainer_smoke.yaml"],
+            cwd=frontend_root,
+        )
+
+        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
+        run(
+            [maestro, "test", "test/automated/maestro/flows/smoke/android_trainer_edit_smoke.yaml"],
             cwd=frontend_root,
         )
 

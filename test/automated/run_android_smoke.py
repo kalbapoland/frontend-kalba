@@ -62,6 +62,13 @@ def ensure_smoke_trainer_account(backend_root: Path, python_exe: str) -> None:
     )
 
 
+def ensure_smoke_user_account(backend_root: Path, python_exe: str) -> None:
+    run(
+        [python_exe, "run", "python", "tests/automated/ensure_smoke_user.py", "--reset-password"],
+        cwd=backend_root,
+    )
+
+
 def get_secure_setting(adb: str, setting_name: str, cwd: Path) -> str | None:
     result = subprocess.run(
         [adb, "shell", "settings", "get", "secure", setting_name],
@@ -113,10 +120,17 @@ def main() -> None:
         disable_android_autofill(adb, frontend_root)
         run([adb, "reverse", "tcp:8000", "tcp:8000"], cwd=frontend_root)
         ensure_smoke_trainer_account(backend_root, uv_exe)
+        ensure_smoke_user_account(backend_root, uv_exe)
         install_release_build(frontend_root)
         run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
         run(
             [maestro, "test", "test/automated/maestro/flows/smoke/android_trainer_smoke.yaml"],
+            cwd=frontend_root,
+        )
+
+        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
+        run(
+            [maestro, "test", "test/automated/maestro/flows/smoke/android_trainer_edit_smoke.yaml"],
             cwd=frontend_root,
         )
 
