@@ -57,7 +57,9 @@ android/.cxx/
 android/app/.cxx/
 android/local.properties
 android/app/google-services.json
-android/app/debug.keystore
+# debug.keystore is intentionally NOT listed here — it is tracked in git so
+# all developers share the same SHA-1 fingerprint. Register it once in Google
+# Cloud Console for local OAuth to work. Password is public ('android').
 android/app/debug.keystore.bk
 
 # iOS is versioned to keep native config consistent across developers.
