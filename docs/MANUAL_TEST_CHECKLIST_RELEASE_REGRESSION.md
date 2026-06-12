@@ -68,13 +68,25 @@ Zakres: frontend Kalba (web + mobile), role `user` i `trainer`.
 
 ### Error/Loading/Empty States
 
-- [ ] P1-1: Home ma poprawny loading state.
-- [ ] P1-2: Home error state + Retry dziala.
-- [ ] P1-3: Detail not found / error pokazuje czytelny stan.
-- [ ] P1-4: Groups loading/error/empty sa czytelne.
-- [ ] P1-5: Group Detail loading/error/empty sa czytelne.
-- [ ] P1-6: My Kalba loading/error/empty sa czytelne.
+- [ ] P1-1: Home ma poprawny loading state (skeleton karty, nie spinner).
+- [ ] P1-2: Home error state + Retry dziala (nowy EmptyState z przyciskiem Try again).
+- [ ] P1-2a: Home empty state pokazuje CTA "Browse groups" i przenosi do Groups.
+- [ ] P1-3: Detail not found / error pokazuje czytelny stan (EmptyState).
+- [ ] P1-4: Groups loading/error/empty sa czytelne (skeleton przy ladowaniu).
+- [ ] P1-5: Group Detail loading/error/empty sa czytelne (skeleton, EmptyState z Go back).
+- [ ] P1-6: My Kalba loading/error/empty sa czytelne (skeleton przy ladowaniu).
 - [ ] P1-7: Calendar loading/error/empty sa czytelne.
+
+### Redesign UI/UX (2026-06)
+
+- [ ] P1-R1: Fonty Fraunces (naglowki) i Inter (tekst) laduja sie na iOS, Android i web; brak fallbacku systemowego.
+- [ ] P1-R2: Karty warsztatu na Home pokazuja blok daty (dzien tygodnia + numer dnia), czas, czas trwania, miejsca i cene jako badge ("Free" z zielonym tlem).
+- [ ] P1-R3: Tab bar: wskaznik aktywnej zakladki przesuwa sie plynnie miedzy ikonami; ikona aktywna lekko powiekszona.
+- [ ] P1-R4: Haptyka (native): lekki impuls przy zmianie taba i tapnieciu karty; wibracja sukcesu po enroll/subscribe/zapisie formularza; brak crasha na web.
+- [ ] P1-R5: Animacje wejscia kart (fade+slide) na Home, Groups, My Kalba i Profile; brak laga przy dlugiej liscie.
+- [ ] P1-R6: Naglowek Home: powitanie zalezne od pory dnia (przetlumaczone PL/EN) + imie w foncie serif + dekoracyjne "oddychajace" kolo.
+- [ ] P1-R7: Reduce Motion w systemie wylacza animacje wejscia, oddychania i skeleton pulse (brak ruchu).
+- [ ] P1-R8: Profile: dialogi Sign Out / Delete account sa przetlumaczone (PL/EN); Sign Out jako przycisk z ikona.
 
 ### My Kalba
 
@@ -110,6 +122,8 @@ Zakres: frontend Kalba (web + mobile), role `user` i `trainer`.
 - [ ] P2-2: Teksty, etykiety i placeholdery sa spojne jezykowo.
 - [ ] P2-3: Przyciski sa disabled podczas pending mutation.
 - [ ] P2-4: Pull-to-refresh nie dubluje rekordow (Home i Groups).
+- [ ] P2-4a: Typografia spojna na wszystkich ekranach (serif naglowki, Inter tekst); brak ekranow ze starym systemowym fontem.
+- [ ] P2-4b: Karty grup pokazuja awatar z inicjalem grupy; badge Admin widoczny dla ownera.
 
 ### Web Confirm/Alert
 

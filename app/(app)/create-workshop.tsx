@@ -31,7 +31,8 @@ import {
   toLocalDateInput,
   toLocalTimeInput,
 } from "@/lib/workshopSchedule";
-import { colors } from "@/theme/tokens";
+import { successFeedback } from "@/lib/haptics";
+import { colors, fonts } from "@/theme/tokens";
 
 type PickerMode = "date" | "time" | null;
 
@@ -199,7 +200,10 @@ export default function CreateWorkshopScreen() {
         group_id: groupId,
       },
       {
-        onSuccess: () => router.back(),
+        onSuccess: () => {
+          successFeedback();
+          router.back();
+        },
         onError: () => showAlert("Failed to create workshop"),
       },
     );
@@ -460,7 +464,7 @@ function FormField({
           focused && s.fieldInputFocused,
           multiline && { minHeight: 100, textAlignVertical: "top" as const },
         ]}
-        placeholderTextColor="#8C8A82"
+        placeholderTextColor={colors.inkMuted}
       />
     </View>
   );
@@ -475,8 +479,8 @@ const s = StyleSheet.create({
   },
   lockedText: {
     fontSize: 15,
-    fontWeight: "400",
-    color: "#8C8A82",
+    fontFamily: fonts.body,
+    color: colors.inkMuted,
     marginTop: 16,
     textAlign: "center",
   },
@@ -496,9 +500,9 @@ const s = StyleSheet.create({
   },
   pageTitle: {
     fontSize: 20,
-    fontWeight: "300",
+    fontFamily: fonts.display,
     letterSpacing: 0.4,
-    color: "#2E2E2B",
+    color: colors.ink,
   },
   scrollContent: {
     paddingHorizontal: 24,
@@ -513,17 +517,17 @@ const s = StyleSheet.create({
   },
   fieldLabel: {
     fontSize: 11,
-    fontWeight: "500",
+    fontFamily: fonts.bodyMedium,
     letterSpacing: 0.8,
-    color: "#8C8A82",
+    color: colors.inkMuted,
     marginBottom: 6,
     textTransform: "uppercase",
   },
   scheduleCard: {
-    backgroundColor: "#FAF8F4",
+    backgroundColor: colors.surface,
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: "#E8E3DA",
+    borderColor: colors.line,
     padding: 14,
     gap: 10,
   },
@@ -534,12 +538,12 @@ const s = StyleSheet.create({
   },
   schedulePreviewText: {
     fontSize: 14,
-    color: "#2E2E2B",
-    fontWeight: "500",
+    color: colors.ink,
+    fontFamily: fonts.bodyMedium,
     letterSpacing: 0.2,
   },
   scheduleDot: {
-    color: "#CFC8BD",
+    color: colors.line,
     fontSize: 13,
   },
   scheduleButtonRow: {
@@ -552,39 +556,40 @@ const s = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 6,
-    backgroundColor: "#F1EEE8",
+    backgroundColor: colors.canvasDeep,
     borderRadius: 999,
     paddingVertical: 10,
   },
   scheduleButtonText: {
     fontSize: 13,
-    color: "#566B52",
-    fontWeight: "600",
+    color: colors.primary,
+    fontFamily: fonts.bodySemiBold,
     letterSpacing: 0.3,
   },
   scheduleHint: {
     fontSize: 12,
-    color: "#8C8A82",
+    color: colors.inkMuted,
     lineHeight: 16,
   },
   fieldInput: {
-    backgroundColor: "#FAF8F4",
+    backgroundColor: colors.surface,
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 12,
+    fontFamily: fonts.body,
     fontSize: 15,
-    color: "#2E2E2B",
+    color: colors.ink,
     borderWidth: 1.5,
     borderColor: "transparent",
   },
   fieldInputFocused: {
-    borderColor: "#8A9A7E",
+    borderColor: colors.primarySoft,
   },
   groupBanner: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    backgroundColor: "#E8EDE5",
+    backgroundColor: colors.primaryWash,
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -592,20 +597,20 @@ const s = StyleSheet.create({
   groupBannerText: {
     flex: 1,
     fontSize: 15,
-    fontWeight: "500",
-    color: "#566B52",
+    fontFamily: fonts.bodyMedium,
+    color: colors.primary,
   },
   footer: {
     paddingHorizontal: 24,
     paddingTop: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "#EDE9E2",
+    borderTopColor: colors.lineWhisper,
     backgroundColor: "transparent",
   },
   submitButton: {
     height: 52,
     borderRadius: 999,
-    backgroundColor: "#566B52",
+    backgroundColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -616,9 +621,9 @@ const s = StyleSheet.create({
   },
   submitText: {
     fontSize: 16,
-    fontWeight: "500",
+    fontFamily: fonts.bodyMedium,
     letterSpacing: 0.5,
-    color: "#FAF8F4",
+    color: colors.surface,
   },
   pickerSheetBackdrop: {
     flex: 1,
@@ -626,7 +631,7 @@ const s = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.2)",
   },
   pickerSheet: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: colors.elevated,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingBottom: 20,
@@ -641,12 +646,12 @@ const s = StyleSheet.create({
   },
   pickerSheetTitle: {
     fontSize: 16,
-    fontWeight: "600",
-    color: "#2E2E2B",
+    fontFamily: fonts.bodySemiBold,
+    color: colors.ink,
   },
   pickerDoneText: {
     fontSize: 15,
-    fontWeight: "600",
-    color: "#566B52",
+    fontFamily: fonts.bodySemiBold,
+    color: colors.primary,
   },
 });

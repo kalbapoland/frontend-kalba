@@ -22,7 +22,7 @@ import {
   endOfWeek,
   startOfWeek,
 } from "@/components/calendar/dateUtils";
-import { colors } from "@/theme/tokens";
+import { colors, fonts } from "@/theme/tokens";
 
 type ViewMode = "month" | "week" | "day";
 
@@ -207,8 +207,8 @@ const s = StyleSheet.create({
   title: {
     flex: 1,
     textAlign: "center",
+    fontFamily: fonts.displayMedium,
     fontSize: 18,
-    fontWeight: "500",
     color: colors.ink,
     letterSpacing: 0.3,
   },
@@ -228,8 +228,8 @@ const s = StyleSheet.create({
     paddingVertical: 4,
   },
   todayPillText: {
+    fontFamily: fonts.bodyMedium,
     fontSize: 11,
-    fontWeight: "500",
     color: colors.primary,
     letterSpacing: 0.4,
     textTransform: "uppercase",
@@ -251,14 +251,14 @@ const s = StyleSheet.create({
     backgroundColor: colors.surface,
   },
   switchOptionText: {
+    fontFamily: fonts.bodyMedium,
     fontSize: 13,
     color: colors.inkMuted,
-    fontWeight: "500",
   },
-  switchOptionTextActive: { color: colors.primary, fontWeight: "600" },
+  switchOptionTextActive: { fontFamily: fonts.bodySemiBold, color: colors.primary },
   content: { flex: 1 },
   centered: { flex: 1, alignItems: "center", justifyContent: "center" },
-  errorText: { fontSize: 14, color: colors.danger },
+  errorText: { fontFamily: fonts.body, fontSize: 14, color: colors.danger },
   legend: {
     position: "absolute",
     left: 16,
@@ -269,5 +269,5 @@ const s = StyleSheet.create({
   },
   legendItem: { flexDirection: "row", alignItems: "center", gap: 6 },
   legendDot: { width: 8, height: 8, borderRadius: 4 },
-  legendText: { fontSize: 11, color: colors.inkMuted, letterSpacing: 0.3 },
+  legendText: { fontFamily: fonts.body, fontSize: 11, color: colors.inkMuted, letterSpacing: 0.3 },
 });

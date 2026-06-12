@@ -35,8 +35,9 @@ Zakres: najwazniejsze flow end-to-end (user + trainer).
 
 ### 1.2 Home -> Detail
 
-- [ ] Lista warsztatow laduje sie bez bledu.
+- [ ] Lista warsztatow laduje sie bez bledu (skeleton podczas ladowania, fonty serif/Inter zaladowane).
 - [ ] Klik warsztatu otwiera detail.
+- [ ] Tab bar: wskaznik aktywnej zakladki przesuwa sie plynnie; haptyka na native.
 
 ### 1.3 Groups
 

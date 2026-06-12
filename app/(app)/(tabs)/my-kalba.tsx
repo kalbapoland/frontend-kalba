@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import {
-    ActivityIndicator,
     Pressable,
     ScrollView,
     StyleSheet,
@@ -10,6 +9,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import Animated from "react-native-reanimated";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 
@@ -22,7 +22,9 @@ import {
     useUpdateMyKalbaGoal,
     useUpdateMyKalbaNotificationRead,
 } from "@/hooks/useMyKalba";
-import { colors } from "@/theme/tokens";
+import { SkeletonList } from "@/components/Skeleton";
+import { listItemEntering } from "@/lib/entrance";
+import { colors, fonts, shadows } from "@/theme/tokens";
 import { formatMonthDayYear, formatTime, formatWeekdayShort } from "@/lib/date";
 
 function clampTarget(value: number): number {
@@ -81,8 +83,8 @@ export default function MyKalbaScreen() {
 
     if (isLoading) {
         return (
-            <View style={styles.centeredState}>
-                <ActivityIndicator color={colors.primary} size="large" />
+            <View style={[styles.screen, { paddingTop: insets.top + 32 }]}>
+                <SkeletonList />
             </View>
         );
     }
@@ -120,7 +122,7 @@ export default function MyKalbaScreen() {
                     {t("my_kalba.title")}
                 </Text>
 
-                <View style={styles.card}>
+                <Animated.View entering={listItemEntering(0)} style={styles.card}>
                     <Text style={styles.sectionTitle}>
                         {t("my_kalba.goal_title")}
                     </Text>
@@ -163,9 +165,9 @@ export default function MyKalbaScreen() {
                             <Ionicons name="add" size={18} color={colors.primary} />
                         </Pressable>
                     </View>
-                </View>
+                </Animated.View>
 
-                <View style={styles.card}>
+                <Animated.View entering={listItemEntering(1)} style={styles.card}>
                     <Text style={styles.sectionTitle}>{t("my_kalba.stats_title")}</Text>
                     <View style={styles.statsRow}>
                         <View style={styles.statTile}>
@@ -184,9 +186,9 @@ export default function MyKalbaScreen() {
                     <View style={styles.progressTrack}>
                         <View style={[styles.progressFill, { width: `${progress}%` }]} />
                     </View>
-                </View>
+                </Animated.View>
 
-                <View style={styles.card}>
+                <Animated.View entering={listItemEntering(2)} style={styles.card}>
                     <View style={styles.rowBetween}>
                         <Text style={styles.sectionTitle}>{t("my_kalba.schedule_title")}</Text>
                     </View>
@@ -211,9 +213,9 @@ export default function MyKalbaScreen() {
                             </Pressable>
                         ))
                     )}
-                </View>
+                </Animated.View>
 
-                <View style={styles.card}>
+                <Animated.View entering={listItemEntering(3)} style={styles.card}>
                     <View style={styles.rowBetween}>
                         <Text style={styles.sectionTitle}>
                             {t("my_kalba.notifications_title")}
@@ -293,7 +295,7 @@ export default function MyKalbaScreen() {
                             </View>
                         ))
                     )}
-                </View>
+                </Animated.View>
             </ScrollView>
         </View>
     );
@@ -311,13 +313,15 @@ const styles = StyleSheet.create({
         backgroundColor: colors.canvas,
     },
     errorText: {
+        fontFamily: fonts.body,
         fontSize: 14,
         color: colors.danger,
     },
     title: {
-        fontSize: 28,
-        lineHeight: 34,
-        fontWeight: "600",
+        fontFamily: fonts.displayLight,
+        fontSize: 30,
+        lineHeight: 40,
+        letterSpacing: 0.3,
         color: colors.ink,
         marginBottom: 4,
     },
@@ -328,22 +332,25 @@ const styles = StyleSheet.create({
         backgroundColor: colors.surface,
         paddingHorizontal: 16,
         paddingVertical: 16,
+        ...shadows.card,
     },
     sectionTitle: {
-        fontSize: 16,
-        lineHeight: 22,
-        fontWeight: "600",
+        fontFamily: fonts.displayMedium,
+        fontSize: 17,
+        lineHeight: 24,
+        letterSpacing: 0.2,
         color: colors.ink,
     },
     goalValue: {
         marginTop: 8,
+        fontFamily: fonts.display,
         fontSize: 48,
-        lineHeight: 54,
-        fontWeight: "500",
+        lineHeight: 56,
         color: colors.primary,
     },
     subtleLabel: {
         marginTop: 4,
+        fontFamily: fonts.body,
         fontSize: 14,
         lineHeight: 20,
         color: colors.inkMuted,
@@ -374,9 +381,9 @@ const styles = StyleSheet.create({
         justifyContent: "center",
     },
     presetText: {
+        fontFamily: fonts.bodyMedium,
         fontSize: 16,
         lineHeight: 20,
-        fontWeight: "500",
         color: colors.ink,
     },
     statsRow: {
@@ -392,13 +399,14 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
     },
     statValue: {
-        fontSize: 40,
-        lineHeight: 44,
-        fontWeight: "600",
+        fontFamily: fonts.display,
+        fontSize: 38,
+        lineHeight: 46,
         color: colors.ink,
     },
     statLabel: {
         marginTop: 6,
+        fontFamily: fonts.body,
         fontSize: 12,
         lineHeight: 16,
         color: colors.inkMuted,
@@ -421,6 +429,7 @@ const styles = StyleSheet.create({
     },
     emptyText: {
         marginTop: 10,
+        fontFamily: fonts.body,
         fontSize: 13,
         lineHeight: 18,
         color: colors.inkMuted,
@@ -438,21 +447,22 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     scheduleTitle: {
+        fontFamily: fonts.bodyMedium,
         fontSize: 16,
         lineHeight: 22,
-        fontWeight: "600",
         color: colors.ink,
     },
     scheduleMeta: {
         marginTop: 4,
+        fontFamily: fonts.body,
         fontSize: 13,
         lineHeight: 18,
         color: colors.inkMuted,
     },
     markAllText: {
+        fontFamily: fonts.bodySemiBold,
         fontSize: 12,
         lineHeight: 16,
-        fontWeight: "600",
         color: colors.primary,
     },
     filterRow: {
@@ -482,12 +492,12 @@ const styles = StyleSheet.create({
         lineHeight: 16,
     },
     filterPillTextActive: {
+        fontFamily: fonts.bodySemiBold,
         color: colors.primary,
-        fontWeight: "700",
     },
     filterPillTextInactive: {
+        fontFamily: fonts.bodyMedium,
         color: colors.inkMuted,
-        fontWeight: "500",
     },
     notificationItem: {
         marginTop: 10,
@@ -498,16 +508,17 @@ const styles = StyleSheet.create({
         columnGap: 8,
     },
     notificationTitle: {
+        fontFamily: fonts.bodyMedium,
         fontSize: 16,
         lineHeight: 22,
-        fontWeight: "600",
         color: colors.ink,
     },
     notificationTitleUnread: {
-        fontWeight: "700",
+        fontFamily: fonts.bodySemiBold,
     },
     notificationBody: {
         marginTop: 4,
+        fontFamily: fonts.body,
         fontSize: 12,
         lineHeight: 16,
         color: colors.inkMuted,

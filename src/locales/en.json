@@ -52,6 +52,22 @@
     "workshop_not_found": "Workshop not found",
     "workshop_one": "{{count}} workshop",
     "workshop_other": "{{count}} workshops",
+    "home": {
+        "greeting_morning": "Good morning",
+        "greeting_afternoon": "Good afternoon",
+        "greeting_evening": "Good evening",
+        "upcoming": "Upcoming",
+        "empty_title": "Your schedule is clear",
+        "empty_subtitle": "Join a group to see its upcoming workshops here",
+        "browse_groups": "Browse groups",
+        "error_title": "Unable to load",
+        "error_subtitle": "Check your connection and try again",
+        "try_again": "Try again",
+        "retry_a11y": "Retry loading workshops",
+        "duration_min": "{{count}} min",
+        "spots_count_one": "{{count}} spot",
+        "spots_count_other": "{{count}} spots"
+    },
     "calendar": {
         "title": "Calendar",
         "month": "Month",
@@ -179,6 +195,20 @@
         "remove": "Remove",
         "remove_member_a11y": "Remove {{name}}",
         "subscribe_to_name": "Subscribe to {{title}}"
+    },
+    "profile_screen": {
+        "signout": "Sign Out",
+        "signout_confirm": "Are you sure you want to sign out?",
+        "delete_account": "Delete account",
+        "delete_title": "Delete Account",
+        "delete_body": "This permanently deletes your account and all your data. This cannot be undone.",
+        "delete_confirm_title": "Are you sure?",
+        "delete_confirm_body": "This is permanent and cannot be undone.",
+        "delete_confirm_again": "Are you absolutely sure? This is permanent.",
+        "delete_failed": "We couldn't delete your account right now. Please try again.",
+        "deleting": "Deleting…",
+        "delete": "Delete",
+        "privacy_policy": "Privacy Policy"
     },
     "errors": {
         "title": "Error",

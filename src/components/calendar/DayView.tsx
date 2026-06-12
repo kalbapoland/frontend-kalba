@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { useRouter } from "expo-router";
 
 import type { Workshop } from "@/types/api";
-import { colors } from "@/theme/tokens";
+import { colors, fonts } from "@/theme/tokens";
 import { formatTime } from "@/lib/date";
 import {
   DAY_END_HOUR,
@@ -129,7 +129,7 @@ const s = StyleSheet.create({
   },
   eventTitle: {
     fontSize: 13,
-    fontWeight: "500",
+    fontFamily: fonts.bodyMedium,
     color: colors.ink,
   },
   eventTime: {

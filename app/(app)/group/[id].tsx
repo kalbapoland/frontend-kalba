@@ -9,6 +9,10 @@ import {
   Alert,
   StyleSheet,
 } from "react-native";
+import { EmptyState } from "@/components/EmptyState";
+import { SectionHeader } from "@/components/SectionHeader";
+import { SkeletonList } from "@/components/Skeleton";
+import { successFeedback } from "@/lib/haptics";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
@@ -30,7 +34,7 @@ import {
   formatMonthLong,
   formatTime,
 } from "@/lib/date";
-import { colors } from "@/theme/tokens";
+import { colors, fonts } from "@/theme/tokens";
 
 function toAutomationSlug(value: string): string {
   return value
@@ -43,8 +47,7 @@ function toAutomationSlug(value: string): string {
 function SectionLabel({ children }: { children: string }) {
   return (
     <View style={s.sectionLabelRow}>
-      <Text style={s.sectionLabel}>{children}</Text>
-      <View style={s.sectionAccent} />
+      <SectionHeader label={children} />
     </View>
   );
 }
@@ -105,26 +108,21 @@ export default function GroupDetailScreen() {
 
   if (group.isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-canvas">
-        <ActivityIndicator size="large" color={colors.primary} />
+      <View className="flex-1 bg-canvas" style={{ paddingTop: insets.top + 32 }}>
+        <SkeletonList count={3} />
       </View>
     );
   }
 
   if (group.error || !group.data) {
     return (
-      <View className="flex-1 items-center justify-center bg-canvas px-12">
-        <Ionicons name="cloud-offline-outline" size={48} color={colors.line} />
-        <Text style={s.errorTitle}>{t("group.group_not_found")}</Text>
-        <Pressable
-          onPress={() => router.back()}
-          className="mt-7 rounded-full border border-primary px-8 py-4"
-          style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-        >
-          <Text className="text-sm font-medium tracking-wide text-primary">
-            {t("workshop.go_back")}
-          </Text>
-        </Pressable>
+      <View className="flex-1 justify-center bg-canvas">
+        <EmptyState
+          icon="cloud-offline-outline"
+          title={t("group.group_not_found")}
+          actionLabel={t("workshop.go_back")}
+          onAction={() => router.back()}
+        />
       </View>
     );
   }
@@ -219,6 +217,7 @@ export default function GroupDetailScreen() {
             <Pressable
               onPress={() =>
                 unsubscribe.mutate(g.id, {
+                  onSuccess: () => successFeedback(),
                   onError: () => showError(t("group.unsubscribe_failed")),
                 })
               }
@@ -239,6 +238,7 @@ export default function GroupDetailScreen() {
             <Pressable
               onPress={() =>
                 subscribe.mutate(g.id, {
+                  onSuccess: () => successFeedback(),
                   onError: () => showError(t("group.subscribe_failed")),
                 })
               }
@@ -355,12 +355,12 @@ const s = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: "#566B52",
+    borderColor: colors.primary,
   },
   editButtonText: {
+    fontFamily: fonts.bodySemiBold,
     fontSize: 13,
-    fontWeight: "600",
-    color: "#566B52",
+    color: colors.primary,
   },
   titleRow: {
     flexDirection: "row",
@@ -371,25 +371,26 @@ const s = StyleSheet.create({
   },
   title: {
     flex: 1,
+    fontFamily: fonts.displayLight,
     fontSize: 26,
-    fontWeight: "300",
+    lineHeight: 34,
     letterSpacing: 0.4,
-    color: "#2E2E2B",
+    color: colors.ink,
   },
   adminBadge: {
     flexDirection: "row",
     alignItems: "center",
     gap: 3,
-    backgroundColor: "#E8EDE5",
+    backgroundColor: colors.primaryWash,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 8,
   },
   adminBadgeText: {
+    fontFamily: fonts.bodySemiBold,
     fontSize: 10,
-    fontWeight: "600",
     letterSpacing: 0.4,
-    color: "#566B52",
+    color: colors.primary,
     textTransform: "uppercase",
   },
   metaRow: {
@@ -399,72 +400,61 @@ const s = StyleSheet.create({
     marginTop: 8,
   },
   metaText: {
+    fontFamily: fonts.body,
     fontSize: 13,
-    color: "#57564F",
+    color: colors.inkBody,
   },
   description: {
+    fontFamily: fonts.body,
     fontSize: 15,
-    lineHeight: 22,
-    color: "#57564F",
+    lineHeight: 23,
+    color: colors.inkBody,
     marginTop: 16,
   },
   descriptionMuted: {
+    fontFamily: fonts.body,
     fontSize: 14,
     fontStyle: "italic",
-    color: "#8C8A82",
+    color: colors.inkMuted,
     marginTop: 16,
   },
   primaryButton: {
     height: 50,
     borderRadius: 999,
-    backgroundColor: "#566B52",
+    backgroundColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
     marginTop: 20,
   },
   primaryButtonText: {
+    fontFamily: fonts.bodySemiBold,
     fontSize: 15,
-    fontWeight: "600",
     letterSpacing: 0.3,
-    color: "#FAF8F4",
+    color: colors.surface,
   },
   secondaryButton: {
     height: 50,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: "#566B52",
+    borderColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
     marginTop: 20,
   },
   secondaryButtonText: {
+    fontFamily: fonts.bodySemiBold,
     fontSize: 15,
-    fontWeight: "600",
     letterSpacing: 0.3,
-    color: "#566B52",
+    color: colors.primary,
   },
   sectionLabelRow: {
     marginTop: 32,
     marginBottom: 14,
-    gap: 8,
-  },
-  sectionLabel: {
-    fontSize: 11,
-    fontWeight: "500",
-    letterSpacing: 2,
-    color: "#8C8A82",
-    textTransform: "uppercase",
-  },
-  sectionAccent: {
-    width: 24,
-    height: 1.5,
-    backgroundColor: "#566B52",
-    borderRadius: 1,
-    marginTop: 6,
   },
   emptyHint: {
+    fontFamily: fonts.body,
     fontSize: 13,
-    color: "#8C8A82",
+    color: colors.inkMuted,
     lineHeight: 20,
   },
   createWorkshopBtn: {
@@ -473,33 +463,33 @@ const s = StyleSheet.create({
     justifyContent: "center",
     gap: 6,
     borderWidth: 1,
-    borderColor: "#566B52",
+    borderColor: colors.primary,
     borderRadius: 999,
     paddingVertical: 12,
     marginBottom: 14,
   },
   createWorkshopText: {
+    fontFamily: fonts.bodySemiBold,
     fontSize: 14,
-    fontWeight: "600",
     letterSpacing: 0.2,
-    color: "#566B52",
+    color: colors.primary,
   },
   workshopRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    backgroundColor: "#FAF8F4",
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: "#EDE9E2",
+    borderColor: colors.lineWhisper,
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 14,
     marginBottom: 10,
   },
   workshopTitle: {
+    fontFamily: fonts.bodyMedium,
     fontSize: 15,
-    fontWeight: "500",
-    color: "#2E2E2B",
+    color: colors.ink,
   },
   workshopMetaRow: {
     flexDirection: "row",
@@ -508,12 +498,13 @@ const s = StyleSheet.create({
     marginTop: 4,
   },
   workshopMeta: {
+    fontFamily: fonts.body,
     fontSize: 12,
-    color: "#8C8A82",
+    color: colors.inkMuted,
   },
   workshopDot: {
     fontSize: 12,
-    color: "#8C8A82",
+    color: colors.inkMuted,
     marginHorizontal: 2,
   },
   memberRow: {
@@ -526,20 +517,14 @@ const s = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "#E8EDE5",
+    backgroundColor: colors.primaryWash,
     alignItems: "center",
     justifyContent: "center",
   },
   memberName: {
     flex: 1,
+    fontFamily: fonts.body,
     fontSize: 15,
-    color: "#2E2E2B",
-  },
-  errorTitle: {
-    fontSize: 20,
-    fontWeight: "300",
-    color: "#57564F",
-    marginTop: 20,
-    textAlign: "center",
+    color: colors.ink,
   },
 });

@@ -18,7 +18,8 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { useTranslation } from "react-i18next";
 
 import { useGroup, useUpdateGroup } from "@/hooks/useGroups";
-import { colors } from "@/theme/tokens";
+import { successFeedback } from "@/lib/haptics";
+import { colors, fonts } from "@/theme/tokens";
 
 const EDIT_GROUP_TEST_IDS = {
   titleInput: "group.edit.title.input",
@@ -63,7 +64,10 @@ export default function EditGroupScreen() {
     mutate(
       { title: title.trim(), description: description.trim() },
       {
-        onSuccess: () => router.back(),
+        onSuccess: () => {
+          successFeedback();
+          router.back();
+        },
         onError: () => showAlert(t("group.failed_update")),
       },
     );
@@ -117,7 +121,7 @@ export default function EditGroupScreen() {
               onFocus={() => setTitleFocused(true)}
               onBlur={() => setTitleFocused(false)}
               style={[s.fieldInput, titleFocused && s.fieldInputFocused]}
-              placeholderTextColor="#8C8A82"
+              placeholderTextColor={colors.inkMuted}
               testID={EDIT_GROUP_TEST_IDS.titleInput}
             />
           </View>
@@ -136,7 +140,7 @@ export default function EditGroupScreen() {
                 descFocused && s.fieldInputFocused,
                 { minHeight: 120, textAlignVertical: "top" },
               ]}
-              placeholderTextColor="#8C8A82"
+              placeholderTextColor={colors.inkMuted}
               testID={EDIT_GROUP_TEST_IDS.descriptionInput}
             />
           </View>
@@ -189,9 +193,9 @@ const s = StyleSheet.create({
   },
   pageTitle: {
     fontSize: 20,
-    fontWeight: "300",
+    fontFamily: fonts.display,
     letterSpacing: 0.4,
-    color: "#2E2E2B",
+    color: colors.ink,
   },
   scrollContent: {
     paddingHorizontal: 24,
@@ -202,36 +206,37 @@ const s = StyleSheet.create({
   },
   fieldLabel: {
     fontSize: 11,
-    fontWeight: "500",
+    fontFamily: fonts.bodyMedium,
     letterSpacing: 0.8,
-    color: "#8C8A82",
+    color: colors.inkMuted,
     marginBottom: 6,
     textTransform: "uppercase",
   },
   fieldInput: {
-    backgroundColor: "#FAF8F4",
+    backgroundColor: colors.surface,
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 12,
+    fontFamily: fonts.body,
     fontSize: 15,
-    color: "#2E2E2B",
+    color: colors.ink,
     borderWidth: 1.5,
     borderColor: "transparent",
   },
   fieldInputFocused: {
-    borderColor: "#8A9A7E",
+    borderColor: colors.primarySoft,
   },
   footer: {
     paddingHorizontal: 24,
     paddingTop: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "#EDE9E2",
+    borderTopColor: colors.lineWhisper,
     backgroundColor: "transparent",
   },
   submitButton: {
     height: 52,
     borderRadius: 999,
-    backgroundColor: "#566B52",
+    backgroundColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -242,8 +247,8 @@ const s = StyleSheet.create({
   },
   submitText: {
     fontSize: 16,
-    fontWeight: "500",
+    fontFamily: fonts.bodyMedium,
     letterSpacing: 0.5,
-    color: "#FAF8F4",
+    color: colors.surface,
   },
 });

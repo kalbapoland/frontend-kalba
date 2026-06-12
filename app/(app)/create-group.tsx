@@ -19,7 +19,8 @@ import { useTranslation } from "react-i18next";
 
 import { useCreateGroup } from "@/hooks/useGroups";
 import { useAuthStore } from "@/store/auth";
-import { colors } from "@/theme/tokens";
+import { successFeedback } from "@/lib/haptics";
+import { colors, fonts, radii } from "@/theme/tokens";
 
 const CREATE_GROUP_TEST_IDS = {
   titleInput: "group.create.title.input",
@@ -61,7 +62,10 @@ export default function CreateGroupScreen() {
     mutate(
       { title: title.trim(), description: description.trim() },
       {
-        onSuccess: (group) => router.replace(`/(app)/group/${group.id}`),
+        onSuccess: (group) => {
+          successFeedback();
+          router.replace(`/(app)/group/${group.id}`);
+        },
         onError: () => showAlert(t("group.failed_create")),
       },
     );
@@ -107,7 +111,7 @@ export default function CreateGroupScreen() {
               onFocus={() => setTitleFocused(true)}
               onBlur={() => setTitleFocused(false)}
               style={[s.fieldInput, titleFocused && s.fieldInputFocused]}
-              placeholderTextColor="#8C8A82"
+              placeholderTextColor={colors.inkMuted}
               testID={CREATE_GROUP_TEST_IDS.titleInput}
             />
           </View>
@@ -126,7 +130,7 @@ export default function CreateGroupScreen() {
                 descFocused && s.fieldInputFocused,
                 { minHeight: 120, textAlignVertical: "top" },
               ]}
-              placeholderTextColor="#8C8A82"
+              placeholderTextColor={colors.inkMuted}
               testID={CREATE_GROUP_TEST_IDS.descriptionInput}
             />
           </View>
@@ -172,9 +176,9 @@ const s = StyleSheet.create({
     paddingHorizontal: 40,
   },
   lockedText: {
+    fontFamily: fonts.body,
     fontSize: 15,
-    fontWeight: "400",
-    color: "#8C8A82",
+    color: colors.inkMuted,
     marginTop: 16,
     textAlign: "center",
   },
@@ -193,10 +197,10 @@ const s = StyleSheet.create({
     marginLeft: -4,
   },
   pageTitle: {
+    fontFamily: fonts.display,
     fontSize: 20,
-    fontWeight: "300",
     letterSpacing: 0.4,
-    color: "#2E2E2B",
+    color: colors.ink,
   },
   scrollContent: {
     paddingHorizontal: 24,
@@ -206,37 +210,38 @@ const s = StyleSheet.create({
     marginBottom: 12,
   },
   fieldLabel: {
+    fontFamily: fonts.bodyMedium,
     fontSize: 11,
-    fontWeight: "500",
     letterSpacing: 0.8,
-    color: "#8C8A82",
+    color: colors.inkMuted,
     marginBottom: 6,
     textTransform: "uppercase",
   },
   fieldInput: {
-    backgroundColor: "#FAF8F4",
-    borderRadius: 14,
+    backgroundColor: colors.surface,
+    borderRadius: radii.input,
     paddingHorizontal: 16,
     paddingVertical: 12,
+    fontFamily: fonts.body,
     fontSize: 15,
-    color: "#2E2E2B",
+    color: colors.ink,
     borderWidth: 1.5,
     borderColor: "transparent",
   },
   fieldInputFocused: {
-    borderColor: "#8A9A7E",
+    borderColor: colors.primarySoft,
   },
   footer: {
     paddingHorizontal: 24,
     paddingTop: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "#EDE9E2",
+    borderTopColor: colors.lineWhisper,
     backgroundColor: "transparent",
   },
   submitButton: {
     height: 52,
     borderRadius: 999,
-    backgroundColor: "#566B52",
+    backgroundColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -246,9 +251,9 @@ const s = StyleSheet.create({
     gap: 10,
   },
   submitText: {
+    fontFamily: fonts.bodyMedium,
     fontSize: 16,
-    fontWeight: "500",
     letterSpacing: 0.5,
-    color: "#FAF8F4",
+    color: colors.surface,
   },
 });

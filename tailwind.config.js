@@ -37,6 +37,15 @@ module.exports = {
           wash:        "#F8EDE8",
         },
       },
+
+      fontFamily: {
+        "display-light":  ["Fraunces_300Light"],
+        display:          ["Fraunces_400Regular"],
+        "display-medium": ["Fraunces_500Medium"],
+        body:             ["Inter_400Regular"],
+        "body-medium":    ["Inter_500Medium"],
+        "body-semibold":  ["Inter_600SemiBold"],
+      },
     },
   },
   plugins: [],

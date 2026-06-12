@@ -1,20 +1,15 @@
-import {
-  View,
-  Text,
-  FlatList,
-  Pressable,
-  ActivityIndicator,
-  RefreshControl,
-  StyleSheet,
-} from "react-native";
+import { View, FlatList, RefreshControl, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import Animated from "react-native-reanimated";
+import { useTranslation } from "react-i18next";
 
 import { useWorkshops } from "@/hooks/useWorkshops";
 import { useAuthStore } from "@/store/auth";
 import { displayName } from "@/lib/user";
+import { listItemEntering } from "@/lib/entrance";
 import type { Workshop } from "@/types/api";
 import {
   formatWeekdayShort,
@@ -22,7 +17,15 @@ import {
   formatMonthLong,
   formatTime,
 } from "@/lib/date";
-import { colors } from "@/theme/tokens";
+import { AppText } from "@/components/AppText";
+import { Badge } from "@/components/Badge";
+import { BreathingCircle } from "@/components/BreathingCircle";
+import { DateBlock } from "@/components/DateBlock";
+import { EmptyState } from "@/components/EmptyState";
+import { PressableScale } from "@/components/PressableScale";
+import { SectionHeader } from "@/components/SectionHeader";
+import { SkeletonList } from "@/components/Skeleton";
+import { colors, radii, shadows, spacing } from "@/theme/tokens";
 
 function toAutomationSlug(value: string): string {
   return value
@@ -32,90 +35,106 @@ function toAutomationSlug(value: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
-function getGreeting(): string {
+function getGreetingKey(): string {
   const hour = new Date().getHours();
-  if (hour < 12) return "Good morning";
-  if (hour < 17) return "Good afternoon";
-  return "Good evening";
+  if (hour < 12) return "home.greeting_morning";
+  if (hour < 17) return "home.greeting_afternoon";
+  return "home.greeting_evening";
 }
 
-function formatPrice(price: string | number): string {
-  const n = Number(price);
-  if (n === 0) return "Free";
-  return `$${n % 1 === 0 ? n : n.toFixed(2)}`;
+function useFormatPrice() {
+  const { t } = useTranslation();
+  return (price: string | number): string => {
+    const n = Number(price);
+    if (n === 0) return t("free");
+    return `$${n % 1 === 0 ? n : n.toFixed(2)}`;
+  };
 }
 
-function WorkshopCard({ workshop }: { workshop: Workshop }) {
+function WorkshopCard({
+  workshop,
+  index,
+}: {
+  workshop: Workshop;
+  index: number;
+}) {
   const router = useRouter();
+  const { t } = useTranslation();
+  const formatPrice = useFormatPrice();
   const weekday = formatWeekdayShort(workshop.start_time);
   const day = formatDay(workshop.start_time);
   const month = formatMonthLong(workshop.start_time);
   const time = formatTime(workshop.start_time);
+  const price = formatPrice(workshop.price);
+  const isFree = Number(workshop.price) === 0;
 
   return (
-    <Pressable
-      onPress={() => router.push(`/(app)/workshop/${workshop.id}`)}
-      accessibilityRole="button"
-      accessibilityLabel={`${workshop.title}, ${weekday} ${day} ${month} at ${time}, ${formatPrice(workshop.price)}`}
-      testID={`home.workshop.card.${toAutomationSlug(workshop.title)}`}
-      className="mb-5 flex-row overflow-hidden rounded-2xl border border-line-whisper bg-surface"
-      style={({ pressed }) => ({
-        transform: [{ scale: pressed ? 0.98 : 1 }],
-        opacity: pressed ? 0.92 : 1,
-      })}
-    >
-      {/* Left accent strip */}
-      <View style={s.accentStrip} />
+    <Animated.View entering={listItemEntering(index)}>
+      <PressableScale
+        onPress={() => router.push(`/(app)/workshop/${workshop.id}`)}
+        haptic
+        accessibilityRole="button"
+        accessibilityLabel={`${workshop.title}, ${weekday} ${day} ${month} at ${time}, ${price}`}
+        testID={`home.workshop.card.${toAutomationSlug(workshop.title)}`}
+        style={s.card}
+      >
+        <DateBlock weekday={weekday} day={day} />
 
-      <View style={s.cardBody}>
-        {/* Title + Price row */}
-        <View style={s.titleRow}>
-          <Text style={s.cardTitle} numberOfLines={2}>
+        <View style={s.cardBody}>
+          <AppText variant="heading" numberOfLines={2}>
             {workshop.title}
-          </Text>
-          <Text style={s.cardPrice}>{formatPrice(workshop.price)}</Text>
+          </AppText>
+
+          <View style={s.metaRow}>
+            <Ionicons name="time-outline" size={13} color={colors.inkMuted} />
+            <AppText variant="caption" tone="body">
+              {time}
+            </AppText>
+            <AppText variant="caption" tone="muted" style={s.metaDot}>
+              ·
+            </AppText>
+            <AppText variant="caption" tone="body">
+              {t("home.duration_min", { count: workshop.duration_minutes })}
+            </AppText>
+          </View>
+
+          <View style={s.metaRow}>
+            <Ionicons
+              name="people-outline"
+              size={13}
+              color={colors.inkMuted}
+            />
+            <AppText variant="caption" tone="muted">
+              {t("home.spots_count", { count: workshop.max_participants })}
+            </AppText>
+          </View>
         </View>
 
-        {/* Date + time */}
-        <View style={s.metaRow}>
-          <Ionicons name="calendar-outline" size={13} color={colors.inkMuted} />
-          <Text style={s.metaText}>
-            {weekday}, {day} {month}
-          </Text>
-          <Text style={s.metaDot}>·</Text>
-          <Ionicons name="time-outline" size={13} color={colors.inkMuted} />
-          <Text style={s.metaText}>{time}</Text>
+        <View style={s.cardSide}>
+          <Badge label={price} tone={isFree ? "primary" : "neutral"} />
+          <Ionicons name="chevron-forward" size={14} color={colors.line} />
         </View>
-
-        {/* Duration + spots */}
-        <View style={s.detailRow}>
-          <Ionicons name="time-outline" size={12} color={colors.inkMuted} />
-          <Text style={s.detailText}>{workshop.duration_minutes} min</Text>
-          <Text style={s.detailDot}>·</Text>
-          <Ionicons name="people-outline" size={12} color={colors.inkMuted} />
-          <Text style={s.detailText}>{workshop.max_participants} spots</Text>
-        </View>
-      </View>
-
-      {/* Chevron */}
-      <View style={s.chevronContainer}>
-        <Ionicons name="chevron-forward" size={14} color={colors.line} />
-      </View>
-    </Pressable>
+      </PressableScale>
+    </Animated.View>
   );
 }
 
 function ListHeader({ name }: { name?: string }) {
+  const { t } = useTranslation();
   const firstName = name?.split(" ")[0];
 
   return (
     <View style={s.listHeader}>
-      <Text style={s.greeting}>{getGreeting()}{firstName ? "," : ""}</Text>
-      {firstName && <Text style={s.greetingName}>{firstName}</Text>}
+      <BreathingCircle size={150} style={s.headerDecor} />
+
+      <AppText variant="caption" tone="muted" style={s.greeting}>
+        {t(getGreetingKey())}
+        {firstName ? "," : ""}
+      </AppText>
+      {firstName && <AppText variant="display">{firstName}</AppText>}
 
       <View style={s.sectionLabelRow}>
-        <Text style={s.sectionLabel}>Upcoming</Text>
-        <View style={s.sectionAccent} />
+        <SectionHeader label={t("home.upcoming")} />
       </View>
     </View>
   );
@@ -126,32 +145,27 @@ export default function WorkshopListScreen() {
   const user = useAuthStore((s) => s.user);
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-canvas">
-        <ActivityIndicator size="large" color={colors.primary} />
+      <View className="flex-1 bg-canvas" style={{ paddingTop: insets.top + 32 }}>
+        <SkeletonList />
       </View>
     );
   }
 
   if (error) {
     return (
-      <View className="flex-1 items-center justify-center bg-canvas px-12">
-        <Ionicons name="cloud-offline-outline" size={48} color={colors.line} />
-        <Text style={s.emptyTitle}>Unable to load</Text>
-        <Text style={s.emptySubtitle}>Check your connection and try again</Text>
-        <Pressable
-          onPress={() => refetch()}
-          accessibilityRole="button"
-          accessibilityLabel="Retry loading workshops"
-          className="mt-7 rounded-full border border-primary px-8 py-4"
-          style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-        >
-          <Text className="text-sm font-medium tracking-wide text-primary">
-            Try again
-          </Text>
-        </Pressable>
+      <View className="flex-1 justify-center bg-canvas">
+        <EmptyState
+          icon="cloud-offline-outline"
+          title={t("home.error_title")}
+          subtitle={t("home.error_subtitle")}
+          actionLabel={t("home.try_again")}
+          onAction={() => refetch()}
+          actionAccessibilityLabel={t("home.retry_a11y")}
+        />
       </View>
     );
   }
@@ -168,11 +182,13 @@ export default function WorkshopListScreen() {
       <FlatList
         data={data}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <WorkshopCard workshop={item} />}
+        renderItem={({ item, index }) => (
+          <WorkshopCard workshop={item} index={index} />
+        )}
         testID="home.workshops.list"
         contentContainerStyle={{
-          paddingHorizontal: 24,
-          paddingTop: insets.top + 32,
+          paddingHorizontal: spacing.screenPadding,
+          paddingTop: insets.top + spacing.sectionGap,
           paddingBottom: 140,
         }}
         ListHeaderComponent={<ListHeader name={displayName(user)} />}
@@ -184,24 +200,13 @@ export default function WorkshopListScreen() {
           />
         }
         ListEmptyComponent={
-          <View style={s.emptyContainer}>
-            <Ionicons name="calendar-outline" size={48} color={colors.line} />
-            <Text style={s.emptyTitle}>Your schedule is clear</Text>
-            <Text style={s.emptySubtitle}>
-              Join a group to see its upcoming workshops here
-            </Text>
-            <Pressable
-              onPress={() => router.push("/(app)/(tabs)/groups")}
-              accessibilityRole="button"
-              accessibilityLabel="Browse groups"
-              className="mt-7 rounded-full border border-primary px-8 py-4"
-              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-            >
-              <Text className="text-sm font-medium tracking-wide text-primary">
-                Browse groups
-              </Text>
-            </Pressable>
-          </View>
+          <EmptyState
+            icon="calendar-outline"
+            title={t("home.empty_title")}
+            subtitle={t("home.empty_subtitle")}
+            actionLabel={t("home.browse_groups")}
+            onAction={() => router.push("/(app)/(tabs)/groups")}
+          />
         }
       />
     </View>
@@ -209,143 +214,49 @@ export default function WorkshopListScreen() {
 }
 
 const s = StyleSheet.create({
-  accentStrip: {
-    width: 3,
-    backgroundColor: "#566B52",
+  card: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.elementGap,
+    backgroundColor: colors.surface,
+    borderRadius: radii.card,
+    borderWidth: 1,
+    borderColor: colors.lineWhisper,
+    padding: spacing.cardPadding,
+    marginBottom: spacing.elementGap,
+    ...shadows.card,
   },
   cardBody: {
     flex: 1,
-    paddingHorizontal: 18,
-    paddingVertical: 18,
-    gap: 8,
-  },
-  titleRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    gap: 12,
-  },
-  cardTitle: {
-    flex: 1,
-    fontSize: 17,
-    fontWeight: "500",
-    letterSpacing: 0.2,
-    lineHeight: 24,
-    color: "#2E2E2B",
-  },
-  cardPrice: {
-    fontSize: 15,
-    fontWeight: "600",
-    letterSpacing: 0.3,
-    color: "#566B52",
+    gap: 6,
   },
   metaRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
   },
-  metaText: {
-    fontSize: 13,
-    fontWeight: "400",
-    letterSpacing: 0.2,
-    color: "#57564F",
-  },
   metaDot: {
-    fontSize: 13,
-    color: "#8C8A82",
     marginHorizontal: 2,
   },
-  detailRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  detailText: {
-    fontSize: 12,
-    fontWeight: "400",
-    color: "#8C8A82",
-  },
-  detailDot: {
-    fontSize: 12,
-    color: "#DDD9D1",
-    marginHorizontal: 4,
-  },
-  chevronContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingRight: 16,
+  cardSide: {
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+    alignSelf: "stretch",
+    paddingVertical: 2,
   },
   listHeader: {
-    marginBottom: 32,
+    marginBottom: spacing.sectionGap,
     paddingHorizontal: 4,
   },
-  greeting: {
-    fontSize: 14,
-    fontWeight: "400",
-    letterSpacing: 0.3,
-    color: "#8C8A82",
+  headerDecor: {
+    position: "absolute",
+    top: -40,
+    right: -60,
   },
-  greetingName: {
-    fontSize: 28,
-    fontWeight: "300",
-    letterSpacing: 0.5,
-    lineHeight: 36,
-    color: "#2E2E2B",
-    marginTop: 2,
+  greeting: {
+    marginBottom: 2,
   },
   sectionLabelRow: {
     marginTop: 40,
-    gap: 8,
-  },
-  sectionLabel: {
-    fontSize: 11,
-    fontWeight: "500",
-    letterSpacing: 2,
-    color: "#8C8A82",
-    textTransform: "uppercase",
-  },
-  sectionAccent: {
-    width: 24,
-    height: 1.5,
-    backgroundColor: "#566B52",
-    borderRadius: 1,
-    marginTop: 6,
-  },
-  emptyContainer: {
-    alignItems: "center",
-    paddingTop: 60,
-    paddingHorizontal: 40,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: "300",
-    letterSpacing: 0.3,
-    color: "#57564F",
-    marginTop: 20,
-    textAlign: "center",
-  },
-  emptySubtitle: {
-    fontSize: 13,
-    fontWeight: "400",
-    color: "#8C8A82",
-    marginTop: 8,
-    textAlign: "center",
-    maxWidth: 240,
-    lineHeight: 20,
-  },
-  fab: {
-    position: "absolute",
-    right: 24,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: "#566B52",
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#2E2E2B",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
-    elevation: 8,
   },
 });
