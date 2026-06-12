@@ -27,7 +27,7 @@ import {
   registerWithEmail,
 } from "@/api/endpoints";
 import { useAuthStore } from "@/store/auth";
-import { colors, radii, spacing } from "@/theme/tokens";
+import { colors, fonts, radii, spacing } from "@/theme/tokens";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -458,14 +458,14 @@ const s = StyleSheet.create({
   brand: {
     color: colors.ink,
     fontSize: 44,
-    fontWeight: "200",
+    fontFamily: fonts.displayLight,
     letterSpacing: 8,
     marginLeft: 8,
   },
   tagline: {
     color: colors.inkMuted,
     fontSize: 14,
-    fontWeight: "400",
+    fontFamily: fonts.body,
     letterSpacing: 0.4,
     marginTop: 14,
     textAlign: "center",
@@ -503,7 +503,7 @@ const s = StyleSheet.create({
   modeButtonText: {
     color: colors.inkMuted,
     fontSize: 15,
-    fontWeight: "600",
+    fontFamily: fonts.bodySemiBold,
     textAlign: "center",
   },
   modeButtonTextActive: {
@@ -512,7 +512,8 @@ const s = StyleSheet.create({
   heading: {
     color: colors.ink,
     fontSize: 28,
-    fontWeight: "600",
+    lineHeight: 36,
+    fontFamily: fonts.displayMedium,
     textAlign: "center",
   },
   subheading: {
@@ -532,7 +533,7 @@ const s = StyleSheet.create({
   label: {
     color: colors.ink,
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: fonts.bodySemiBold,
   },
   input: {
     backgroundColor: colors.elevated,
@@ -555,7 +556,7 @@ const s = StyleSheet.create({
   primaryButtonText: {
     color: colors.surface,
     fontSize: 16,
-    fontWeight: "700",
+    fontFamily: fonts.bodySemiBold,
     letterSpacing: 0.4,
   },
   forgotPasswordRow: {
@@ -565,7 +566,7 @@ const s = StyleSheet.create({
   forgotPasswordText: {
     color: colors.accent,
     fontSize: 13,
-    fontWeight: "600",
+    fontFamily: fonts.bodySemiBold,
   },
   footerRow: {
     alignItems: "center",
@@ -581,7 +582,7 @@ const s = StyleSheet.create({
   footerLink: {
     color: colors.accent,
     fontSize: 14,
-    fontWeight: "700",
+    fontFamily: fonts.bodySemiBold,
   },
   separatorRow: {
     alignItems: "center",
@@ -597,7 +598,7 @@ const s = StyleSheet.create({
   separatorText: {
     color: colors.inkMuted,
     fontSize: 12,
-    fontWeight: "600",
+    fontFamily: fonts.bodySemiBold,
     letterSpacing: 1,
     textTransform: "uppercase",
   },
@@ -622,6 +623,6 @@ const s = StyleSheet.create({
   secondaryButtonText: {
     color: colors.primary,
     fontSize: 15,
-    fontWeight: "700",
+    fontFamily: fonts.bodySemiBold,
   },
 });

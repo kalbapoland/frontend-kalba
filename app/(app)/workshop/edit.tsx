@@ -24,7 +24,8 @@ import DateTimePicker, {
 import { HashtagTextInput } from "@/components/HashtagTextInput";
 import { useWorkshopDetail } from "@/hooks/useWorkshopDetail";
 import { useUpdateWorkshop } from "@/hooks/useUpdateWorkshop";
-import { colors } from "@/theme/tokens";
+import { successFeedback } from "@/lib/haptics";
+import { colors, fonts } from "@/theme/tokens";
 import {
   getDeviceTimezone,
   localTimeToUTC,
@@ -171,7 +172,10 @@ export default function EditWorkshopScreen() {
         max_participants: Number(maxParticipants),
       },
       {
-        onSuccess: () => router.back(),
+        onSuccess: () => {
+          successFeedback();
+          router.back();
+        },
         onError: () => showAlert(t("workshop.update_failed")),
       },
     );
@@ -470,7 +474,7 @@ const s = StyleSheet.create({
   },
   notFoundText: {
     fontSize: 18,
-    fontWeight: "300",
+    fontFamily: fonts.display,
     color: colors.inkBody,
     marginTop: 16,
     textAlign: "center",
@@ -491,7 +495,7 @@ const s = StyleSheet.create({
   },
   pageTitle: {
     fontSize: 20,
-    fontWeight: "300",
+    fontFamily: fonts.display,
     letterSpacing: 0.4,
     color: colors.ink,
   },
@@ -508,7 +512,7 @@ const s = StyleSheet.create({
   },
   fieldLabel: {
     fontSize: 11,
-    fontWeight: "500",
+    fontFamily: fonts.bodyMedium,
     letterSpacing: 0.8,
     color: colors.inkMuted,
     marginBottom: 6,
@@ -530,7 +534,7 @@ const s = StyleSheet.create({
   schedulePreviewText: {
     fontSize: 14,
     color: colors.ink,
-    fontWeight: "500",
+    fontFamily: fonts.bodyMedium,
     letterSpacing: 0.2,
   },
   scheduleDot: {
@@ -554,7 +558,7 @@ const s = StyleSheet.create({
   scheduleButtonText: {
     fontSize: 13,
     color: colors.primary,
-    fontWeight: "600",
+    fontFamily: fonts.bodySemiBold,
     letterSpacing: 0.3,
   },
   scheduleHint: {
@@ -567,6 +571,7 @@ const s = StyleSheet.create({
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 12,
+    fontFamily: fonts.body,
     fontSize: 15,
     color: colors.ink,
     borderWidth: 1.5,
@@ -596,7 +601,7 @@ const s = StyleSheet.create({
   },
   submitText: {
     fontSize: 16,
-    fontWeight: "500",
+    fontFamily: fonts.bodyMedium,
     letterSpacing: 0.5,
     color: colors.surface,
   },
@@ -621,12 +626,12 @@ const s = StyleSheet.create({
   },
   pickerSheetTitle: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: fonts.bodySemiBold,
     color: colors.ink,
   },
   pickerDoneText: {
     fontSize: 15,
-    fontWeight: "600",
+    fontFamily: fonts.bodySemiBold,
     color: colors.primary,
   },
 });

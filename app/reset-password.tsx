@@ -16,7 +16,7 @@ import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 
 import { resetPassword } from "@/api/endpoints";
 import { useAuthStore } from "@/store/auth";
-import { colors, radii, spacing } from "@/theme/tokens";
+import { colors, fonts, radii, spacing } from "@/theme/tokens";
 
 const RESET_TEST_IDS = {
   passwordInput: "reset.password.input",
@@ -208,7 +208,8 @@ const s = StyleSheet.create({
   heading: {
     color: colors.ink,
     fontSize: 26,
-    fontWeight: "600",
+    lineHeight: 34,
+    fontFamily: fonts.displayMedium,
     textAlign: "center",
   },
   subheading: {
@@ -228,7 +229,7 @@ const s = StyleSheet.create({
   label: {
     color: colors.ink,
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: fonts.bodySemiBold,
   },
   input: {
     backgroundColor: colors.elevated,
@@ -243,7 +244,7 @@ const s = StyleSheet.create({
   errorText: {
     color: colors.danger,
     fontSize: 13,
-    fontWeight: "600",
+    fontFamily: fonts.bodySemiBold,
   },
   primaryButton: {
     alignItems: "center",
@@ -256,7 +257,7 @@ const s = StyleSheet.create({
   primaryButtonText: {
     color: colors.surface,
     fontSize: 16,
-    fontWeight: "700",
+    fontFamily: fonts.bodySemiBold,
     letterSpacing: 0.4,
   },
   footerRow: {
@@ -266,6 +267,6 @@ const s = StyleSheet.create({
   footerLink: {
     color: colors.accent,
     fontSize: 14,
-    fontWeight: "700",
+    fontFamily: fonts.bodySemiBold,
   },
 });

@@ -11,7 +11,7 @@ import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 
 import type { Workshop } from "@/types/api";
-import { colors } from "@/theme/tokens";
+import { colors, fonts } from "@/theme/tokens";
 import {
   DAY_END_HOUR,
   DAY_START_HOUR,
@@ -93,7 +93,7 @@ export function WeekView({ workshops, date, onSelectDay }: Props) {
                 <Text
                   style={[
                     s.dayNumber,
-                    isToday && { color: colors.surface, fontWeight: "600" },
+                    isToday && { color: colors.surface, fontFamily: fonts.bodySemiBold },
                   ]}
                 >
                   {d.getDate()}
@@ -231,5 +231,5 @@ const s = StyleSheet.create({
     paddingVertical: 3,
     overflow: "hidden",
   },
-  eventTitle: { fontSize: 11, fontWeight: "500", color: colors.ink },
+  eventTitle: { fontSize: 11, fontFamily: fonts.bodyMedium, color: colors.ink },
 });

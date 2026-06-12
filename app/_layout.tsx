@@ -6,6 +6,17 @@ import { Platform } from "react-native";
 import * as Notifications from "expo-notifications";
 import { Slot, SplashScreen, useRouter } from "expo-router";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { useFonts } from "expo-font";
+import {
+  Fraunces_300Light,
+  Fraunces_400Regular,
+  Fraunces_500Medium,
+} from "@expo-google-fonts/fraunces";
+import {
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+} from "@expo-google-fonts/inter";
 
 import { queryClient } from "@/lib/query-client";
 import { useAuthStore } from "@/store/auth";
@@ -59,16 +70,25 @@ export default function RootLayout() {
   const router = useRouter();
   const isRestoringToken = useAuthStore((s) => s.isRestoringToken);
   const restoreToken = useAuthStore((s) => s.restoreToken);
+  const [fontsLoaded, fontError] = useFonts({
+    Fraunces_300Light,
+    Fraunces_400Regular,
+    Fraunces_500Medium,
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+  });
+  const fontsReady = fontsLoaded || fontError != null;
 
   useEffect(() => {
     restoreToken();
   }, [restoreToken]);
 
   useEffect(() => {
-    if (!isRestoringToken) {
+    if (!isRestoringToken && fontsReady) {
       SplashScreen.hideAsync();
     }
-  }, [isRestoringToken]);
+  }, [isRestoringToken, fontsReady]);
 
   useEffect(() => {
     if (Platform.OS === "web") {
@@ -97,7 +117,7 @@ export default function RootLayout() {
     };
   }, [router]);
 
-  if (isRestoringToken) {
+  if (isRestoringToken || !fontsReady) {
     return null;
   }
 

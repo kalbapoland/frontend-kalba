@@ -54,6 +54,24 @@
     "workshop_few": "{{count}} warsztaty",
     "workshop_many": "{{count}} warsztatów",
     "workshop_other": "{{count}} warsztatów",
+    "home": {
+        "greeting_morning": "Dzień dobry",
+        "greeting_afternoon": "Dzień dobry",
+        "greeting_evening": "Dobry wieczór",
+        "upcoming": "Nadchodzące",
+        "empty_title": "Twój grafik jest pusty",
+        "empty_subtitle": "Dołącz do grupy, aby zobaczyć tutaj jej nadchodzące warsztaty",
+        "browse_groups": "Przeglądaj grupy",
+        "error_title": "Nie udało się załadować",
+        "error_subtitle": "Sprawdź połączenie i spróbuj ponownie",
+        "try_again": "Spróbuj ponownie",
+        "retry_a11y": "Ponów ładowanie warsztatów",
+        "duration_min": "{{count}} min",
+        "spots_count_one": "{{count}} miejsce",
+        "spots_count_few": "{{count}} miejsca",
+        "spots_count_many": "{{count}} miejsc",
+        "spots_count_other": "{{count}} miejsca"
+    },
     "calendar": {
         "title": "Kalendarz",
         "month": "Miesiąc",
@@ -183,6 +201,20 @@
         "remove": "Usuń",
         "remove_member_a11y": "Usuń {{name}}",
         "subscribe_to_name": "Subskrybuj {{title}}"
+    },
+    "profile_screen": {
+        "signout": "Wyloguj się",
+        "signout_confirm": "Czy na pewno chcesz się wylogować?",
+        "delete_account": "Usuń konto",
+        "delete_title": "Usuń konto",
+        "delete_body": "To trwale usunie Twoje konto i wszystkie Twoje dane. Tej operacji nie można cofnąć.",
+        "delete_confirm_title": "Na pewno?",
+        "delete_confirm_body": "To jest trwałe i nie można tego cofnąć.",
+        "delete_confirm_again": "Czy na pewno? Ta operacja jest trwała.",
+        "delete_failed": "Nie udało się teraz usunąć konta. Spróbuj ponownie.",
+        "deleting": "Usuwanie…",
+        "delete": "Usuń",
+        "privacy_policy": "Polityka prywatności"
     },
     "errors": {
         "title": "Błąd",

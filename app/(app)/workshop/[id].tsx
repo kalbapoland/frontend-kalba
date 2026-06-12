@@ -21,7 +21,10 @@ import { useDeleteWorkshop } from "@/hooks/useDeleteWorkshop";
 import { useEnrollWorkshop, useUnenrollWorkshop } from "@/hooks/useEnrollment";
 import { useAuthStore } from "@/store/auth";
 import { formatWeekdayLong, formatMonthDayYear, formatTime, formatTimeWithTZ } from "@/lib/date";
-import { colors } from "@/theme/tokens";
+import { EmptyState } from "@/components/EmptyState";
+import { SkeletonList } from "@/components/Skeleton";
+import { successFeedback } from "@/lib/haptics";
+import { colors, fonts } from "@/theme/tokens";
 
 function formatPrice(price: string | number, freeLabel: string): string {
   const n = Number(price);
@@ -99,8 +102,8 @@ export default function WorkshopDetailScreen() {
 
   if (isLoading) {
     return (
-      <View style={[s.centered, { backgroundColor: colors.canvas }]}>
-        <ActivityIndicator size="large" color={colors.primary} />
+      <View style={[s.screen, { backgroundColor: colors.canvas, paddingTop: insets.top + 32 }]}>
+        <SkeletonList count={3} />
       </View>
     );
   }
@@ -108,8 +111,7 @@ export default function WorkshopDetailScreen() {
   if (!workshop) {
     return (
       <View style={[s.centered, { backgroundColor: colors.canvas }]}>
-        <Ionicons name="alert-circle-outline" size={48} color={colors.line} />
-        <Text style={s.emptyTitle}>{t("workshop_not_found")}</Text>
+        <EmptyState icon="alert-circle-outline" title={t("workshop_not_found")} />
       </View>
     );
   }
@@ -122,6 +124,7 @@ export default function WorkshopDetailScreen() {
   const handleEnrollToggle = () => {
     const mutation = isEnrolled ? unenrollMutation : enrollMutation;
     mutation.mutate(id!, {
+      onSuccess: () => successFeedback(),
       onError: (err) => {
         const axiosErr = err as AxiosError<{ detail?: string }>;
         const msg = axiosErr.response?.data?.detail ?? t("errors.action_failed");
@@ -328,42 +331,41 @@ const s = StyleSheet.create({
   screen: { flex: 1 },
   scroll: { flex: 1 },
   centered: { flex: 1, alignItems: "center", justifyContent: "center" },
-  emptyTitle: { fontSize: 18, fontWeight: "300", color: "#57564F", marginTop: 16 },
   navBar: { paddingHorizontal: 20, paddingBottom: 8 },
   backButton: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
   header: { paddingHorizontal: 24, paddingBottom: 28 },
   title: {
+    fontFamily: fonts.displayLight,
     fontSize: 28,
-    fontWeight: "200",
-    letterSpacing: 0.5,
-    lineHeight: 36,
-    color: "#2E2E2B",
+    letterSpacing: 0.4,
+    lineHeight: 38,
+    color: colors.ink,
     marginBottom: 12,
   },
   dateRow: { flexDirection: "row", alignItems: "center", gap: 6 },
-  dateText: { fontSize: 14, color: "#57564F", letterSpacing: 0.2 },
-  dateDot: { fontSize: 14, color: "#DDD9D1", marginHorizontal: 2 },
+  dateText: { fontFamily: fonts.body, fontSize: 14, color: colors.inkBody, letterSpacing: 0.2 },
+  dateDot: { fontSize: 14, color: colors.line, marginHorizontal: 2 },
   section: { paddingHorizontal: 24, paddingBottom: 28 },
   description: {
+    fontFamily: fonts.body,
     fontSize: 16,
-    fontWeight: "400",
     lineHeight: 26,
-    color: "#57564F",
+    color: colors.inkBody,
     letterSpacing: 0.1,
   },
   sectionLabel: {
+    fontFamily: fonts.bodyMedium,
     fontSize: 11,
-    fontWeight: "500",
     letterSpacing: 2,
-    color: "#8C8A82",
+    color: colors.inkMuted,
     textTransform: "uppercase",
     marginBottom: 12,
   },
   detailCard: {
     borderRadius: 20,
-    backgroundColor: "#FAF8F4",
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: "#EDE9E2",
+    borderColor: colors.lineWhisper,
     paddingHorizontal: 20,
     overflow: "hidden",
   },
@@ -373,9 +375,9 @@ const s = StyleSheet.create({
     paddingVertical: 16,
     gap: 12,
   },
-  detailRowBorder: { borderBottomWidth: 1, borderBottomColor: "#EDE9E2" },
-  detailLabel: { flex: 1, fontSize: 14, color: "#57564F" },
-  detailValue: { fontSize: 14, fontWeight: "600", color: "#2E2E2B" },
+  detailRowBorder: { borderBottomWidth: 1, borderBottomColor: colors.lineWhisper },
+  detailLabel: { flex: 1, fontFamily: fonts.body, fontSize: 14, color: colors.inkBody },
+  detailValue: { fontFamily: fonts.bodySemiBold, fontSize: 14, color: colors.ink },
   manageRow: { flexDirection: "row", gap: 12 },
   ghostButton: {
     flex: 1,
@@ -389,31 +391,31 @@ const s = StyleSheet.create({
   editButton: {
     borderWidth: 1.5,
     borderColor: "rgba(86,107,82,0.3)",
-    backgroundColor: "#FAF8F4",
+    backgroundColor: colors.surface,
   },
   deleteButton: {
     borderWidth: 1.5,
     borderColor: "rgba(196,131,110,0.3)",
-    backgroundColor: "#FAF8F4",
+    backgroundColor: colors.surface,
   },
-  ghostButtonText: { fontSize: 14, fontWeight: "500", letterSpacing: 0.3 },
+  ghostButtonText: { fontFamily: fonts.bodyMedium, fontSize: 14, letterSpacing: 0.3 },
   stickyBar: {
     paddingHorizontal: 24,
     paddingTop: 16,
     backgroundColor: colors.canvas,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "#EDE9E2",
+    borderTopColor: colors.lineWhisper,
   },
   joinButton: {
     height: 56,
     borderRadius: 999,
-    backgroundColor: "#566B52",
+    backgroundColor: colors.primary,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 10,
   },
-  joinButtonText: { fontSize: 16, fontWeight: "500", letterSpacing: 0.5, color: "#FAF8F4" },
+  joinButtonText: { fontFamily: fonts.bodyMedium, fontSize: 16, letterSpacing: 0.5, color: colors.surface },
   enrollButton: {
     height: 50,
     borderRadius: 999,
@@ -426,15 +428,15 @@ const s = StyleSheet.create({
   },
   enrollButtonEnroll: {
     borderColor: "rgba(86,107,82,0.45)",
-    backgroundColor: "#FAF8F4",
+    backgroundColor: colors.surface,
   },
   enrollButtonUnenroll: {
     borderColor: "rgba(196,131,110,0.45)",
-    backgroundColor: "#FAF8F4",
+    backgroundColor: colors.surface,
   },
   enrollButtonDisabled: {
     borderColor: "rgba(140,138,130,0.3)",
-    backgroundColor: "#F2EFE9",
+    backgroundColor: colors.canvasDeep,
   },
-  enrollButtonText: { fontSize: 15, fontWeight: "500", letterSpacing: 0.3 },
+  enrollButtonText: { fontFamily: fonts.bodyMedium, fontSize: 15, letterSpacing: 0.3 },
 });

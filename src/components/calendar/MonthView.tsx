@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
 import type { Workshop } from "@/types/api";
-import { colors } from "@/theme/tokens";
+import { colors, fonts } from "@/theme/tokens";
 import { formatTime } from "@/lib/date";
 import { sameDay, toISODate } from "./dateUtils";
 
@@ -219,13 +219,13 @@ const s = StyleSheet.create({
   cardTitle: {
     flex: 1,
     fontSize: 15,
-    fontWeight: "500",
+    fontFamily: fonts.bodyMedium,
     color: colors.ink,
     letterSpacing: 0.2,
   },
   cardTime: {
     fontSize: 13,
-    fontWeight: "600",
+    fontFamily: fonts.bodySemiBold,
     color: colors.primary,
   },
   cardMeta: {

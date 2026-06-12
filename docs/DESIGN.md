@@ -511,3 +511,64 @@ remains visible on the detail screen via `formatTimeWithTZ`.
 - Configurable day grid bounds, or auto-fit to the events present.
 
 ---
+
+---
+
+## UI Design System & Modernization
+
+**Status:** shipped (2026-06-12)
+
+### Overview
+
+A cohesive "quiet wellness" design system applied across the app: custom
+typography, motion/micro-interactions, skeleton loading states, illustrated
+empty states, and a shared component vocabulary. Visual-only — no API,
+navigation, or business-logic changes.
+
+### Decisions
+
+- **Typography:** Fraunces (warm serif) for display moments (greetings, page
+  titles, workshop titles, stat numbers) and Inter for body/meta text, loaded
+  via `@expo-google-fonts` in the root layout (splash stays up until fonts
+  resolve). Scale lives in `src/theme/tokens.ts` (`fonts`, `typography`);
+  `<AppText>` is the single typography entry point. `fontWeight` is replaced
+  by explicit font families because custom fonts ignore weight on Android.
+- **Tokens are law:** all raw hex values in screens/components were replaced
+  with `colors` tokens; new `shadows` (soft, low-opacity) and `motion`
+  (durations + stagger) token groups added. Tailwind config mirrors the font
+  families (`font-display`, `font-body`, ...).
+- **Motion:** Reanimated v4 (+ `react-native-worklets`). Staggered
+  `FadeInDown` entrances for list cards (capped at 8 items via
+  `listItemEntering`), spring-sliding active-tab indicator in the
+  FloatingTabBar, pressed-scale via shared `<PressableScale>`, and a slow
+  breathing decoration (`<BreathingCircle>`) on the Home header. Everything
+  respects OS Reduce Motion (`useReducedMotion` / `ReduceMotion.System`).
+- **Haptics:** `expo-haptics` behind `src/lib/haptics.ts` (no-op on web).
+  Light impact on tab switch and card taps; success notification after
+  enroll/subscribe/form save.
+- **States:** full-screen spinners replaced by `<Skeleton>`/`<SkeletonList>`
+  pulse placeholders; empty/error states unified under `<EmptyState>`
+  (layered wash circles + serif headline + filled CTA).
+- **Cards:** workshop cards use a stacked weekday/day `<DateBlock>` in
+  `primaryWash` instead of the 3px accent strip; price is a `<Badge>` ("Free"
+  gets the primary wash). Group cards get an initial-letter avatar circle.
+- **i18n:** previously hardcoded strings migrated (`home.*`,
+  `profile_screen.*` namespaces in `en.json`/`pl.json`), including the
+  time-of-day greeting and the sign-out/delete-account dialogs.
+- **Scope cut:** the video call screens (`workshop/call.tsx`, `call.web.tsx`)
+  keep their purpose-built dark in-call chrome.
+
+### Current limitations
+
+- New native modules (reanimated, haptics, fonts) require a fresh dev-client
+  / release build — Expo Go and old dev clients won't run this branch.
+- `<Button>` exists but legacy bespoke buttons remain on detail/auth screens
+  (tokenized, not yet migrated to the shared component).
+- No dark mode; palette is light-only.
+
+### Future improvements
+
+- Migrate remaining bespoke buttons/inputs to shared `<Button>` + a future
+  `<TextField>`.
+- Shared-element transition from workshop card to detail.
+- Subtle sound design toggle for breathing/meditation moments.

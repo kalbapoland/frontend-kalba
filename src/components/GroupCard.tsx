@@ -1,10 +1,12 @@
-import { View, Text, Pressable, ActivityIndicator, StyleSheet } from "react-native";
+import { View, Pressable, ActivityIndicator, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useTranslation } from "react-i18next";
 
 import type { Group } from "@/types/api";
-import { colors } from "@/theme/tokens";
+import { AppText } from "@/components/AppText";
+import { PressableScale } from "@/components/PressableScale";
+import { colors, fonts, radii, shadows, spacing } from "@/theme/tokens";
 
 function toAutomationSlug(value: string): string {
   return value
@@ -27,42 +29,47 @@ export function GroupCard({
   const { t } = useTranslation();
   const router = useRouter();
   const memberLabel = t("group.member_count", { count: group.member_count ?? 0 });
+  const initial = group.title.trim().charAt(0).toUpperCase();
 
   return (
-    <Pressable
+    <PressableScale
       onPress={() => router.push(`/(app)/group/${group.id}`)}
+      haptic
       accessibilityRole="button"
       accessibilityLabel={`${group.title}, ${memberLabel}`}
       testID={`group.card.${toAutomationSlug(group.title)}`}
-      className="mb-4 flex-row overflow-hidden rounded-2xl border border-line-whisper bg-surface"
-      style={({ pressed }) => ({
-        transform: [{ scale: pressed ? 0.98 : 1 }],
-        opacity: pressed ? 0.92 : 1,
-      })}
+      style={s.card}
     >
-      <View style={s.accentStrip} />
+      <View style={s.avatar}>
+        <AppText style={s.avatarInitial}>{initial}</AppText>
+      </View>
+
       <View style={s.body}>
         <View style={s.titleRow}>
-          <Text style={s.title} numberOfLines={1}>
+          <AppText variant="heading" numberOfLines={1} style={s.title}>
             {group.title}
-          </Text>
+          </AppText>
           {group.is_owner && (
             <View style={s.adminBadge}>
               <Ionicons name="shield-checkmark" size={11} color={colors.primary} />
-              <Text style={s.adminBadgeText}>{t("group.admin")}</Text>
+              <AppText variant="overline" style={s.adminBadgeText}>
+                {t("group.admin")}
+              </AppText>
             </View>
           )}
         </View>
 
         {group.description ? (
-          <Text style={s.description} numberOfLines={2}>
+          <AppText variant="caption" tone="body" numberOfLines={2}>
             {group.description}
-          </Text>
+          </AppText>
         ) : null}
 
         <View style={s.metaRow}>
           <Ionicons name="people-outline" size={13} color={colors.inkMuted} />
-          <Text style={s.metaText}>{memberLabel}</Text>
+          <AppText variant="caption" tone="muted">
+            {memberLabel}
+          </AppText>
         </View>
       </View>
 
@@ -78,7 +85,9 @@ export function GroupCard({
           {subscribing ? (
             <ActivityIndicator size="small" color={colors.primary} />
           ) : (
-            <Text style={s.subscribeText}>{t("group.subscribe")}</Text>
+            <AppText variant="captionMedium" tone="primary">
+              {t("group.subscribe")}
+            </AppText>
           )}
         </Pressable>
       ) : (
@@ -86,20 +95,41 @@ export function GroupCard({
           <Ionicons name="chevron-forward" size={14} color={colors.line} />
         </View>
       )}
-    </Pressable>
+    </PressableScale>
   );
 }
 
 const s = StyleSheet.create({
-  accentStrip: {
-    width: 3,
-    backgroundColor: "#566B52",
+  card: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.surface,
+    borderRadius: radii.card,
+    borderWidth: 1,
+    borderColor: colors.lineWhisper,
+    marginBottom: spacing.itemGap,
+    paddingLeft: spacing.elementGap,
+    ...shadows.card,
+  },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.primaryWash,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarInitial: {
+    fontFamily: fonts.displayMedium,
+    fontSize: 20,
+    lineHeight: 26,
+    color: colors.primary,
   },
   body: {
     flex: 1,
-    paddingHorizontal: 18,
-    paddingVertical: 16,
-    gap: 6,
+    paddingHorizontal: spacing.elementGap,
+    paddingVertical: spacing.elementGap,
+    gap: 5,
   },
   titleRow: {
     flexDirection: "row",
@@ -109,32 +139,21 @@ const s = StyleSheet.create({
   },
   title: {
     flex: 1,
-    fontSize: 17,
-    fontWeight: "500",
-    letterSpacing: 0.2,
-    color: "#2E2E2B",
   },
   adminBadge: {
     flexDirection: "row",
     alignItems: "center",
     gap: 3,
-    backgroundColor: "#E8EDE5",
+    backgroundColor: colors.primaryWash,
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 8,
+    borderRadius: radii.tag,
   },
   adminBadgeText: {
     fontSize: 10,
-    fontWeight: "600",
-    letterSpacing: 0.4,
-    color: "#566B52",
-    textTransform: "uppercase",
-  },
-  description: {
-    fontSize: 13,
-    fontWeight: "400",
-    lineHeight: 18,
-    color: "#57564F",
+    lineHeight: 14,
+    letterSpacing: 0.6,
+    color: colors.primary,
   },
   metaRow: {
     flexDirection: "row",
@@ -142,29 +161,21 @@ const s = StyleSheet.create({
     gap: 5,
     marginTop: 2,
   },
-  metaText: {
-    fontSize: 12,
-    fontWeight: "400",
-    color: "#8C8A82",
-  },
   subscribeBtn: {
     alignSelf: "center",
     marginRight: 14,
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 999,
+    borderRadius: radii.button,
     borderWidth: 1,
-    borderColor: "#566B52",
-  },
-  subscribeText: {
-    fontSize: 13,
-    fontWeight: "600",
-    letterSpacing: 0.2,
-    color: "#566B52",
+    borderColor: colors.primary,
+    minHeight: 36,
+    alignItems: "center",
+    justifyContent: "center",
   },
   chevron: {
     alignItems: "center",
     justifyContent: "center",
-    paddingRight: 16,
+    paddingRight: spacing.elementGap,
   },
 });

@@ -68,11 +68,14 @@ Zakres: frontend Kalba (Expo), flow dla roli `user` i `trainer`, web + mobile (A
 
 ### Ekran 3: Home / Workshops List
 
-1. Sprawdz stan ladowania (spinner).
-2. Sprawdz stan bledu (wymus np. brak sieci) i przycisk Retry.
+1. Sprawdz stan ladowania (skeleton karty z pulsem, nie spinner).
+2. Sprawdz stan bledu (wymus np. brak sieci) i przycisk Try again (EmptyState z ikonami i kolami).
 3. Sprawdz liste warsztatow:
-- poprawne tytuly, data, godzina, cena, liczba miejsc
-- otwarcie detailu po kliknieciu kafelka
+- poprawne tytuly (font serif), blok daty (dzien tygodnia + numer), godzina, czas trwania, miejsca
+- cena jako badge; "Free" z zielonym tlem
+- karty pojawiaja sie z animacja fade+slide (stagger)
+- otwarcie detailu po kliknieciu kafelka (lekka haptyka na native)
+3a. Naglowek: powitanie wg pory dnia (PL/EN), imie w foncie serif, "oddychajace" kolo w tle.
 4. Pull-to-refresh:
 - odswiez dane
 - brak duplikatow na liscie
@@ -174,8 +177,8 @@ Zakres: frontend Kalba (Expo), flow dla roli `user` i `trainer`, web + mobile (A
 - konto email+haslo: wyswietla sie podane przy rejestracji imie
 - konto Google: wyswietla sie imie z konta Google
 - konto starsze bez imienia: fallback do czesci emaila przed @ (nigdy pusty/surowy email w miejscu imienia)
-3. Kliknij Sign Out:
-- potwierdz modal (mobile) / confirm (web)
+3. Kliknij Sign Out (przycisk z ikona, tekst przetlumaczony PL/EN):
+- potwierdz modal (mobile) / confirm (web); tresc dialogu przetlumaczona
 - anuluj -> pozostan zalogowany
 - potwierdz -> powrot do Sign In
 4. Link "Privacy Policy":

@@ -14,7 +14,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 
 import { requestPasswordReset } from "@/api/endpoints";
-import { colors, radii, spacing } from "@/theme/tokens";
+import { colors, fonts, radii, spacing } from "@/theme/tokens";
 
 const FORGOT_TEST_IDS = {
   emailInput: "forgot.email.input",
@@ -171,7 +171,8 @@ const s = StyleSheet.create({
   heading: {
     color: colors.ink,
     fontSize: 26,
-    fontWeight: "600",
+    lineHeight: 34,
+    fontFamily: fonts.displayMedium,
     textAlign: "center",
   },
   subheading: {
@@ -191,7 +192,7 @@ const s = StyleSheet.create({
   label: {
     color: colors.ink,
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: fonts.bodySemiBold,
   },
   input: {
     backgroundColor: colors.elevated,
@@ -214,7 +215,7 @@ const s = StyleSheet.create({
   primaryButtonText: {
     color: colors.surface,
     fontSize: 16,
-    fontWeight: "700",
+    fontFamily: fonts.bodySemiBold,
     letterSpacing: 0.4,
   },
   footerRow: {
@@ -224,6 +225,6 @@ const s = StyleSheet.create({
   footerLink: {
     color: colors.accent,
     fontSize: 14,
-    fontWeight: "700",
+    fontFamily: fonts.bodySemiBold,
   },
 });

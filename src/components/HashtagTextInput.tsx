@@ -19,7 +19,7 @@ import {
   isActiveHashtagBeyondCap,
   segmentDescription,
 } from "@/lib/hashtags";
-import { colors } from "@/theme/tokens";
+import { colors, fonts } from "@/theme/tokens";
 
 type Props = Pick<TextInputProps, "placeholder" | "testID"> & {
   value: string;
@@ -243,6 +243,6 @@ const s = StyleSheet.create({
   },
   dropdownItemHash: {
     color: colors.accent,
-    fontWeight: "600",
+    fontFamily: fonts.bodySemiBold,
   },
 });

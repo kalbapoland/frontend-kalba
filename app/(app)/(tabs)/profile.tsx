@@ -1,7 +1,6 @@
 import { useState } from "react";
 import {
   View,
-  Text,
   Pressable,
   Alert,
   Linking,
@@ -12,15 +11,21 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import Animated from "react-native-reanimated";
+import { useTranslation } from "react-i18next";
 
 import { deleteAccount } from "@/api/endpoints";
 import { useAuthStore } from "@/store/auth";
 import { displayName, initials as userInitials } from "@/lib/user";
-import { colors } from "@/theme/tokens";
+import { AppText } from "@/components/AppText";
+import { Button } from "@/components/Button";
+import { listItemEntering } from "@/lib/entrance";
+import { colors, fonts, radii, shadows, spacing } from "@/theme/tokens";
 
 const PRIVACY_POLICY_URL = "https://backend-kalba.fly.dev/privacy";
 
 export default function ProfileScreen() {
+  const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const signOut = useAuthStore((s) => s.signOut);
   const queryClient = useQueryClient();
@@ -34,14 +39,22 @@ export default function ProfileScreen() {
     };
 
     if (Platform.OS === "web") {
-      if (window.confirm("Are you sure you want to sign out?")) {
+      if (window.confirm(t("profile_screen.signout_confirm"))) {
         doSignOut();
       }
     } else {
-      Alert.alert("Sign Out", "Are you sure you want to sign out?", [
-        { text: "Cancel", style: "cancel" },
-        { text: "Sign Out", style: "destructive", onPress: doSignOut },
-      ]);
+      Alert.alert(
+        t("profile_screen.signout"),
+        t("profile_screen.signout_confirm"),
+        [
+          { text: t("cancel"), style: "cancel" },
+          {
+            text: t("profile_screen.signout"),
+            style: "destructive",
+            onPress: doSignOut,
+          },
+        ],
+      );
     }
   };
 
@@ -51,12 +64,11 @@ export default function ProfileScreen() {
       await deleteAccount();
     } catch {
       setDeleting(false);
-      const msg =
-        "We couldn't delete your account right now. Please try again.";
+      const msg = t("profile_screen.delete_failed");
       if (Platform.OS === "web") {
         window.alert(msg);
       } else {
-        Alert.alert("Delete Account", msg);
+        Alert.alert(t("profile_screen.delete_title"), msg);
       }
       return;
     }
@@ -68,31 +80,29 @@ export default function ProfileScreen() {
   const handleDeleteAccount = () => {
     if (deleting) return;
 
-    const title = "Delete Account";
-    const body =
-      "This permanently deletes your account and all your data. This cannot be undone.";
+    const body = t("profile_screen.delete_body");
 
     if (Platform.OS === "web") {
       // Double confirm because the action is irreversible.
       if (!window.confirm(body)) return;
-      if (!window.confirm("Are you absolutely sure? This is permanent.")) return;
+      if (!window.confirm(t("profile_screen.delete_confirm_again"))) return;
       void doDeleteAccount();
       return;
     }
 
-    Alert.alert(title, body, [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(t("profile_screen.delete_title"), body, [
+      { text: t("cancel"), style: "cancel" },
       {
-        text: "Delete",
+        text: t("profile_screen.delete"),
         style: "destructive",
         onPress: () =>
           Alert.alert(
-            "Are you sure?",
-            "This is permanent and cannot be undone.",
+            t("profile_screen.delete_confirm_title"),
+            t("profile_screen.delete_confirm_body"),
             [
-              { text: "Cancel", style: "cancel" },
+              { text: t("cancel"), style: "cancel" },
               {
-                text: "Delete account",
+                text: t("profile_screen.delete_account"),
                 style: "destructive",
                 onPress: () => void doDeleteAccount(),
               },
@@ -121,7 +131,7 @@ export default function ProfileScreen() {
       />
 
       {/* Profile card */}
-      <View style={s.card}>
+      <Animated.View entering={listItemEntering(0)} style={s.card}>
         {/* Avatar */}
         <View style={s.avatarWrapper}>
           <LinearGradient
@@ -131,38 +141,35 @@ export default function ProfileScreen() {
             style={s.avatarRing}
           />
           <View style={s.avatarInner}>
-            <Text style={s.avatarInitials}>{initials}</Text>
+            <AppText style={s.avatarInitials}>{initials}</AppText>
           </View>
         </View>
 
-        <Text style={s.name}>{displayName(user)}</Text>
-        <Text style={s.email}>{user.email}</Text>
+        <AppText variant="title">{displayName(user)}</AppText>
+        <AppText variant="caption" tone="muted" style={s.email}>
+          {user.email}
+        </AppText>
 
         <View style={s.rolePill}>
-          <Text style={s.roleText}>{user.role}</Text>
+          <AppText variant="overline" tone="primary">
+            {user.role}
+          </AppText>
         </View>
-      </View>
+      </Animated.View>
 
       <View style={{ flex: 1 }} />
 
       {/* Account actions */}
       <View style={[s.bottomGroup, { marginBottom: Math.max(insets.bottom, 16) + 80 }]}>
-        <Pressable
+        <Button
+          label={t("profile_screen.signout")}
           onPress={handleSignOut}
-          accessibilityRole="button"
+          variant="danger"
+          icon="log-out-outline"
+          fullWidth
           accessibilityLabel="Sign out"
           testID="profile.signout.button"
-          style={({ pressed }) => [
-            s.signOutButton,
-            {
-              transform: [{ scale: pressed ? 0.97 : 1 }],
-              opacity: pressed ? 0.85 : 1,
-            },
-          ]}
-        >
-          <Ionicons name="log-out-outline" size={17} color={colors.danger} />
-          <Text style={s.signOutText}>Sign Out</Text>
-        </Pressable>
+        />
 
         <Pressable
           onPress={handleDeleteAccount}
@@ -176,7 +183,11 @@ export default function ProfileScreen() {
           ]}
         >
           <Ionicons name="trash-outline" size={15} color={colors.inkMuted} />
-          <Text style={s.deleteText}>{deleting ? "Deleting…" : "Delete account"}</Text>
+          <AppText variant="captionMedium" tone="muted">
+            {deleting
+              ? t("profile_screen.deleting")
+              : t("profile_screen.delete_account")}
+          </AppText>
         </Pressable>
 
         <Pressable
@@ -186,7 +197,9 @@ export default function ProfileScreen() {
           testID="profile.privacy.link"
           hitSlop={8}
         >
-          <Text style={s.privacyText}>Privacy Policy</Text>
+          <AppText variant="caption" tone="muted" style={s.privacyText}>
+            {t("profile_screen.privacy_policy")}
+          </AppText>
         </Pressable>
       </View>
     </View>
@@ -196,21 +209,22 @@ export default function ProfileScreen() {
 const s = StyleSheet.create({
   screen: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.screenPadding,
   },
   card: {
     alignItems: "center",
-    borderRadius: 24,
-    backgroundColor: "#FAF8F4",
+    borderRadius: radii.card + 4,
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: "#EDE9E2",
+    borderColor: colors.lineWhisper,
     paddingHorizontal: 32,
     paddingVertical: 40,
+    ...shadows.card,
   },
   avatarWrapper: {
     width: 88,
     height: 88,
-    marginBottom: 20,
+    marginBottom: spacing.cardPadding,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -222,63 +236,30 @@ const s = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: "#FAF8F4",
+    backgroundColor: colors.surface,
     alignItems: "center",
     justifyContent: "center",
   },
   avatarInitials: {
+    fontFamily: fonts.display,
     fontSize: 26,
-    fontWeight: "300",
+    lineHeight: 34,
     letterSpacing: 2,
-    color: "#566B52",
-  },
-  name: {
-    fontSize: 22,
-    fontWeight: "300",
-    letterSpacing: 0.5,
-    color: "#2E2E2B",
+    color: colors.primary,
   },
   email: {
-    fontSize: 13,
-    fontWeight: "400",
-    color: "#8C8A82",
     marginTop: 6,
-    letterSpacing: 0.2,
   },
   rolePill: {
-    marginTop: 16,
-    paddingHorizontal: 16,
+    marginTop: spacing.elementGap,
+    paddingHorizontal: spacing.elementGap,
     paddingVertical: 6,
-    borderRadius: 999,
-    backgroundColor: "#E8EDE5",
-  },
-  roleText: {
-    fontSize: 11,
-    fontWeight: "500",
-    letterSpacing: 1.5,
-    color: "#566B52",
-    textTransform: "uppercase",
+    borderRadius: radii.button,
+    backgroundColor: colors.primaryWash,
   },
   bottomGroup: {
     gap: 14,
     alignItems: "stretch",
-  },
-  signOutButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    borderRadius: 999,
-    borderWidth: 1.5,
-    borderColor: "rgba(196,131,110,0.3)",
-    backgroundColor: "#FAF8F4",
-    paddingVertical: 16,
-  },
-  signOutText: {
-    fontSize: 15,
-    fontWeight: "500",
-    letterSpacing: 0.3,
-    color: "#C4836E",
   },
   deleteButton: {
     flexDirection: "row",
@@ -287,17 +268,7 @@ const s = StyleSheet.create({
     gap: 6,
     paddingVertical: 6,
   },
-  deleteText: {
-    fontSize: 13,
-    fontWeight: "500",
-    letterSpacing: 0.2,
-    color: "#8C8A82",
-  },
   privacyText: {
-    fontSize: 12,
-    fontWeight: "400",
-    letterSpacing: 0.3,
-    color: "#8C8A82",
     textAlign: "center",
     textDecorationLine: "underline",
   },
