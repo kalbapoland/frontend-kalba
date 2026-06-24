@@ -4,14 +4,14 @@ appId: com.kalba.app
 #
 # Co testuje:
 #   1. User może się zalogować i zobaczyć warsztat na ekranie głównym
-#   2. Ekran szczegółów warsztatu pokazuje przycisk "Wypisz się" (user jest już zapisany z user_smoke)
+#   2. Ekran szczegółów warsztatu pokazuje przycisk "Wypisz się" (user jest już zapisany z user_group_subscribe_enroll_smoke)
 #   3. Tapnięcie "Wypisz się" wysyła DELETE /workshops/{id}/enroll i przycisk zmienia się na "Zapisz się"
 #
-# Zależność: musi być uruchomiony po user_smoke.yaml, który zapisuje usera na warsztat.
+# Zależność: musi być uruchomiony po user_group_subscribe_enroll_smoke.yaml, który zapisuje usera na warsztat.
 #
 # Dane wejściowe:
 #   - konto usera: e2e.user@kalba.dev / Pass1234
-#   - istniejący warsztat: "E2E Owner Workshop Smoke" (user jest już enrolled)
+#   - istniejący warsztat: "E2E Owner Workshop Smoke Updated" (user jest już enrolled)
 
 - launchApp:
     clearState: true
@@ -25,13 +25,13 @@ appId: com.kalba.app
     id: tab.index.button
 - extendedWaitUntil:
     visible:
-      id: home.workshop.card.e2e-owner-workshop-smoke
+      id: home.workshop.card.e2e-owner-workshop-smoke-updated
     timeout: 15000
 
 # Weryfikacja: ekran szczegółów warsztatu pokazuje przycisk "Wypisz się"
-# (user był enrolled po zakończeniu user_smoke)
+# (user był enrolled po zakończeniu user_group_subscribe_enroll_smoke)
 - tapOn:
-    id: home.workshop.card.e2e-owner-workshop-smoke
+    id: home.workshop.card.e2e-owner-workshop-smoke-updated
 - extendedWaitUntil:
     visible:
       id: workshop.unenroll.button

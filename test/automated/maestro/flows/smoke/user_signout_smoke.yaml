@@ -1,0 +1,50 @@
+appId: com.kalba.app
+---
+# SMOKE: User signout-flow — wylogowanie z aplikacji
+#
+# Co testuje:
+#   1. User może zalogować się i przejść do zakładki Profil
+#   2. Przycisk "Wyloguj" jest widoczny i otwiera dialog potwierdzenia
+#   3. Potwierdzenie wylogowania czyści sesję i wraca do ekranu logowania
+#      (JWT usunięty, signin.email.input widoczny)
+#
+# Zależność: może być uruchomiony jako ostatni — nie modyfikuje danych.
+#
+# Dane wejściowe:
+#   - konto usera: e2e.user@kalba.dev / Pass1234
+
+- launchApp:
+    clearState: true
+
+# --- Logowanie jako user ---
+- runFlow: ../common/login_user.yaml
+
+# --- Nawigacja do profilu ---
+# Weryfikacja: zakładka Profil ładuje się z przyciskiem wylogowania
+- tapOn:
+    id: tab.profile.button
+- extendedWaitUntil:
+    visible:
+      id: profile.signout.button
+    timeout: 10000
+
+# --- Wylogowanie ---
+# Tapnięcie "Wyloguj" otwiera dialog potwierdzenia
+- tapOn:
+    id: profile.signout.button
+
+# Weryfikacja: dialog potwierdzenia jest widoczny
+- extendedWaitUntil:
+    visible:
+      text: "Are you sure you want to sign out?"
+    timeout: 5000
+
+# Potwierdzenie — tapnięcie "Sign Out" czyści JWT i nawiguje do ekranu logowania
+- tapOn:
+    text: "Sign Out"
+
+# Weryfikacja: ekran logowania jest widoczny — sesja zakończona
+- extendedWaitUntil:
+    visible:
+      id: signin.email.input
+    timeout: 10000

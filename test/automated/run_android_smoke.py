@@ -124,31 +124,49 @@ def main() -> None:
         install_release_build(frontend_root)
         run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
         run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/trainer_smoke.yaml"],
+            [maestro, "test", "test/automated/maestro/flows/smoke/trainer_create_smoke.yaml"],
             cwd=frontend_root,
         )
 
         run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
         run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/trainer_edit_smoke.yaml"],
+            [maestro, "test", "test/automated/maestro/flows/smoke/trainer_edit_workshop_smoke.yaml"],
             cwd=frontend_root,
         )
 
         run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
         run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/user_smoke.yaml"],
+            [maestro, "test", "test/automated/maestro/flows/smoke/user_group_subscribe_enroll_smoke.yaml"],
             cwd=frontend_root,
         )
 
         run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
         run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/user_unenroll_smoke.yaml"],
+            [maestro, "test", "test/automated/maestro/flows/smoke/user_workshop_unenroll_smoke.yaml"],
             cwd=frontend_root,
         )
 
         run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
         run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/trainer_delete_smoke.yaml"],
+            [maestro, "test", "test/automated/maestro/flows/smoke/user_group_unsubscribe_smoke.yaml"],
+            cwd=frontend_root,
+        )
+
+        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
+        run(
+            [maestro, "test", "test/automated/maestro/flows/smoke/trainer_edit_group_smoke.yaml"],
+            cwd=frontend_root,
+        )
+
+        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
+        run(
+            [maestro, "test", "test/automated/maestro/flows/smoke/trainer_delete_workshop_smoke.yaml"],
+            cwd=frontend_root,
+        )
+
+        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
+        run(
+            [maestro, "test", "test/automated/maestro/flows/smoke/user_signout_smoke.yaml"],
             cwd=frontend_root,
         )
     except BaseException as err:

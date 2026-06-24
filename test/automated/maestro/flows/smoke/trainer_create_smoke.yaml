@@ -1,21 +1,24 @@
 appId: com.kalba.app
 ---
-# SMOKE: Trainer owner-flow — create group + create workshop
+# SMOKE: trainer_create — tworzenie grupy + warsztatu
 #
 # Co testuje:
 #   1. Trainer może się zalogować i dostać się do zakładki Grupy
 #   2. Przycisk "Utwórz grupę" jest widoczny i otwiera formularz
 #   3. Formularz tworzenia grupy przyjmuje tytuł i opis, a submit zapisuje grupę
 #   4. Po zapisaniu grupy ekran szczegółów grupy jest widoczny z przyciskiem "Utwórz warsztat"
-#   5. Formularz tworzenia warsztatu przyjmuje wszystkie pola (tytuł, opis, czas trwania, cena, max uczestników)
+#   5. Formularz tworzenia warsztatu przyjmuje wszystkie pola: tytuł, opis z 5 hashtagami
+#      (#e2e #yoga #meditation #wellness #breath), czas trwania, cena, max uczestników
 #   6. Po zapisaniu warsztatu pojawia się on na liście warsztatów w grupie (kafelek z tytułem)
 #
 # Dane wejściowe:
 #   - konto trainera: e2e.trainer@kalba.dev / Pass1234 (seedowane przez ensure_smoke_trainer.py)
 #   - tworzona grupa: "E2E Trainer Group Smoke"
-#   - tworzony warsztat: "E2E Owner Workshop Smoke", 45 min, bezpłatny, max 12 osób
+#   - tworzony warsztat: "E2E Owner Workshop Smoke", 45 min, bezpłatny, max 12 osób,
+#     opis z hashtagami: #e2e #yoga #meditation #wellness #breath
 #
-# Wynik: grupa i warsztat istnieją w DB — kolejne flowy (edit, user) zależą od tych danych.
+# Wynik: grupa i warsztat istnieją w DB — kolejne flowy zależą od tych danych.
+#   Tag "#e2e" w DB umożliwia test autocomplete w trainer_edit_workshop_smoke.
 
 - launchApp:
     clearState: true
@@ -76,7 +79,7 @@ appId: com.kalba.app
 - hideKeyboard
 - tapOn:
     id: workshop.create.description.input
-- inputText: E2E owner workshop description smoke #e2e
+- inputText: "E2E owner workshop description smoke #e2e #yoga #meditation #wellness #breath"
 - hideKeyboard
 - tapOn:
     id: workshop.create.duration.input

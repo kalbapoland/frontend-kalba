@@ -1,0 +1,49 @@
+appId: com.kalba.app
+---
+# SMOKE: User unsubscribe-flow — wypisanie się z grupy
+#
+# Co testuje:
+#   1. User może zalogować się i zobaczyć kartę grupy w "Moje grupy" (jest subskrybentem)
+#   2. Po wejściu do group detail widoczny jest przycisk "Wypisz się z grupy"
+#   3. Tapnięcie "Wypisz się" wysyła DELETE /groups/{id}/members i przycisk zmienia się
+#      na "Dołącz" — potwierdzenie że user opuścił grupę
+#
+# Zależność: musi być uruchomiony po user_workshop_unenroll_smoke.yaml.
+#   User jest subskrybentem grupy "E2E Trainer Group Smoke" (dołączył w user_group_subscribe_enroll_smoke).
+#
+# Dane wejściowe:
+#   - konto usera: e2e.user@kalba.dev / Pass1234
+#   - istniejąca grupa: "E2E Trainer Group Smoke"
+
+- launchApp:
+    clearState: true
+
+# --- Logowanie jako user ---
+- runFlow: ../common/login_user.yaml
+
+# --- Nawigacja do group detail ---
+# Weryfikacja: user widzi kartę grupy w sekcji "Moje grupy" (jest subskrybentem)
+- tapOn:
+    id: tab.groups.button
+- extendedWaitUntil:
+    visible:
+      id: group.card.e2e-trainer-group-smoke
+    timeout: 15000
+
+# Weryfikacja: group detail pokazuje przycisk "Wypisz się z grupy"
+- tapOn:
+    id: group.card.e2e-trainer-group-smoke
+- extendedWaitUntil:
+    visible:
+      id: group.unsubscribe.button
+    timeout: 10000
+
+# --- Wypisanie się z grupy ---
+# Weryfikacja: tapnięcie "Wypisz się" wysyła DELETE /groups/{id}/members
+# i przycisk zmienia się na "Dołącz" — user nie jest już członkiem grupy
+- tapOn:
+    id: group.unsubscribe.button
+- extendedWaitUntil:
+    visible:
+      id: group.subscribe.button
+    timeout: 10000

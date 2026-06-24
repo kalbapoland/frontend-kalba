@@ -9,12 +9,13 @@ appId: com.kalba.app
 #   4. Potwierdzenie usunięcia wysyła DELETE /workshops/{id} i wraca do group detail
 #   5. Wiersz warsztatu znika z listy w grupie (cache odświeżony po DELETE)
 #
-# Zależność: musi być uruchomiony jako ostatni — usuwa dane stworzone przez trainer_smoke.
+# Zależność: musi być uruchomiony po trainer_edit_group_smoke.yaml, który zmienia tytuł grupy.
+#   Używa zaktualizowanego sluga: e2e-trainer-group-smoke-updated.
 #
 # Dane wejściowe:
 #   - konto trainera: e2e.trainer@kalba.dev / Pass1234
-#   - istniejąca grupa: "E2E Trainer Group Smoke"
-#   - istniejący warsztat: "E2E Owner Workshop Smoke"
+#   - istniejąca grupa: "E2E Trainer Group Smoke Updated" (po edycji w trainer_edit_group_smoke)
+#   - istniejący warsztat: "E2E Owner Workshop Smoke Updated" (edytowany przez trainer_edit_workshop_smoke)
 
 - launchApp:
     clearState: true
@@ -28,20 +29,20 @@ appId: com.kalba.app
     id: tab.groups.button
 - extendedWaitUntil:
     visible:
-      id: group.card.e2e-trainer-group-smoke
+      id: group.card.e2e-trainer-group-smoke-updated
     timeout: 15000
 
 # Weryfikacja: wiersz warsztatu jest widoczny w grupie
 - tapOn:
-    id: group.card.e2e-trainer-group-smoke
+    id: group.card.e2e-trainer-group-smoke-updated
 - extendedWaitUntil:
     visible:
-      id: group.workshop.row.e2e-owner-workshop-smoke
+      id: group.workshop.row.e2e-owner-workshop-smoke-updated
     timeout: 15000
 
 # Weryfikacja: ekran szczegółów warsztatu pokazuje przycisk usunięcia (tylko dla właściciela)
 - tapOn:
-    id: group.workshop.row.e2e-owner-workshop-smoke
+    id: group.workshop.row.e2e-owner-workshop-smoke-updated
 - extendedWaitUntil:
     visible:
       id: trainer.delete.workshop.button
@@ -72,4 +73,4 @@ appId: com.kalba.app
 
 # Weryfikacja: wiersz warsztatu zniknął z listy (DELETE /workshops/{id} zadziałał, cache odświeżony)
 - assertNotVisible:
-    id: group.workshop.row.e2e-owner-workshop-smoke
+    id: group.workshop.row.e2e-owner-workshop-smoke-updated
