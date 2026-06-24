@@ -1,0 +1,70 @@
+appId: com.kalba.app
+---
+# SMOKE: User flow — subskrypcja grupy + zapis na warsztat
+#
+# Co testuje:
+#   1. User może się zalogować i dostać się do zakładki Grupy
+#   2. Grupa "E2E Trainer Group Smoke" jest widoczna w sekcji Odkryj (user nie jest jeszcze członkiem)
+#   3. Przycisk "Subskrybuj" działa — user zostaje dodany do grupy (POST /groups/{id}/members)
+#   4. Po dołączeniu do grupy warsztat trenera pojawia się na ekranie głównym (Home feed)
+#   5. User może wejść w szczegóły warsztatu i zobaczyć przycisk "Zapisz się"
+#   6. Zapis na warsztat działa — przycisk zmienia się na "Wypisz się" (POST /workshops/{id}/enroll)
+#
+# Zależność: musi być uruchomiony po trainer_smoke.yaml, który tworzy grupę i warsztat.
+#
+# Dane wejściowe:
+#   - konto usera: e2e.user@kalba.dev / Pass1234 (seedowane przez ensure_smoke_user.py)
+#   - istniejąca grupa: "E2E Trainer Group Smoke" (stworzona przez trainer_smoke)
+#   - istniejący warsztat: "E2E Owner Workshop Smoke" (stworzony przez trainer_smoke)
+
+- launchApp:
+    clearState: true
+
+# --- Logowanie jako user (świeże uruchomienie) ---
+- runFlow: ../common/login_user.yaml
+
+# --- Subskrypcja grupy ---
+# Weryfikacja: w zakładce Grupy, sekcja Odkryj pokazuje grupę trenera z przyciskiem "Subskrybuj"
+# (user nie jest jeszcze członkiem, więc widzi ją w Odkryj, nie w Moje grupy)
+- tapOn:
+    id: tab.groups.button
+- extendedWaitUntil:
+    visible:
+      id: group.subscribe.button.e2e-trainer-group-smoke
+    timeout: 15000
+
+# Weryfikacja: tapnięcie "Subskrybuj" dodaje usera do grupy
+# i karta grupy pojawia się w sekcji Moje grupy (bez przycisku subskrypcji)
+- tapOn:
+    id: group.subscribe.button.e2e-trainer-group-smoke
+- extendedWaitUntil:
+    visible:
+      id: group.card.e2e-trainer-group-smoke
+    timeout: 10000
+
+# --- Zapis na warsztat ---
+# Weryfikacja: po dołączeniu do grupy, ekran główny pokazuje warsztat trenera w feedzie
+- tapOn:
+    id: tab.index.button
+- extendedWaitUntil:
+    visible:
+      id: home.workshop.card.e2e-owner-workshop-smoke
+    timeout: 15000
+
+# Weryfikacja: ekran szczegółów warsztatu ładuje się z przyciskiem "Zapisz się"
+# (user nie jest jeszcze zapisany)
+- tapOn:
+    id: home.workshop.card.e2e-owner-workshop-smoke
+- extendedWaitUntil:
+    visible:
+      id: workshop.enroll.button
+    timeout: 15000
+
+# Weryfikacja: tapnięcie "Zapisz się" zapisuje usera na warsztat
+# i przycisk zmienia się na "Wypisz się" (potwierdzenie że POST /enroll zadziałał)
+- tapOn:
+    id: workshop.enroll.button
+- extendedWaitUntil:
+    visible:
+      id: workshop.unenroll.button
+    timeout: 10000

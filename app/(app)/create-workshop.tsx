@@ -73,7 +73,10 @@ export default function CreateWorkshopScreen() {
   // while normal users keep default app behavior.
   // Default to now + smoke offset (if configured) or app minimum offset.
   const [timezone] = useState(getDeviceTimezone);
-  const minimumOffsetMs = SMOKE_WORKSHOP_OFFSET_MS ?? MIN_WORKSHOP_OFFSET_MS;
+  // Smoke offset controls the *default* start time only — not the validation
+  // threshold. Validation always uses MIN_WORKSHOP_OFFSET_MS (1h in release)
+  // so 24h smoke default easily clears the bar even after slow form filling.
+  const minimumOffsetMs = MIN_WORKSHOP_OFFSET_MS;
   const defaultOffsetMs = SMOKE_WORKSHOP_OFFSET_MS
     ?? (__DEV__ ? Math.max(MIN_WORKSHOP_OFFSET_MS, DEV_DEFAULT_WORKSHOP_OFFSET_MS) : MIN_WORKSHOP_OFFSET_MS);
   const defaultIso = new Date(Date.now() + defaultOffsetMs).toISOString();
@@ -181,7 +184,16 @@ export default function CreateWorkshopScreen() {
       return;
     }
 
-    if (parsedSchedule.value <= new Date(Date.now() + minimumOffsetMs)) {
+    const nowMs = Date.now();
+    const workshopMs = parsedSchedule.value.getTime();
+    if (__DEV__) {
+      const diffMin = ((workshopMs - nowMs) / 60_000).toFixed(1);
+      const minRequired = (minimumOffsetMs / 60_000).toFixed(1);
+      console.log(
+        `[create-workshop] now=${new Date(nowMs).toISOString()} workshop=${parsedSchedule.value.toISOString()} diff=${diffMin}min required>=${minRequired}min`,
+      );
+    }
+    if (parsedSchedule.value <= new Date(nowMs + minimumOffsetMs)) {
       showAlert(__DEV__
         ? "Start time must be at least 1 minute in the future."
         : "Start time must be in the future. Please choose a later date or time.");

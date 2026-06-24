@@ -89,6 +89,7 @@ export function useSubscribeGroup() {
     mutationFn: (id: string) => subscribeToGroup(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["groups"] });
+      void queryClient.invalidateQueries({ queryKey: ["workshops"] });
     },
   });
 }
@@ -99,6 +100,7 @@ export function useUnsubscribeGroup() {
     mutationFn: (id: string) => unsubscribeFromGroup(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["groups"] });
+      void queryClient.invalidateQueries({ queryKey: ["workshops"] });
     },
   });
 }
