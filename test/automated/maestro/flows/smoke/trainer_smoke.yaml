@@ -1,0 +1,101 @@
+appId: com.kalba.app
+---
+# SMOKE: Trainer owner-flow — create group + create workshop
+#
+# Co testuje:
+#   1. Trainer może się zalogować i dostać się do zakładki Grupy
+#   2. Przycisk "Utwórz grupę" jest widoczny i otwiera formularz
+#   3. Formularz tworzenia grupy przyjmuje tytuł i opis, a submit zapisuje grupę
+#   4. Po zapisaniu grupy ekran szczegółów grupy jest widoczny z przyciskiem "Utwórz warsztat"
+#   5. Formularz tworzenia warsztatu przyjmuje wszystkie pola (tytuł, opis, czas trwania, cena, max uczestników)
+#   6. Po zapisaniu warsztatu pojawia się on na liście warsztatów w grupie (kafelek z tytułem)
+#
+# Dane wejściowe:
+#   - konto trainera: e2e.trainer@kalba.dev / Pass1234 (seedowane przez ensure_smoke_trainer.py)
+#   - tworzona grupa: "E2E Trainer Group Smoke"
+#   - tworzony warsztat: "E2E Owner Workshop Smoke", 45 min, bezpłatny, max 12 osób
+#
+# Wynik: grupa i warsztat istnieją w DB — kolejne flowy (edit, user) zależą od tych danych.
+
+- launchApp:
+    clearState: true
+
+# --- Logowanie jako trainer ---
+- runFlow: ../common/login_trainer.yaml
+
+# --- Tworzenie grupy ---
+# Weryfikacja: zakładka Grupy ładuje się i trainer widzi przycisk tworzenia grupy
+- tapOn:
+    id: tab.groups.button
+- extendedWaitUntil:
+    visible:
+      id: trainer.create.group.button
+    timeout: 15000
+
+# Weryfikacja: formularz tworzenia grupy otwiera się po tapnięciu przycisku
+- tapOn:
+    id: trainer.create.group.button
+- extendedWaitUntil:
+    visible:
+      id: group.create.title.input
+    timeout: 10000
+
+# Wypełnienie i submit formularza grupy
+- tapOn:
+    id: group.create.title.input
+- inputText: E2E Trainer Group Smoke
+- hideKeyboard
+- tapOn:
+    id: group.create.description.input
+- inputText: E2E trainer group description smoke
+- hideKeyboard
+- tapOn:
+    id: group.create.submit.button
+
+# Weryfikacja: po zapisaniu grupy ekran szczegółów grupy jest widoczny
+# i trainer może tworzyć warsztaty w tej grupie
+- extendedWaitUntil:
+    visible:
+      id: trainer.create.workshop.button
+    timeout: 15000
+
+# --- Tworzenie warsztatu ---
+# Weryfikacja: formularz tworzenia warsztatu otwiera się
+- tapOn:
+    id: trainer.create.workshop.button
+- extendedWaitUntil:
+    visible:
+      id: workshop.create.title.input
+    timeout: 10000
+
+# Wypełnienie formularza warsztatu
+# Czas startu jest ustawiany automatycznie przez EXPO_PUBLIC_SMOKE_WORKSHOP_OFFSET_MINUTES (now + 24h)
+- tapOn:
+    id: workshop.create.title.input
+- inputText: E2E Owner Workshop Smoke
+- hideKeyboard
+- tapOn:
+    id: workshop.create.description.input
+- inputText: E2E owner workshop description smoke #e2e
+- hideKeyboard
+- tapOn:
+    id: workshop.create.duration.input
+- inputText: 45
+- hideKeyboard
+- tapOn:
+    id: workshop.create.price.input
+- inputText: 0
+- hideKeyboard
+- tapOn:
+    id: workshop.create.max-participants.input
+- inputText: 12
+- hideKeyboard
+- tapOn:
+    id: workshop.create.submit.button
+
+# Weryfikacja: po zapisaniu warsztatu kafelek warsztatów pojawia się na liście w grupie
+# Potwierdza że: POST /workshops zwrócił 201, cache grupy został odświeżony, nawigacja wróciła do szczegółów grupy
+- extendedWaitUntil:
+    visible:
+      id: group.workshop.row.e2e-owner-workshop-smoke
+    timeout: 15000

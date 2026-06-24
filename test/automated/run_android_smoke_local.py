@@ -26,7 +26,6 @@ from run_android_smoke_ephemeral_db import (
     wait_for_backend_health,
 )
 
-EMULATOR_BACKEND_CONNECTIVITY_TIMEOUT = 30
 TIMEZONE = "Europe/Warsaw"
 ANDROID_SMOKE_BUILD_SCRIPT = "android:release:local"
 EPHEMERAL_DB_CONTAINER_PREFIX = "kalba-smoke-pg-"
@@ -119,32 +118,27 @@ def kill_processes_on_backend_port(port: int) -> None:
 
 
 def verify_emulator_backend_connectivity(adb: str, frontend_root: Path) -> None:
-    """Verify the emulator can reach the backend via adb reverse before the long APK build."""
-    health_url = f"http://127.0.0.1:{BACKEND_PORT}/health"
-    deadline = time.monotonic() + EMULATOR_BACKEND_CONNECTIVITY_TIMEOUT
-    last_stderr = ""
-    while time.monotonic() < deadline:
-        try:
-            result = subprocess.run(
-                [adb, "shell", "wget", "-q", "-O", "-", health_url],
-                cwd=str(frontend_root),
-                capture_output=True,
-                text=True,
-                timeout=10,
-            )
-        except subprocess.TimeoutExpired:
-            time.sleep(2)
-            continue
-        if result.returncode == 0 and result.stdout.strip():
-            print(f"[smoke] preflight: emulator can reach backend at {health_url}")
-            return
-        last_stderr = result.stderr.strip()
-        time.sleep(2)
-    hint = f" (adb stderr: {last_stderr})" if last_stderr else ""
-    raise RuntimeError(
-        f"[smoke] preflight FAILED: emulator cannot reach backend at {health_url}. "
-        f"Check that adb reverse is configured and the backend is running on 0.0.0.0.{hint}"
+    """Verify adb reverse tunnel is configured for the backend port.
+
+    Android API 36 ships without wget/curl in the system shell, so we verify
+    the tunnel via `adb reverse --list` on the host side instead of probing
+    from inside the emulator. The backend health is already confirmed by
+    wait_for_backend_health() before this call.
+    """
+    port_token = f"tcp:{BACKEND_PORT}"
+    result = subprocess.run(
+        [adb, "reverse", "--list"],
+        cwd=str(frontend_root),
+        capture_output=True,
+        text=True,
+        timeout=10,
     )
+    if result.returncode != 0 or port_token not in result.stdout:
+        raise RuntimeError(
+            f"[smoke] preflight FAILED: adb reverse {port_token} not found in reverse list. "
+            f"stdout={result.stdout!r} stderr={result.stderr!r}"
+        )
+    print(f"[smoke] preflight: adb reverse {port_token} confirmed")
 
 
 def main() -> None:
@@ -237,7 +231,7 @@ def main() -> None:
             [
                 maestro,
                 "test",
-                "test/automated/maestro/flows/smoke/android_trainer_smoke.yaml",
+                "test/automated/maestro/flows/smoke/trainer_smoke.yaml",
             ],
             cwd=frontend_root,
             env=frontend_env,
@@ -248,7 +242,7 @@ def main() -> None:
             [
                 maestro,
                 "test",
-                "test/automated/maestro/flows/smoke/android_trainer_edit_smoke.yaml",
+                "test/automated/maestro/flows/smoke/trainer_edit_smoke.yaml",
             ],
             cwd=frontend_root,
             env=frontend_env,
@@ -256,7 +250,7 @@ def main() -> None:
         print("[smoke] running Android user Maestro flow")
         run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
         run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/android_user_smoke.yaml"],
+            [maestro, "test", "test/automated/maestro/flows/smoke/user_smoke.yaml"],
             cwd=frontend_root,
             env=frontend_env,
         )

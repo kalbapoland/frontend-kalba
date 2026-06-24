@@ -124,19 +124,19 @@ def main() -> None:
         install_release_build(frontend_root)
         run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
         run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/android_trainer_smoke.yaml"],
+            [maestro, "test", "test/automated/maestro/flows/smoke/trainer_smoke.yaml"],
             cwd=frontend_root,
         )
 
         run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
         run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/android_trainer_edit_smoke.yaml"],
+            [maestro, "test", "test/automated/maestro/flows/smoke/trainer_edit_smoke.yaml"],
             cwd=frontend_root,
         )
 
         run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
         run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/android_user_smoke.yaml"],
+            [maestro, "test", "test/automated/maestro/flows/smoke/user_smoke.yaml"],
             cwd=frontend_root,
         )
     except BaseException as err:

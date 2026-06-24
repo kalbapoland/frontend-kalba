@@ -8,8 +8,9 @@ export function useCreateWorkshop() {
 
   return useMutation({
     mutationFn: (payload: WorkshopCreatePayload) => createWorkshop(payload),
-    onSuccess: () => {
+    onSuccess: (_data, payload) => {
       queryClient.invalidateQueries({ queryKey: ["workshops"] });
+      queryClient.invalidateQueries({ queryKey: ["groups", payload.group_id, "workshops"] });
     },
   });
 }
