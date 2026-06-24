@@ -1,0 +1,96 @@
+appId: com.kalba.app
+---
+# SMOKE: Trainer edit-group-flow — edycja tytułu i opisu grupy z weryfikacją zapisu
+#
+# Co testuje:
+#   1. Trainer może zalogować się i nawigować do grupy
+#   2. Przycisk edycji grupy jest widoczny (tylko dla właściciela)
+#   3. Formularz edycji grupy otwiera się i przyjmuje nowe wartości
+#   4. Po zapisaniu ekran szczegółów grupy wraca (PATCH /groups/{id} zwrócił 200)
+#   5. Ponowne otwarcie formularza potwierdza że nowy tytuł i opis zostały zapisane w DB:
+#      - tytuł: "E2E Trainer Group Smoke" → "E2E Trainer Group Smoke Updated"
+#      - opis: "E2E trainer group description smoke" → "E2E trainer group description smoke updated"
+#
+# Uwaga: po tej edycji testID grupy zmienia slug na "e2e-trainer-group-smoke-updated".
+#        trainer_delete_workshop_smoke.yaml używa już zaktualizowanego sluga.
+#
+# Zależność: musi być uruchomiony po user_group_unsubscribe_smoke.yaml.
+#
+# Dane wejściowe:
+#   - konto trainera: e2e.trainer@kalba.dev / Pass1234
+#   - istniejąca grupa: "E2E Trainer Group Smoke"
+
+- launchApp:
+    clearState: true
+
+# --- Logowanie jako trainer ---
+- runFlow: ../common/login_trainer.yaml
+
+# --- Nawigacja do group detail ---
+# Weryfikacja: karta grupy jest widoczna na liście grup trainera
+- tapOn:
+    id: tab.groups.button
+- extendedWaitUntil:
+    visible:
+      id: group.card.e2e-trainer-group-smoke
+    timeout: 15000
+
+# Weryfikacja: group detail pokazuje przycisk edycji (tylko dla właściciela)
+- tapOn:
+    id: group.card.e2e-trainer-group-smoke
+- extendedWaitUntil:
+    visible:
+      id: group.edit.button
+    timeout: 10000
+
+# Weryfikacja: formularz edycji grupy otwiera się
+- tapOn:
+    id: group.edit.button
+- extendedWaitUntil:
+    visible:
+      id: group.edit.submit.button
+    timeout: 10000
+
+# --- Edycja tytułu grupy ---
+# longPressOn → "Select all" gwarantuje że całość zostanie zaznaczona niezależnie od pozycji kursora
+- longPressOn:
+    id: group.edit.title.input
+- tapOn:
+    text: "Select all"
+- inputText: "E2E Trainer Group Smoke Updated"
+- hideKeyboard
+
+# --- Edycja opisu grupy ---
+- longPressOn:
+    id: group.edit.description.input
+- tapOn:
+    text: "Select all"
+- inputText: "E2E trainer group description smoke updated"
+- hideKeyboard
+
+# Submit — weryfikacja że PATCH /groups/{id} działa i nawigacja wraca do group detail
+- tapOn:
+    id: group.edit.submit.button
+
+# Weryfikacja: powrót do group detail (landmark: przycisk tworzenia warsztatu)
+- extendedWaitUntil:
+    visible:
+      id: trainer.create.workshop.button
+    timeout: 15000
+
+# --- Weryfikacja trwałości zapisu w DB ---
+# Otwieramy formularz edycji ponownie i sprawdzamy czy nowe wartości zostały załadowane z serwera
+- tapOn:
+    id: group.edit.button
+- extendedWaitUntil:
+    visible:
+      id: group.edit.submit.button
+    timeout: 10000
+
+# Weryfikacja: pole tytułu zawiera nową wartość
+- assertVisible:
+    text: "E2E Trainer Group Smoke Updated"
+
+# Weryfikacja: pole opisu zawiera nową wartość
+- assertVisible:
+    text: "E2E trainer group description smoke updated"

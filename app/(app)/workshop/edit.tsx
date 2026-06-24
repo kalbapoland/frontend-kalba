@@ -37,6 +37,7 @@ type PickerMode = "date" | "time" | null;
 
 const EDIT_WORKSHOP_TEST_IDS = {
   titleInput: "workshop.edit.title.input",
+  descriptionInput: "workshop.edit.description.input",
   dateButton: "workshop.edit.date.button",
   timeButton: "workshop.edit.time.button",
   durationInput: "workshop.edit.duration.input",
@@ -244,6 +245,7 @@ export default function EditWorkshopScreen() {
               value={description}
               onChangeText={setDescription}
               placeholder={t("workshop.description_placeholder")}
+              testID={EDIT_WORKSHOP_TEST_IDS.descriptionInput}
             />
           </View>
 

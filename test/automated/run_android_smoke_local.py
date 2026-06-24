@@ -231,7 +231,7 @@ def main() -> None:
             [
                 maestro,
                 "test",
-                "test/automated/maestro/flows/smoke/trainer_smoke.yaml",
+                "test/automated/maestro/flows/smoke/trainer_create_smoke.yaml",
             ],
             cwd=frontend_root,
             env=frontend_env,
@@ -242,7 +242,7 @@ def main() -> None:
             [
                 maestro,
                 "test",
-                "test/automated/maestro/flows/smoke/trainer_edit_smoke.yaml",
+                "test/automated/maestro/flows/smoke/trainer_edit_workshop_smoke.yaml",
             ],
             cwd=frontend_root,
             env=frontend_env,
@@ -250,21 +250,42 @@ def main() -> None:
         print("[smoke] running Android user Maestro flow")
         run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
         run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/user_smoke.yaml"],
+            [maestro, "test", "test/automated/maestro/flows/smoke/user_group_subscribe_enroll_smoke.yaml"],
             cwd=frontend_root,
             env=frontend_env,
         )
         print("[smoke] running Android user unenroll Maestro flow")
         run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
         run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/user_unenroll_smoke.yaml"],
+            [maestro, "test", "test/automated/maestro/flows/smoke/user_workshop_unenroll_smoke.yaml"],
+            cwd=frontend_root,
+            env=frontend_env,
+        )
+        print("[smoke] running Android user unsubscribe Maestro flow")
+        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
+        run(
+            [maestro, "test", "test/automated/maestro/flows/smoke/user_group_unsubscribe_smoke.yaml"],
+            cwd=frontend_root,
+            env=frontend_env,
+        )
+        print("[smoke] running Android trainer edit group Maestro flow")
+        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
+        run(
+            [maestro, "test", "test/automated/maestro/flows/smoke/trainer_edit_group_smoke.yaml"],
             cwd=frontend_root,
             env=frontend_env,
         )
         print("[smoke] running Android trainer delete Maestro flow")
         run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
         run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/trainer_delete_smoke.yaml"],
+            [maestro, "test", "test/automated/maestro/flows/smoke/trainer_delete_workshop_smoke.yaml"],
+            cwd=frontend_root,
+            env=frontend_env,
+        )
+        print("[smoke] running Android user signout Maestro flow")
+        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
+        run(
+            [maestro, "test", "test/automated/maestro/flows/smoke/user_signout_smoke.yaml"],
             cwd=frontend_root,
             env=frontend_env,
         )

@@ -144,6 +144,7 @@ export function HashtagTextInput({ value, onChangeText, placeholder, testID }: P
             suggestions.map((tag) => (
               <Pressable
                 key={tag}
+                testID={`hashtag.suggestion.${tag}`}
                 onPress={() => handlePickSuggestion(tag)}
                 accessibilityRole="button"
                 accessibilityLabel={`Insert hashtag ${tag}`}

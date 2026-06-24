@@ -1,0 +1,179 @@
+appId: com.kalba.app
+---
+# SMOKE: Trainer edit-flow — edycja warsztatu z weryfikacją zapisu
+#
+# Co testuje:
+#   1. Trainer może zalogować się od zera (clearState) i nawigować do swoich grup
+#   2. Karta grupy "E2E Trainer Group Smoke" jest widoczna na liście grup trenera
+#   3. Po wejściu do grupy warsztat "E2E Owner Workshop Smoke" jest widoczny na liście
+#   4. Ekran szczegółów warsztatu ładuje przycisk edycji dla właściciela
+#   5. Formularz edycji otwiera się i przyjmuje zmiany we wszystkich polach
+#   6. Autocomplete hashtagów (positive): wpisanie "#e" → dropdown → tapnięcie "e2e" → "#e2e" w opisie
+#   7. Autocomplete hashtagów (negative): przy 5 hashtagach (cap) dropdown NIE pojawia się dla 6.
+#      Mechanizm: tapOn+eraseText czyści opis, inputText wpisuje 5 tagów (cursor na końcu),
+#      inputText " #e" → beyondCap=true → suggestPrefix="" → enabled=false → brak zapytania
+#   8. Po zapisaniu ekran szczegółów warsztatu wraca (PATCH /workshops/{id} zwrócił 200)
+#   9. Ponowne otwarcie formularza edycji pokazuje nowe wartości — zapis w DB potwierdzony:
+#      - tytuł: "E2E Owner Workshop Smoke" → "E2E Owner Workshop Smoke Updated"
+#      - opis: "#e2e #yoga #meditation #wellness #breath" (5 hashtagów zapisanych)
+#      - czas trwania: 45 → 60 min
+#      - cena: 0 → 25
+#      - max uczestników: 12 → 8
+#
+# Zależność: musi być uruchomiony po trainer_create_smoke.yaml, który tworzy grupę i warsztat
+#   oraz zapisuje w DB tag "#e2e" — potrzebny dla autocomplete w tym flow.
+#
+# Dane wejściowe:
+#   - konto trainera: e2e.trainer@kalba.dev / Pass1234
+#   - istniejąca grupa: "E2E Trainer Group Smoke" (stworzona przez trainer_create_smoke)
+#   - istniejący warsztat: "E2E Owner Workshop Smoke" (stworzony przez trainer_create_smoke)
+
+- launchApp:
+    clearState: true
+
+# --- Logowanie jako trainer (świeże uruchomienie) ---
+- runFlow: ../common/login_trainer.yaml
+
+# --- Nawigacja do warsztatu ---
+- tapOn:
+    id: tab.groups.button
+- extendedWaitUntil:
+    visible:
+      id: group.card.e2e-trainer-group-smoke
+    timeout: 15000
+- tapOn:
+    id: group.card.e2e-trainer-group-smoke
+- extendedWaitUntil:
+    visible:
+      id: group.workshop.row.e2e-owner-workshop-smoke
+    timeout: 15000
+- tapOn:
+    id: group.workshop.row.e2e-owner-workshop-smoke
+- extendedWaitUntil:
+    visible:
+      id: trainer.edit.workshop.button
+    timeout: 10000
+
+# --- Formularz edycji ---
+- tapOn:
+    id: trainer.edit.workshop.button
+- extendedWaitUntil:
+    visible:
+      id: workshop.edit.submit.button
+    timeout: 10000
+
+# Zmiana tytułu: longPressOn → "Select all" → nowa wartość
+- longPressOn:
+    id: workshop.edit.title.input
+- tapOn:
+    text: "Select all"
+- inputText: "E2E Owner Workshop Smoke Updated"
+- hideKeyboard
+
+# --- Test autocomplete (positive): "#e" → dropdown widoczny → tapnięcie "#e2e" wstawia hashtag ---
+# trainer_create_smoke zapisał w DB tag "#e2e" dzięki opisowi z 5 hashtagami.
+# Uwaga: tapOn: label: NIE działa w Maestro — mapuje do null w ElementSelector i tapuje
+# pierwszy klikalny element (przycisk wstecz). Używamy tapOn: id: (resource-id z testID).
+# eraseText:1 potrzebny przed inputText: oryginalny opis ma 57 znaków → selection.end=57 po
+# Select all. Bez eraseText cursor=57 > długość nowego tekstu=42 → detectActiveHashtag zwraca
+# null → dropdown nie pojawia się.
+- longPressOn:
+    id: workshop.edit.description.input
+- tapOn:
+    text: "Select all"
+- eraseText: 1
+- inputText: "E2E owner workshop description updated #e"
+- extendedWaitUntil:
+    visible:
+      id: hashtag.suggestion.e2e
+    timeout: 5000
+- tapOn:
+    id: hashtag.suggestion.e2e
+# Po tapnięciu Pressable autocomplete: TextInput traci focus → klawiatura zamyka się automatycznie.
+# NIE wywołujemy hideKeyboard — przy zamkniętej klawiaturze wysyła KEYCODE_BACK → nawigacja wstecz.
+
+# --- Test autocomplete (negative): cap 5 hashtagów — dropdown NIE pojawia się dla 6. ---
+# Czyścimy opis przez longPressOn → Select all → eraseText:1 (DELETE na zaznaczeniu = wyczyszczenie całości).
+# Kursor ląduje na 0. Następnie inputText 5 hashtagów ustawia cursor na końcu przez onSelectionChange.
+# Wtedy #e jako 6. hashtag trafia na beyondCap=true → suggestPrefix="" → enabled=false.
+# Dlaczego nie longPressOn jak przy tytule: po autocomplete opis kończy się spacją ("#e2e "), więc
+# longPressOn przy cursor=44 → char przed = ' ' → detectActiveHashtag zwraca null → brak autocomplete.
+- longPressOn:
+    id: workshop.edit.description.input
+- tapOn:
+    text: "Select all"
+- eraseText: 1
+- inputText: "E2E owner workshop description updated #e2e #yoga #meditation #wellness #breath"
+- tapOn:
+    id: workshop.edit.description.input
+- inputText: " #e"
+- assertNotVisible:
+    id: hashtag.suggestion.e2e
+# Usuwamy częściowy 6. hashtag (" #e" = 3 znaki) i zamykamy klawiaturę
+- eraseText: 3
+- hideKeyboard
+
+# Czekamy na stabilizację formularza przed edycją pól numerycznych
+- extendedWaitUntil:
+    visible:
+      id: workshop.edit.duration.input
+    timeout: 5000
+
+# Zmiana czasu trwania: 45 → 60 min
+- tapOn:
+    id: workshop.edit.duration.input
+- eraseText: 10
+- inputText: "60"
+- hideKeyboard
+
+# Zmiana ceny: 0 → 25
+- tapOn:
+    id: workshop.edit.price.input
+- eraseText: 10
+- inputText: "25"
+- hideKeyboard
+
+# Zmiana max uczestników: 12 → 8
+- tapOn:
+    id: workshop.edit.max-participants.input
+- eraseText: 10
+- inputText: "8"
+- hideKeyboard
+
+# Submit
+- tapOn:
+    id: workshop.edit.submit.button
+- extendedWaitUntil:
+    visible:
+      id: trainer.edit.workshop.button
+    timeout: 15000
+
+# --- Weryfikacja trwałości zapisu w DB ---
+- tapOn:
+    id: trainer.edit.workshop.button
+- extendedWaitUntil:
+    visible:
+      id: workshop.edit.submit.button
+    timeout: 10000
+
+# Tytuł zaktualizowany
+- assertVisible:
+    text: "E2E Owner Workshop Smoke Updated"
+
+# Opis zawiera #e2e (wstawiony przez autocomplete, potem potwierdzony w opisie 5-tagowym)
+# Uwaga: text: w Maestro używa Java .matches() — pełne dopasowanie stringa, nie substring.
+# Dlatego potrzebny wzorzec ".*#e2e.*" zamiast "#e2e".
+- assertVisible:
+    text: ".*#e2e.*"
+
+# Opis zawiera #breath (5. hashtag — weryfikacja cap testu)
+- assertVisible:
+    text: ".*#breath.*"
+
+# Pola numeryczne zaktualizowane
+- assertVisible:
+    text: "60"
+- assertVisible:
+    text: "25"
+- assertVisible:
+    text: "8"

@@ -1,6 +1,6 @@
 appId: com.kalba.app
 ---
-# SMOKE: User flow — subskrypcja grupy + zapis na warsztat
+# SMOKE: user_subscribe_enroll — subskrypcja grupy + zapis na warsztat
 #
 # Co testuje:
 #   1. User może się zalogować i dostać się do zakładki Grupy
@@ -10,12 +10,13 @@ appId: com.kalba.app
 #   5. User może wejść w szczegóły warsztatu i zobaczyć przycisk "Zapisz się"
 #   6. Zapis na warsztat działa — przycisk zmienia się na "Wypisz się" (POST /workshops/{id}/enroll)
 #
-# Zależność: musi być uruchomiony po trainer_smoke.yaml, który tworzy grupę i warsztat.
+# Zależność: musi być uruchomiony po trainer_edit_workshop_smoke.yaml, który zmienia tytuł warsztatu
+#   na "E2E Owner Workshop Smoke Updated" (slug: e2e-owner-workshop-smoke-updated).
 #
 # Dane wejściowe:
 #   - konto usera: e2e.user@kalba.dev / Pass1234 (seedowane przez ensure_smoke_user.py)
-#   - istniejąca grupa: "E2E Trainer Group Smoke" (stworzona przez trainer_smoke)
-#   - istniejący warsztat: "E2E Owner Workshop Smoke" (stworzony przez trainer_smoke)
+#   - istniejąca grupa: "E2E Trainer Group Smoke" (stworzona przez trainer_create_smoke)
+#   - istniejący warsztat: "E2E Owner Workshop Smoke Updated" (edytowany przez trainer_edit_workshop_smoke)
 
 - launchApp:
     clearState: true
@@ -48,13 +49,13 @@ appId: com.kalba.app
     id: tab.index.button
 - extendedWaitUntil:
     visible:
-      id: home.workshop.card.e2e-owner-workshop-smoke
+      id: home.workshop.card.e2e-owner-workshop-smoke-updated
     timeout: 15000
 
 # Weryfikacja: ekran szczegółów warsztatu ładuje się z przyciskiem "Zapisz się"
 # (user nie jest jeszcze zapisany)
 - tapOn:
-    id: home.workshop.card.e2e-owner-workshop-smoke
+    id: home.workshop.card.e2e-owner-workshop-smoke-updated
 - extendedWaitUntil:
     visible:
       id: workshop.enroll.button
