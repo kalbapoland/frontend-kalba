@@ -254,6 +254,20 @@ def main() -> None:
             cwd=frontend_root,
             env=frontend_env,
         )
+        print("[smoke] running Android user unenroll Maestro flow")
+        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
+        run(
+            [maestro, "test", "test/automated/maestro/flows/smoke/user_unenroll_smoke.yaml"],
+            cwd=frontend_root,
+            env=frontend_env,
+        )
+        print("[smoke] running Android trainer delete Maestro flow")
+        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
+        run(
+            [maestro, "test", "test/automated/maestro/flows/smoke/trainer_delete_smoke.yaml"],
+            cwd=frontend_root,
+            env=frontend_env,
+        )
     except BaseException as err:
         primary_error = err
     finally:
