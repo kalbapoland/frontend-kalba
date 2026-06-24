@@ -9,6 +9,7 @@ export function useDeleteWorkshop() {
     mutationFn: (workshopId: string) => deleteWorkshop(workshopId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["workshops"] });
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
     },
   });
 }

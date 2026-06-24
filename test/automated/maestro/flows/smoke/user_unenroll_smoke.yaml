@@ -1,0 +1,48 @@
+appId: com.kalba.app
+---
+# SMOKE: User unenroll-flow — wypisanie się z warsztatu
+#
+# Co testuje:
+#   1. User może się zalogować i zobaczyć warsztat na ekranie głównym
+#   2. Ekran szczegółów warsztatu pokazuje przycisk "Wypisz się" (user jest już zapisany z user_smoke)
+#   3. Tapnięcie "Wypisz się" wysyła DELETE /workshops/{id}/enroll i przycisk zmienia się na "Zapisz się"
+#
+# Zależność: musi być uruchomiony po user_smoke.yaml, który zapisuje usera na warsztat.
+#
+# Dane wejściowe:
+#   - konto usera: e2e.user@kalba.dev / Pass1234
+#   - istniejący warsztat: "E2E Owner Workshop Smoke" (user jest już enrolled)
+
+- launchApp:
+    clearState: true
+
+# --- Logowanie jako user ---
+- runFlow: ../common/login_user.yaml
+
+# --- Nawigacja do warsztatu ---
+# Weryfikacja: warsztat jest widoczny na home feed (user jest subskrybentem grupy)
+- tapOn:
+    id: tab.index.button
+- extendedWaitUntil:
+    visible:
+      id: home.workshop.card.e2e-owner-workshop-smoke
+    timeout: 15000
+
+# Weryfikacja: ekran szczegółów warsztatu pokazuje przycisk "Wypisz się"
+# (user był enrolled po zakończeniu user_smoke)
+- tapOn:
+    id: home.workshop.card.e2e-owner-workshop-smoke
+- extendedWaitUntil:
+    visible:
+      id: workshop.unenroll.button
+    timeout: 15000
+
+# --- Wypisanie się ---
+# Weryfikacja: tapnięcie "Wypisz się" wysyła DELETE /enroll
+# i przycisk zmienia się na "Zapisz się" — potwierdzenie że wypisanie zadziałało
+- tapOn:
+    id: workshop.unenroll.button
+- extendedWaitUntil:
+    visible:
+      id: workshop.enroll.button
+    timeout: 10000
