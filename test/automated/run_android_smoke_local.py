@@ -226,7 +226,14 @@ def main() -> None:
         frontend_env["DATABASE_URL"] = ephemeral_db.database_url
         frontend_env["APP_ENV"] = "local"
 
+        print("[smoke] running Android user negative login Maestro flow")
+        run(
+            [maestro, "test", "test/automated/maestro/flows/smoke/user_negative_login_smoke.yaml"],
+            cwd=frontend_root,
+            env=frontend_env,
+        )
         print("[smoke] running Android trainer Maestro flow")
+        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
         run(
             [
                 maestro,
@@ -251,6 +258,13 @@ def main() -> None:
         run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
         run(
             [maestro, "test", "test/automated/maestro/flows/smoke/user_group_subscribe_enroll_smoke.yaml"],
+            cwd=frontend_root,
+            env=frontend_env,
+        )
+        print("[smoke] running Android user home workshops Maestro flow")
+        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
+        run(
+            [maestro, "test", "test/automated/maestro/flows/smoke/user_home_workshops_smoke.yaml"],
             cwd=frontend_root,
             env=frontend_env,
         )

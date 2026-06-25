@@ -1,0 +1,41 @@
+appId: com.kalba.app
+---
+# SMOKE: user_home_workshops — enrolled warsztat widoczny na zakładce Home po świeżym uruchomieniu
+#
+# Co testuje:
+#   1. User (już subskrybent grupy i zapisany na warsztat) loguje się ponownie (clearState)
+#   2. Zakładka Home ładuje listę warsztatów (home.workshops.list)
+#   3. Karta warsztatu "E2E Owner Workshop Smoke Updated" jest widoczna w feedzie
+#   4. Tapnięcie karty nawiguje do szczegółów warsztatu
+#   5. Ekran szczegółów pokazuje przycisk "Wypisz się" — stan zapisu zachowany po restarcie sesji
+#
+# Zależność: musi być uruchomiony po user_group_subscribe_enroll_smoke.yaml,
+#   który subskrybuje grupę i zapisuje usera na warsztat.
+#
+# Dane wejściowe:
+#   - konto usera: e2e.user@kalba.dev / Pass1234
+#   - istniejący warsztat: "E2E Owner Workshop Smoke Updated" (user jest enrolled)
+
+- launchApp:
+    clearState: true
+
+# --- Logowanie jako user (świeże uruchomienie — symuluje powracającego usera) ---
+- runFlow: ../common/login_user.yaml
+
+# --- Weryfikacja home feed ---
+# Zakładka Home jest domyślna po zalogowaniu — lista warsztatów powinna załadować się od razu
+- tapOn:
+    id: tab.index.button
+- extendedWaitUntil:
+    visible:
+      id: home.workshop.card.e2e-owner-workshop-smoke-updated
+    timeout: 15000
+
+# --- Weryfikacja szczegółów warsztatu ---
+# Tapnięcie karty → ekran szczegółów warsztatu, user jest enrolled → widoczny przycisk "Wypisz się"
+- tapOn:
+    id: home.workshop.card.e2e-owner-workshop-smoke-updated
+- extendedWaitUntil:
+    visible:
+      id: workshop.unenroll.button
+    timeout: 15000
