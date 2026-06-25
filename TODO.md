@@ -16,17 +16,11 @@ Brakujące przepływy dla lepszego pokrycia E2E (kolejność wg priorytetu):
 
 ### Wysoki priorytet
 
-- **`trainer_delete_group_smoke`** — Trainer usuwa grupę: nawigacja do grupy → long-press lub przycisk delete → potwierdzenie → weryfikacja że karta grupy znikła z listy. Testuje DELETE /groups/{id} + cascade na warsztatach i uczestnikach.
-
 - **`trainer_create_workshop_date_smoke`** — Trainer tworzy warsztat z datą/godziną: weryfikacja działania date/time pickera, zapis daty w DB, wyświetlenie na szczegółach warsztatu. Testuje najbardziej złożony element formularza tworzenia warsztatu.
-
-- **`user_home_workshops_smoke`** — Użytkownik zapisany na warsztat widzi go na zakładce Home: user loguje się, przechodzi na Home, weryfikuje że lista `home.workshops.list` zawiera warsztat na który się zapisał (zależność od `user_group_subscribe_enroll_smoke`).
 
 ### Średni priorytet
 
 - **`trainer_video_join_smoke`** — Trainer dołącza do sesji wideo: tapnięcie "Start session" → token Daily.co zwrócony → ekran wideo załadowany. Weryfikuje integrację z Daily.co (POST /video/workshops/{id}/join jako host).
-
-- **`user_negative_login_smoke`** — Próba logowania złymi danymi: wpisanie błędnego hasła → komunikat błędu widoczny na ekranie. Weryfikuje obsługę błędów auth flow.
 
 ### Niski priorytet
 

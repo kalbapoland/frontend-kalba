@@ -194,7 +194,12 @@
         "remove_member_failed": "Could not remove member.",
         "remove": "Remove",
         "remove_member_a11y": "Remove {{name}}",
-        "subscribe_to_name": "Subscribe to {{title}}"
+        "subscribe_to_name": "Subscribe to {{title}}",
+        "delete_group": "Delete Group",
+        "deleting": "Deleting...",
+        "delete_confirm_title": "Delete Group",
+        "delete_confirm_body": "Are you sure you want to delete this group? All workshops and members will be removed. This cannot be undone.",
+        "failed_delete": "Failed to delete group"
     },
     "profile_screen": {
         "signout": "Sign Out",

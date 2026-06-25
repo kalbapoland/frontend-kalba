@@ -48,6 +48,16 @@ def run(command: list[str], *, cwd: Path, env: dict[str, str] | None = None) -> 
     subprocess.run(command, cwd=str(cwd), env=env, check=True)
 
 
+def clear_app_state(adb: str, cwd: Path) -> None:
+    """Force-stop the app between Maestro flows.
+
+    Maestro's clearState:true handles data clearing; a separate pm clear from
+    the script causes a double-clear race that intermittently prevents the app
+    from launching. force-stop is synchronous and only kills running processes.
+    """
+    run([adb, "shell", "am", "force-stop", APP_ID], cwd=cwd)
+
+
 def run_best_effort(command: list[str], *, cwd: Path) -> None:
     try:
         run(command, cwd=cwd)
@@ -233,7 +243,7 @@ def main() -> None:
             env=frontend_env,
         )
         print("[smoke] running Android trainer Maestro flow")
-        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
+        clear_app_state(adb, frontend_root)
         run(
             [
                 maestro,
@@ -244,7 +254,7 @@ def main() -> None:
             env=frontend_env,
         )
         print("[smoke] running Android trainer edit Maestro flow")
-        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
+        clear_app_state(adb, frontend_root)
         run(
             [
                 maestro,
@@ -255,49 +265,56 @@ def main() -> None:
             env=frontend_env,
         )
         print("[smoke] running Android user Maestro flow")
-        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
+        clear_app_state(adb, frontend_root)
         run(
             [maestro, "test", "test/automated/maestro/flows/smoke/user_group_subscribe_enroll_smoke.yaml"],
             cwd=frontend_root,
             env=frontend_env,
         )
         print("[smoke] running Android user home workshops Maestro flow")
-        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
+        clear_app_state(adb, frontend_root)
         run(
             [maestro, "test", "test/automated/maestro/flows/smoke/user_home_workshops_smoke.yaml"],
             cwd=frontend_root,
             env=frontend_env,
         )
         print("[smoke] running Android user unenroll Maestro flow")
-        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
+        clear_app_state(adb, frontend_root)
         run(
             [maestro, "test", "test/automated/maestro/flows/smoke/user_workshop_unenroll_smoke.yaml"],
             cwd=frontend_root,
             env=frontend_env,
         )
         print("[smoke] running Android user unsubscribe Maestro flow")
-        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
+        clear_app_state(adb, frontend_root)
         run(
             [maestro, "test", "test/automated/maestro/flows/smoke/user_group_unsubscribe_smoke.yaml"],
             cwd=frontend_root,
             env=frontend_env,
         )
         print("[smoke] running Android trainer edit group Maestro flow")
-        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
+        clear_app_state(adb, frontend_root)
         run(
             [maestro, "test", "test/automated/maestro/flows/smoke/trainer_edit_group_smoke.yaml"],
             cwd=frontend_root,
             env=frontend_env,
         )
         print("[smoke] running Android trainer delete Maestro flow")
-        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
+        clear_app_state(adb, frontend_root)
         run(
             [maestro, "test", "test/automated/maestro/flows/smoke/trainer_delete_workshop_smoke.yaml"],
             cwd=frontend_root,
             env=frontend_env,
         )
+        print("[smoke] running Android trainer delete group Maestro flow")
+        clear_app_state(adb, frontend_root)
+        run(
+            [maestro, "test", "test/automated/maestro/flows/smoke/trainer_delete_group_smoke.yaml"],
+            cwd=frontend_root,
+            env=frontend_env,
+        )
         print("[smoke] running Android user signout Maestro flow")
-        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
+        clear_app_state(adb, frontend_root)
         run(
             [maestro, "test", "test/automated/maestro/flows/smoke/user_signout_smoke.yaml"],
             cwd=frontend_root,
