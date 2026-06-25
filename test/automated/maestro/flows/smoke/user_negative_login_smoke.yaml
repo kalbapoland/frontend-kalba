@@ -1,0 +1,56 @@
+appId: com.kalba.app
+---
+# SMOKE: user_negative_login — próba logowania z błędnym hasłem
+#
+# Co testuje:
+#   1. Ekran logowania jest widoczny po zimnym uruchomieniu aplikacji (clearState)
+#   2. Wpisanie poprawnego adresu e-mail i BŁĘDNEGO hasła → tapnięcie "Log In"
+#   3. Natywny dialog błędu "Log In Failed" z komunikatem "Invalid credentials" jest widoczny
+#   4. Po zamknięciu dialogu aplikacja wraca do ekranu logowania (nie nawiguje dalej)
+#
+# Zależność: brak — flow jest w pełni standalone, nie wymaga danych w DB.
+#
+# Dane wejściowe:
+#   - konto usera: e2e.user@kalba.dev / WrongPass999 (celowo błędne hasło)
+
+- launchApp:
+    clearState: true
+
+# Ekran logowania pojawia się automatycznie po clearState (brak tokenu JWT)
+- extendedWaitUntil:
+    visible:
+      id: signin.email.input
+    timeout: 15000
+
+# Wpisujemy poprawny email i BŁĘDNE hasło
+- tapOn:
+    id: signin.email.input
+- inputText: e2e.user@kalba.dev
+- hideKeyboard
+
+- tapOn:
+    id: signin.password.input
+- inputText: "WrongPass999"
+- hideKeyboard
+
+# Submit — backend zwróci 401 → resolveAuthError → "Invalid credentials"
+- tapOn:
+    id: signin.submit.button
+
+# Weryfikacja: natywny Alert.alert z tytułem "Log In Failed" jest widoczny
+- extendedWaitUntil:
+    visible:
+      text: "Log In Failed"
+    timeout: 10000
+
+# Weryfikacja: komunikat błędu pochodzi z backendu (401 detail: "Invalid credentials")
+- assertVisible:
+    text: "Invalid credentials"
+
+# Zamknięcie dialogu
+- tapOn:
+    text: "OK"
+
+# Weryfikacja: po odrzuceniu dialogu aplikacja pozostaje na ekranie logowania
+- assertVisible:
+    id: signin.email.input
