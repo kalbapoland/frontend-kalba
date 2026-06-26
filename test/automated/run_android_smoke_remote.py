@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import subprocess
 import sys
+import time
 import traceback
 from pathlib import Path
 
@@ -20,6 +21,7 @@ from run_android_smoke_ephemeral_db import resolve_tool
 TIMEZONE = "Europe/Warsaw"
 ANDROID_SMOKE_BUILD_SCRIPT = "android:release:remote"
 SMOKE_WORKSHOP_OFFSET_MINUTES = "1440"
+MAESTRO_FLOW_RETRY_DELAY_SECONDS = 5
 
 
 def run(command: list[str], *, cwd: Path, env: dict[str, str] | None = None) -> None:
@@ -38,6 +40,28 @@ def resolve_npm() -> str:
         except RuntimeError:
             continue
     raise RuntimeError("npm not found in PATH")
+
+
+def run_maestro_flow(
+    flow_path: str,
+    *,
+    maestro: str,
+    adb: str,
+    cwd: Path,
+    env: dict[str, str] | None = None,
+    max_attempts: int = 2,
+) -> None:
+    for attempt in range(1, max_attempts + 1):
+        run([adb, "shell", "pm", "clear", APP_ID], cwd=cwd)
+        try:
+            run([maestro, "test", flow_path], cwd=cwd, env=env)
+            return
+        except subprocess.CalledProcessError:
+            if attempt == max_attempts:
+                raise
+            flow_name = Path(flow_path).name
+            print(f"[smoke] attempt {attempt}/{max_attempts} failed for {flow_name}, retrying in {MAESTRO_FLOW_RETRY_DELAY_SECONDS}s...")
+            time.sleep(MAESTRO_FLOW_RETRY_DELAY_SECONDS)
 
 
 def main() -> None:
@@ -72,83 +96,27 @@ def main() -> None:
         build_env["EXPO_PUBLIC_SMOKE_WORKSHOP_OFFSET_MINUTES"] = SMOKE_WORKSHOP_OFFSET_MINUTES
         run([npm, "run", ANDROID_SMOKE_BUILD_SCRIPT], cwd=frontend_root, env=build_env)
 
-        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
-        run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/user_negative_login_smoke.yaml"],
-            cwd=frontend_root,
-        )
+        def flow(path: str) -> None:
+            run_maestro_flow(path, maestro=maestro, adb=adb, cwd=frontend_root)
 
-        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
-        run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/user_register_smoke.yaml"],
-            cwd=frontend_root,
+        flow("test/automated/maestro/flows/smoke/user_negative_login_smoke.yaml")
+        # max_attempts=1: hardcoded email e2e.register.smoke@kalba.dev — retry after successful
+        # registration would hit 409 and convert a transient flake into a guaranteed failure.
+        run_maestro_flow(
+            "test/automated/maestro/flows/smoke/user_register_smoke.yaml",
+            maestro=maestro, adb=adb, cwd=frontend_root, max_attempts=1,
         )
-
-        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
-        run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/user_forgot_password_smoke.yaml"],
-            cwd=frontend_root,
-        )
-
-        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
-        run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/trainer_create_smoke.yaml"],
-            cwd=frontend_root,
-        )
-
-        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
-        run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/trainer_create_workshop_date_smoke.yaml"],
-            cwd=frontend_root,
-        )
-
-        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
-        run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/trainer_edit_workshop_smoke.yaml"],
-            cwd=frontend_root,
-        )
-
-        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
-        run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/user_group_subscribe_enroll_smoke.yaml"],
-            cwd=frontend_root,
-        )
-
-        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
-        run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/user_home_workshops_smoke.yaml"],
-            cwd=frontend_root,
-        )
-
-        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
-        run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/user_workshop_unenroll_smoke.yaml"],
-            cwd=frontend_root,
-        )
-
-        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
-        run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/user_group_unsubscribe_smoke.yaml"],
-            cwd=frontend_root,
-        )
-
-        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
-        run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/trainer_edit_group_smoke.yaml"],
-            cwd=frontend_root,
-        )
-
-        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
-        run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/trainer_delete_workshop_smoke.yaml"],
-            cwd=frontend_root,
-        )
-
-        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
-        run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/user_signout_smoke.yaml"],
-            cwd=frontend_root,
-        )
+        flow("test/automated/maestro/flows/smoke/user_forgot_password_smoke.yaml")
+        flow("test/automated/maestro/flows/smoke/trainer_create_smoke.yaml")
+        flow("test/automated/maestro/flows/smoke/trainer_create_workshop_date_smoke.yaml")
+        flow("test/automated/maestro/flows/smoke/trainer_edit_workshop_smoke.yaml")
+        flow("test/automated/maestro/flows/smoke/user_group_subscribe_enroll_smoke.yaml")
+        flow("test/automated/maestro/flows/smoke/user_home_workshops_smoke.yaml")
+        flow("test/automated/maestro/flows/smoke/user_workshop_unenroll_smoke.yaml")
+        flow("test/automated/maestro/flows/smoke/user_group_unsubscribe_smoke.yaml")
+        flow("test/automated/maestro/flows/smoke/trainer_edit_group_smoke.yaml")
+        flow("test/automated/maestro/flows/smoke/trainer_delete_workshop_smoke.yaml")
+        flow("test/automated/maestro/flows/smoke/user_signout_smoke.yaml")
     except BaseException as err:
         primary_error = err
     finally:
