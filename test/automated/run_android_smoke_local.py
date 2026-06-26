@@ -187,16 +187,9 @@ def main() -> None:
         print("[smoke] running Alembic migrations")
         run([uv, "run", "alembic", "upgrade", "head"], cwd=backend_root, env=backend_env)
 
-        print("[smoke] ensuring smoke trainer account exists")
+        print("[smoke] seeding mobile E2E fixtures (trainer, user, groups, workshops, notifications)")
         run(
-            [uv, "run", "python", "tests/automated/ensure_smoke_trainer.py", "--reset-password"],
-            cwd=backend_root,
-            env=backend_env,
-        )
-
-        print("[smoke] ensuring smoke user account exists")
-        run(
-            [uv, "run", "python", "tests/automated/ensure_smoke_user.py", "--reset-password"],
+            [uv, "run", "python", "tests/automated/seed_mobile_e2e_fixtures.py"],
             cwd=backend_root,
             env=backend_env,
         )
@@ -229,6 +222,41 @@ def main() -> None:
         print("[smoke] running Android user negative login Maestro flow")
         run(
             [maestro, "test", "test/automated/maestro/flows/smoke/user_negative_login_smoke.yaml"],
+            cwd=frontend_root,
+            env=frontend_env,
+        )
+        print("[smoke] running Android user register Maestro flow")
+        clear_app_state(adb, frontend_root)
+        run(
+            [maestro, "test", "test/automated/maestro/flows/smoke/user_register_smoke.yaml"],
+            cwd=frontend_root,
+            env=frontend_env,
+        )
+        print("[smoke] running Android user forgot password Maestro flow")
+        clear_app_state(adb, frontend_root)
+        run(
+            [maestro, "test", "test/automated/maestro/flows/smoke/user_forgot_password_smoke.yaml"],
+            cwd=frontend_root,
+            env=frontend_env,
+        )
+        print("[smoke] running Android user My Kalba Maestro flow")
+        clear_app_state(adb, frontend_root)
+        run(
+            [maestro, "test", "test/automated/maestro/flows/smoke/user_my_kalba_smoke.yaml"],
+            cwd=frontend_root,
+            env=frontend_env,
+        )
+        print("[smoke] running Android user Calendar Maestro flow")
+        clear_app_state(adb, frontend_root)
+        run(
+            [maestro, "test", "test/automated/maestro/flows/smoke/user_calendar_smoke.yaml"],
+            cwd=frontend_root,
+            env=frontend_env,
+        )
+        print("[smoke] running Android user workshop full Maestro flow")
+        clear_app_state(adb, frontend_root)
+        run(
+            [maestro, "test", "test/automated/maestro/flows/smoke/user_workshop_full_smoke.yaml"],
             cwd=frontend_root,
             env=frontend_env,
         )

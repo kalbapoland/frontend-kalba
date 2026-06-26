@@ -26,14 +26,7 @@ import { PressableScale } from "@/components/PressableScale";
 import { SectionHeader } from "@/components/SectionHeader";
 import { SkeletonList } from "@/components/Skeleton";
 import { colors, radii, shadows, spacing } from "@/theme/tokens";
-
-function toAutomationSlug(value: string): string {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
+import { toAutomationSlug } from "@/lib/automationId";
 
 function getGreetingKey(): string {
   const hour = new Date().getHours();
