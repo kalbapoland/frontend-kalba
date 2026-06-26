@@ -137,6 +137,11 @@ def start_backend_process(backend_root: Path, database_url: str, uv: str) -> sub
     env.setdefault("APP_ENV", "local")
     env["PYTHONUNBUFFERED"] = "1"
 
+    # Redirect backend output to DEVNULL so uvicorn never inherits the smoke
+    # runner's stdout/stderr handles. Without this, on Windows an orphaned
+    # uvicorn (grandchild of `uv run`) holds the inherited pipe open, which
+    # blocks PowerShell from detecting that the Python smoke runner has exited,
+    # stalling the multi-run loop indefinitely.
     return subprocess.Popen(
         [
             uv,
@@ -150,6 +155,8 @@ def start_backend_process(backend_root: Path, database_url: str, uv: str) -> sub
         ],
         cwd=str(backend_root),
         env=env,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
     )
 
 

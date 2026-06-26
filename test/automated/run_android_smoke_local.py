@@ -30,6 +30,7 @@ TIMEZONE = "Europe/Warsaw"
 ANDROID_SMOKE_BUILD_SCRIPT = "android:release:local"
 EPHEMERAL_DB_CONTAINER_PREFIX = "kalba-smoke-pg-"
 SMOKE_WORKSHOP_OFFSET_MINUTES = "1440"
+MAESTRO_FLOW_RETRY_DELAY_SECONDS = 5
 
 
 def require_directory_env(name: str) -> Path:
@@ -119,6 +120,28 @@ def kill_processes_on_backend_port(port: int) -> None:
 
 def clear_app_state(adb: str, cwd: Path) -> None:
     run([adb, "shell", "pm", "clear", APP_ID], cwd=cwd)
+
+
+def run_maestro_flow(
+    flow_path: str,
+    *,
+    maestro: str,
+    adb: str,
+    cwd: Path,
+    env: dict[str, str] | None = None,
+    max_attempts: int = 2,
+) -> None:
+    for attempt in range(1, max_attempts + 1):
+        clear_app_state(adb, cwd)
+        try:
+            run([maestro, "test", flow_path], cwd=cwd, env=env)
+            return
+        except subprocess.CalledProcessError:
+            if attempt == max_attempts:
+                raise
+            flow_name = Path(flow_path).name
+            print(f"[smoke] attempt {attempt}/{max_attempts} failed for {flow_name}, retrying in {MAESTRO_FLOW_RETRY_DELAY_SECONDS}s...")
+            time.sleep(MAESTRO_FLOW_RETRY_DELAY_SECONDS)
 
 
 def verify_emulator_backend_connectivity(adb: str, frontend_root: Path) -> None:
@@ -223,125 +246,46 @@ def main() -> None:
         frontend_env["DATABASE_URL"] = ephemeral_db.database_url
         frontend_env["APP_ENV"] = "local"
 
+        def flow(path: str) -> None:
+            run_maestro_flow(path, maestro=maestro, adb=adb, cwd=frontend_root, env=frontend_env)
+
         print("[smoke] running Android user negative login Maestro flow")
-        run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/user_negative_login_smoke.yaml"],
-            cwd=frontend_root,
-            env=frontend_env,
-        )
+        flow("test/automated/maestro/flows/smoke/user_negative_login_smoke.yaml")
         print("[smoke] running Android user register Maestro flow")
-        clear_app_state(adb, frontend_root)
-        run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/user_register_smoke.yaml"],
-            cwd=frontend_root,
-            env=frontend_env,
+        # max_attempts=1: hardcoded email e2e.register.smoke@kalba.dev — retry after successful
+        # registration would hit 409 and convert a transient flake into a guaranteed failure.
+        run_maestro_flow(
+            "test/automated/maestro/flows/smoke/user_register_smoke.yaml",
+            maestro=maestro, adb=adb, cwd=frontend_root, env=frontend_env, max_attempts=1,
         )
         print("[smoke] running Android user forgot password Maestro flow")
-        clear_app_state(adb, frontend_root)
-        run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/user_forgot_password_smoke.yaml"],
-            cwd=frontend_root,
-            env=frontend_env,
-        )
+        flow("test/automated/maestro/flows/smoke/user_forgot_password_smoke.yaml")
         print("[smoke] running Android user My Kalba Maestro flow")
-        clear_app_state(adb, frontend_root)
-        run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/user_my_kalba_smoke.yaml"],
-            cwd=frontend_root,
-            env=frontend_env,
-        )
+        flow("test/automated/maestro/flows/smoke/user_my_kalba_smoke.yaml")
         print("[smoke] running Android user Calendar Maestro flow")
-        clear_app_state(adb, frontend_root)
-        run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/user_calendar_smoke.yaml"],
-            cwd=frontend_root,
-            env=frontend_env,
-        )
+        flow("test/automated/maestro/flows/smoke/user_calendar_smoke.yaml")
         print("[smoke] running Android user workshop full Maestro flow")
-        clear_app_state(adb, frontend_root)
-        run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/user_workshop_full_smoke.yaml"],
-            cwd=frontend_root,
-            env=frontend_env,
-        )
+        flow("test/automated/maestro/flows/smoke/user_workshop_full_smoke.yaml")
         print("[smoke] running Android trainer Maestro flow")
-        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
-        run(
-            [
-                maestro,
-                "test",
-                "test/automated/maestro/flows/smoke/trainer_create_smoke.yaml",
-            ],
-            cwd=frontend_root,
-            env=frontend_env,
-        )
+        flow("test/automated/maestro/flows/smoke/trainer_create_smoke.yaml")
         print("[smoke] running Android trainer create workshop date Maestro flow")
-        clear_app_state(adb, frontend_root)
-        run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/trainer_create_workshop_date_smoke.yaml"],
-            cwd=frontend_root,
-            env=frontend_env,
-        )
+        flow("test/automated/maestro/flows/smoke/trainer_create_workshop_date_smoke.yaml")
         print("[smoke] running Android trainer edit Maestro flow")
-        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
-        run(
-            [
-                maestro,
-                "test",
-                "test/automated/maestro/flows/smoke/trainer_edit_workshop_smoke.yaml",
-            ],
-            cwd=frontend_root,
-            env=frontend_env,
-        )
+        flow("test/automated/maestro/flows/smoke/trainer_edit_workshop_smoke.yaml")
         print("[smoke] running Android user Maestro flow")
-        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
-        run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/user_group_subscribe_enroll_smoke.yaml"],
-            cwd=frontend_root,
-            env=frontend_env,
-        )
+        flow("test/automated/maestro/flows/smoke/user_group_subscribe_enroll_smoke.yaml")
         print("[smoke] running Android user home workshops Maestro flow")
-        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
-        run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/user_home_workshops_smoke.yaml"],
-            cwd=frontend_root,
-            env=frontend_env,
-        )
+        flow("test/automated/maestro/flows/smoke/user_home_workshops_smoke.yaml")
         print("[smoke] running Android user unenroll Maestro flow")
-        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
-        run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/user_workshop_unenroll_smoke.yaml"],
-            cwd=frontend_root,
-            env=frontend_env,
-        )
+        flow("test/automated/maestro/flows/smoke/user_workshop_unenroll_smoke.yaml")
         print("[smoke] running Android user unsubscribe Maestro flow")
-        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
-        run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/user_group_unsubscribe_smoke.yaml"],
-            cwd=frontend_root,
-            env=frontend_env,
-        )
+        flow("test/automated/maestro/flows/smoke/user_group_unsubscribe_smoke.yaml")
         print("[smoke] running Android trainer edit group Maestro flow")
-        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
-        run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/trainer_edit_group_smoke.yaml"],
-            cwd=frontend_root,
-            env=frontend_env,
-        )
+        flow("test/automated/maestro/flows/smoke/trainer_edit_group_smoke.yaml")
         print("[smoke] running Android trainer delete Maestro flow")
-        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
-        run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/trainer_delete_workshop_smoke.yaml"],
-            cwd=frontend_root,
-            env=frontend_env,
-        )
+        flow("test/automated/maestro/flows/smoke/trainer_delete_workshop_smoke.yaml")
         print("[smoke] running Android user signout Maestro flow")
-        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
-        run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/user_signout_smoke.yaml"],
-            cwd=frontend_root,
-            env=frontend_env,
-        )
+        flow("test/automated/maestro/flows/smoke/user_signout_smoke.yaml")
     except BaseException as err:
         primary_error = err
     finally:
