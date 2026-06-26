@@ -1,0 +1,94 @@
+appId: com.kalba.app
+---
+# SMOKE: trainer_create_workshop_date_smoke — tworzenie warsztatu z interakcją date/time pickera
+#
+# Co testuje:
+#   1. Trainer nawiguje do grupy "E2E Trainer Group Smoke" (utworzonej przez trainer_create_smoke)
+#   2. Otwiera formularz tworzenia nowego warsztatu
+#   3. Tapnięcie "Pick Date" otwiera natywny Android DatePicker dialog
+#   4. Zaakceptowanie pickera przez "OK" zamyka dialog bez crasha (pre-filled date stays)
+#   5. Tapnięcie "Pick Time" otwiera natywny Android TimePicker dialog
+#   6. Zaakceptowanie pickera przez "OK" zamyka dialog bez crasha (pre-filled time stays)
+#   7. Reszta formularza wypełniona i wysłana (POST /workshops)
+#   8. Warsztat pojawia się na liście grupy (potwierdzenie zapisu z datą w DB)
+#
+# Zależność: musi być uruchomiony po trainer_create_smoke.yaml
+#   (który tworzy grupę "E2E Trainer Group Smoke")
+#
+# Dane wejściowe:
+#   - konto trainera: e2e.trainer@kalba.dev / Pass1234
+#   - istniejąca grupa: "E2E Trainer Group Smoke" (slug: e2e-trainer-group-smoke)
+#   - tworzony warsztat: "E2E Date Workshop Smoke"
+
+- launchApp:
+    clearState: true
+
+# --- Logowanie jako trainer ---
+- runFlow: ../common/login_trainer.yaml
+
+# --- Nawigacja do grupy ---
+- tapOn:
+    id: tab.groups.button
+- extendedWaitUntil:
+    visible:
+      id: group.card.e2e-trainer-group-smoke
+    timeout: 15000
+- tapOn:
+    id: group.card.e2e-trainer-group-smoke
+- extendedWaitUntil:
+    visible:
+      id: trainer.create.workshop.button
+    timeout: 10000
+
+# --- Otwarcie formularza tworzenia warsztatu ---
+- tapOn:
+    id: trainer.create.workshop.button
+- extendedWaitUntil:
+    visible:
+      id: workshop.create.date.button
+    timeout: 10000
+
+# --- Interakcja z date pickerem ---
+# Tapnięcie "Pick Date" otwiera natywny Android DatePicker dialog
+- tapOn:
+    id: workshop.create.date.button
+# Akceptowanie wyświetlonej daty przez "OK" — Android Material date picker
+# zawsze pokazuje "OK" niezależnie od locale urządzenia
+- tapOn:
+    text: "OK"
+# Weryfikacja: picker zamknięty, przycisk daty znów widoczny i tappable
+- assertVisible:
+    id: workshop.create.date.button
+
+# --- Interakcja z time pickerem ---
+# Tapnięcie "Pick Time" otwiera natywny Android TimePicker dialog
+- tapOn:
+    id: workshop.create.time.button
+- tapOn:
+    text: "OK"
+# Weryfikacja: picker zamknięty
+- assertVisible:
+    id: workshop.create.time.button
+
+# --- Wypełnienie pozostałych pól ---
+- tapOn:
+    id: workshop.create.title.input
+- inputText: E2E Date Workshop Smoke
+- hideKeyboard
+- tapOn:
+    id: workshop.create.duration.input
+- inputText: 30
+- hideKeyboard
+- tapOn:
+    id: workshop.create.max-participants.input
+- inputText: 10
+- hideKeyboard
+
+# --- Submit ---
+# Weryfikacja: POST /workshops zwrócił 201, nawigacja wróciła do szczegółów grupy
+- tapOn:
+    id: workshop.create.submit.button
+- extendedWaitUntil:
+    visible:
+      id: group.workshop.row.e2e-date-workshop-smoke
+    timeout: 15000

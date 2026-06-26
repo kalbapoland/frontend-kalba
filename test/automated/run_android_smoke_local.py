@@ -117,6 +117,10 @@ def kill_processes_on_backend_port(port: int) -> None:
         subprocess.run(["taskkill", "/PID", pid, "/F", "/T"], check=False, capture_output=True, text=True)
 
 
+def clear_app_state(adb: str, cwd: Path) -> None:
+    run([adb, "shell", "pm", "clear", APP_ID], cwd=cwd)
+
+
 def verify_emulator_backend_connectivity(adb: str, frontend_root: Path) -> None:
     """Verify adb reverse tunnel is configured for the backend port.
 
@@ -268,6 +272,13 @@ def main() -> None:
                 "test",
                 "test/automated/maestro/flows/smoke/trainer_create_smoke.yaml",
             ],
+            cwd=frontend_root,
+            env=frontend_env,
+        )
+        print("[smoke] running Android trainer create workshop date Maestro flow")
+        clear_app_state(adb, frontend_root)
+        run(
+            [maestro, "test", "test/automated/maestro/flows/smoke/trainer_create_workshop_date_smoke.yaml"],
             cwd=frontend_root,
             env=frontend_env,
         )
