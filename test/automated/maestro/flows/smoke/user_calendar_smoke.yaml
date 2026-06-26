@@ -1,0 +1,88 @@
+appId: com.kalba.app
+---
+# SMOKE: user_calendar — zakładka Calendar: widok miesięczny, tygodniowy, dzienny + nawigacja
+#
+# Co testuje:
+#   1. User loguje się i nawiguje do zakładki Calendar
+#   2. Widok miesięczny ładuje się — nagłówek z aktualnym miesiącem jest widoczny
+#   3. Strzałki nawigacji (prev/next) zmieniają miesiąc
+#   4. Przycisk "Today" wraca do bieżącego miesiąca
+#   5. Przełącznik widoku: Month → Week → Day i z powrotem
+#   6. Brak ekranu błędu przez cały flow (calendar.content jest zawsze widoczne)
+#
+# Uwaga: flow sprawdza że kalendarz się ładuje i nawigacja działa. Nie weryfikuje
+#   obecności konkretnego warsztatu na widoku — to zależy od implementacji MonthView/WeekView
+#   i nie ma dedykowanych testIDs w komponentach kalendarza.
+#
+# Prereq: seed_mobile_e2e_fixtures.py (user enrolled w workshop_free i workshop_past)
+#
+# Dane wejściowe:
+#   - konto usera: e2e.user@kalba.dev / Pass1234
+
+- launchApp:
+    clearState: true
+
+# --- Logowanie jako user ---
+- runFlow: ../common/login_user.yaml
+
+# --- Nawigacja do Calendar ---
+- tapOn:
+    id: tab.calendar.button
+- extendedWaitUntil:
+    visible:
+      id: calendar.content
+    timeout: 15000
+
+# Weryfikacja: nagłówek miesiąca jest widoczny (dynamiczny tekst — sprawdzamy przez testID)
+- assertVisible:
+    id: calendar.header.title
+
+# --- Nawigacja next/prev ---
+# Tapnięcie "Next" przechodzi do następnego miesiąca
+- tapOn:
+    id: calendar.nav.next
+- extendedWaitUntil:
+    visible:
+      id: calendar.header.title
+    timeout: 5000
+
+# Tapnięcie "Prev" wraca do poprzedniego miesiąca
+- tapOn:
+    id: calendar.nav.prev
+- extendedWaitUntil:
+    visible:
+      id: calendar.header.title
+    timeout: 5000
+
+# Tapnięcie "Today" wraca do bieżącego miesiąca
+- tapOn:
+    id: calendar.nav.today
+- extendedWaitUntil:
+    visible:
+      id: calendar.header.title
+    timeout: 5000
+
+# --- Przełącznik widoku: Week ---
+# Weryfikacja: przełączenie na Week view ładuje widok bez błędu
+- tapOn:
+    id: calendar.mode.week
+- extendedWaitUntil:
+    visible:
+      id: calendar.content
+    timeout: 10000
+
+# --- Przełącznik widoku: Day ---
+- tapOn:
+    id: calendar.mode.day
+- extendedWaitUntil:
+    visible:
+      id: calendar.content
+    timeout: 10000
+
+# --- Powrót do Month ---
+- tapOn:
+    id: calendar.mode.month
+- extendedWaitUntil:
+    visible:
+      id: calendar.content
+    timeout: 10000

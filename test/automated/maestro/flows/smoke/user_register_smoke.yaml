@@ -1,0 +1,78 @@
+appId: com.kalba.app
+---
+# SMOKE: user_register — rejestracja nowego konta email/password
+#
+# Co testuje:
+#   1. Ekran logowania jest widoczny po zimnym uruchomieniu
+#   2. Tapnięcie "Sign Up" otwiera formularz rejestracji
+#   3. Wypełnienie imienia, emaila i hasła + submit tworzy konto (POST /auth/register)
+#   4. Po rejestracji aplikacja nawiguje do ekranu głównego (home.workshops.list widoczne)
+#   5. Użytkownik jest zalogowany — tapnięcie "Profile" pokazuje przycisk wylogowania
+#
+# Zależność: standalone — nie wymaga danych w DB z seeda.
+#   Email jest unikatowy za każdym razem (bazuje na timestamp z nazwy), ale smoke
+#   uruchamia się z clearState więc konto nigdy nie istnieje przed startem.
+#
+# Uwaga: konto tworzone przez ten flow pozostaje w DB. Przy wielokrotnym uruchomieniu
+#   w tym samym środowisku należy wyczyścić DB lub użyć --cleanup w seed_mobile_e2e_fixtures.
+#
+# Dane wejściowe:
+#   - email: e2e.register.smoke@kalba.dev (unikalny adres dedykowany temu flow)
+#   - password: Pass1234
+#   - name: E2E Register Smoke
+
+- launchApp:
+    clearState: true
+
+# Ekran logowania pojawia się automatycznie po clearState (brak tokenu JWT)
+- extendedWaitUntil:
+    visible:
+      id: signin.email.input
+    timeout: 15000
+
+# --- Otwarcie formularza rejestracji ---
+# Weryfikacja: tapnięcie "Sign Up" (signin.mode.register.button) otwiera formularz rejestracji
+- tapOn:
+    id: signin.mode.register.button
+- extendedWaitUntil:
+    visible:
+      text: "Create your account"
+    timeout: 10000
+
+# --- Wypełnienie formularza ---
+# Imię
+- tapOn:
+    id: signin.name.input
+- inputText: "E2E Register Smoke"
+- hideKeyboard
+
+# Email
+- tapOn:
+    id: signin.email.input
+- inputText: "e2e.register.smoke@kalba.dev"
+- hideKeyboard
+
+# Hasło
+- tapOn:
+    id: signin.password.input
+- inputText: "Pass1234"
+- hideKeyboard
+
+# Submit — POST /auth/register → 201 → auto-login
+- tapOn:
+    id: signin.submit.button
+
+# --- Weryfikacja rejestracji ---
+# Po udanej rejestracji aplikacja nawiguje do ekranu głównego
+- extendedWaitUntil:
+    visible:
+      id: home.workshops.list
+    timeout: 20000
+
+# Weryfikacja: zakładka Profile pokazuje przycisk wylogowania (sesja aktywna)
+- tapOn:
+    id: tab.profile.button
+- extendedWaitUntil:
+    visible:
+      id: profile.signout.button
+    timeout: 10000

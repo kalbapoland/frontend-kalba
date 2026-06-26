@@ -93,6 +93,7 @@ export default function CalendarScreen() {
       <View style={[s.header, { paddingTop: insets.top + 16 }]}>
         <View style={s.headerRow}>
           <Pressable
+            testID="calendar.nav.prev"
             onPress={() => step(-1)}
             style={({ pressed }) => [s.iconButton, pressed && { opacity: 0.6 }]}
             accessibilityRole="button"
@@ -100,8 +101,9 @@ export default function CalendarScreen() {
           >
             <Ionicons name="chevron-back" size={22} color={colors.ink} />
           </Pressable>
-          <Text style={s.title}>{title}</Text>
+          <Text testID="calendar.header.title" style={s.title}>{title}</Text>
           <Pressable
+            testID="calendar.nav.next"
             onPress={() => step(1)}
             style={({ pressed }) => [s.iconButton, pressed && { opacity: 0.6 }]}
             accessibilityRole="button"
@@ -112,6 +114,7 @@ export default function CalendarScreen() {
         </View>
 
         <Pressable
+          testID="calendar.nav.today"
           onPress={goToToday}
           style={({ pressed }) => [s.todayPill, pressed && { opacity: 0.7 }]}
         >
@@ -122,6 +125,7 @@ export default function CalendarScreen() {
           {(["month", "week", "day"] as const).map((m) => (
             <Pressable
               key={m}
+              testID={`calendar.mode.${m}`}
               onPress={() => setMode(m)}
               accessibilityRole="button"
               accessibilityLabel={t(`calendar.${m}`)}
@@ -141,7 +145,7 @@ export default function CalendarScreen() {
         </View>
       </View>
 
-      <View style={s.content}>
+      <View testID="calendar.content" style={s.content}>
         {isLoading ? (
           <View style={s.centered}>
             <ActivityIndicator color={colors.primary} />

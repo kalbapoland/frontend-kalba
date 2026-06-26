@@ -10,6 +10,8 @@ Najlepiej byloby zaprojektowac go tak aby nie trzeba bylo scrollowac.
 
 - **Migracja błędów API na kody** — Backend powinien zwracać kody błędów (`SCREAMING_SNAKE_CASE`, np. `INVALID_CREDENTIALS`, `USER_ALREADY_EXISTS`, `WORKSHOP_FULL`) zamiast angielskich stringów. Frontend mapuje kody na zlokalizowane teksty przez `t()`. Dotyczy wszystkich endpointów (auth, groups, workshops, video). Zmiany w obu repozytoriach (oba).
 
+- **Zdefiniować zachowanie przy usunięciu grupy** — Obecny `DELETE /groups/{id}` robi tylko soft-delete grupy bez kaskady. Brak zdefiniowanego zachowania dla: workshopów w grupie (duchy w feedzie bo `_caller_group_ids` nie filtruje po `Group.deleted_at`), membershipów, enrollmentów, pokoi Daily.co. PR #87 (frontend: przycisk Delete Group + smoke test) zdraftowany do czasu rozwiązania. Opcje: (a) blokuj usunięcie jeśli grupa ma workshopy `422`; (b) cascade soft-delete workshopów wraz z grupą; (c) blokuj tylko przy przyszłych workshopach. Zmiany w obu repozytoriach (oba).
+
 ## Smoke testy — do zaimplementowania
 
 Brakujące przepływy dla lepszego pokrycia E2E (kolejność wg priorytetu):

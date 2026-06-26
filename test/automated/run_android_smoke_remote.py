@@ -80,6 +80,18 @@ def main() -> None:
 
         run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
         run(
+            [maestro, "test", "test/automated/maestro/flows/smoke/user_register_smoke.yaml"],
+            cwd=frontend_root,
+        )
+
+        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
+        run(
+            [maestro, "test", "test/automated/maestro/flows/smoke/user_forgot_password_smoke.yaml"],
+            cwd=frontend_root,
+        )
+
+        run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
+        run(
             [maestro, "test", "test/automated/maestro/flows/smoke/trainer_create_smoke.yaml"],
             cwd=frontend_root,
         )

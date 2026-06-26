@@ -26,6 +26,7 @@ import { SkeletonList } from "@/components/Skeleton";
 import { listItemEntering } from "@/lib/entrance";
 import { colors, fonts, shadows } from "@/theme/tokens";
 import { formatMonthDayYear, formatTime, formatWeekdayShort } from "@/lib/date";
+import { toAutomationSlug } from "@/lib/automationId";
 
 function clampTarget(value: number): number {
     return Math.max(1, Math.min(60, value));
@@ -133,6 +134,7 @@ export default function MyKalbaScreen() {
 
                     <View style={styles.goalActionsRow}>
                         <Pressable
+                            testID="my-kalba.goal.decrease"
                             style={styles.roundActionButton}
                             onPress={() => adjustGoal(-1)}
                             accessibilityRole="button"
@@ -157,6 +159,7 @@ export default function MyKalbaScreen() {
                             <Text style={styles.presetText}>8</Text>
                         </Pressable>
                         <Pressable
+                            testID="my-kalba.goal.increase"
                             style={styles.roundActionButton}
                             onPress={() => adjustGoal(1)}
                             accessibilityRole="button"
@@ -193,11 +196,12 @@ export default function MyKalbaScreen() {
                         <Text style={styles.sectionTitle}>{t("my_kalba.schedule_title")}</Text>
                     </View>
                     {schedule.data.length === 0 ? (
-                        <Text style={styles.emptyText}>{t("my_kalba.schedule_empty")}</Text>
+                        <Text testID="my-kalba.schedule.empty" style={styles.emptyText}>{t("my_kalba.schedule_empty")}</Text>
                     ) : (
                         schedule.data.map((item) => (
                             <Pressable
                                 key={item.id}
+                                testID={`my-kalba.schedule.item.${toAutomationSlug(item.title)}`}
                                 style={styles.scheduleItem}
                                 onPress={() => router.push(`/(app)/workshop/${item.id}`)}
                                 accessibilityRole="button"
@@ -221,6 +225,7 @@ export default function MyKalbaScreen() {
                             {t("my_kalba.notifications_title")}
                         </Text>
                         <Pressable
+                            testID="my-kalba.notifications.mark-all-read"
                             onPress={() => markAllRead.mutate()}
                             accessibilityRole="button"
                             accessibilityLabel={t("my_kalba.a11y_mark_all_read")}
@@ -233,6 +238,7 @@ export default function MyKalbaScreen() {
 
                     <View style={styles.filterRow}>
                         <Pressable
+                            testID="my-kalba.notifications.filter.unread"
                             onPress={() => setUnreadOnly(true)}
                             style={unreadStyles.container}
                             accessibilityRole="button"
@@ -243,6 +249,7 @@ export default function MyKalbaScreen() {
                             </Text>
                         </Pressable>
                         <Pressable
+                            testID="my-kalba.notifications.filter.all"
                             onPress={() => setUnreadOnly(false)}
                             style={allStyles.container}
                             accessibilityRole="button"
@@ -255,10 +262,14 @@ export default function MyKalbaScreen() {
                     </View>
 
                     {notifications.data.length === 0 ? (
-                        <Text style={styles.emptyText}>{t("my_kalba.notifications_empty")}</Text>
+                        <Text testID="my-kalba.notifications.empty" style={styles.emptyText}>{t("my_kalba.notifications_empty")}</Text>
                     ) : (
                         notifications.data.map((item) => (
-                            <View key={item.id} style={styles.notificationItem}>
+                            <View
+                                key={item.id}
+                                testID={`my-kalba.notification.item.${toAutomationSlug(item.title)}`}
+                                style={styles.notificationItem}
+                            >
                                 <View style={styles.flex1}>
                                     <Text style={[styles.notificationTitle, !item.is_read && styles.notificationTitleUnread]}>
                                         {item.title}
@@ -268,6 +279,7 @@ export default function MyKalbaScreen() {
 
                                 <View style={styles.notificationActions}>
                                     <Pressable
+                                        testID={`my-kalba.notification.toggle-read.${toAutomationSlug(item.title)}`}
                                         style={styles.notificationActionButton}
                                         onPress={() => updateRead.mutate({ id: item.id, isRead: !item.is_read })}
                                         accessibilityRole="button"
@@ -284,6 +296,7 @@ export default function MyKalbaScreen() {
                                         />
                                     </Pressable>
                                     <Pressable
+                                        testID={`my-kalba.notification.delete.${toAutomationSlug(item.title)}`}
                                         style={styles.notificationActionButton}
                                         onPress={() => deleteNotification.mutate(item.id)}
                                         accessibilityRole="button"
