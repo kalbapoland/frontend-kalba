@@ -32,7 +32,7 @@ Brakujące przepływy dla lepszego pokrycia E2E (kolejność wg priorytetu):
 
 - **`user_notification_deep_link_smoke`** — Tapnięcie notyfikacji push otwiera właściwy ekran warsztatu (deep link). Wymaga symulacji notyfikacji lub testowego endpointu wyzwalającego notyfikację w urządzeniu.
 
-- **`trainer_video_join_smoke`** — Trainer dołącza do sesji wideo: tapnięcie "Start session" → token Daily.co zwrócony → ekran wideo załadowany. Weryfikuje integrację z Daily.co (POST /video/workshops/{id}/join jako host).
+- ~~**`trainer_video_join_smoke`**~~ — **GOTOWE** (`flows/smoke/trainer_video_join_smoke.yaml`). Trainer dołącza do Daily.co call → kontrolki i host panel widoczne → leave → powrót do ekranu warsztatu.
 
 ### Niski priorytat / odłożone
 
