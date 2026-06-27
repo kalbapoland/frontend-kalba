@@ -61,14 +61,16 @@ appId: com.kalba.app
 - tapOn:
     id: workshop.enroll.button
 
-# Poczekanie na ewentualną zmianę stanu (daje czas na odpowiedź API gdyby tap przeszedł)
-- wait:
-    millis: 2000
+# Odczekanie na osiadnięcie UI (gdyby tap wywołał brief loading state przez onPress)
+- waitForAnimationToEnd:
+    timeout: 3000
 
 # --- Weryfikacja: stan identyczny jak przed tapnięciem ---
 # workshop.enroll.button nadal widoczny — disabled-state nie zmienił się
-- assertVisible:
-    id: workshop.enroll.button
+- extendedWaitUntil:
+    visible:
+      id: workshop.enroll.button
+    timeout: 5000
 
 # workshop.unenroll.button nadal niewidoczny — enrollment nie nastąpił
 - assertNotVisible:
