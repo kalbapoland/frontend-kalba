@@ -199,6 +199,10 @@
     "profile_screen": {
         "signout": "Sign Out",
         "signout_confirm": "Are you sure you want to sign out?",
+        "edit_name": "Edit name",
+        "edit_name_placeholder": "Your name",
+        "save": "Save",
+        "edit_name_failed": "Couldn't update your name. Please try again.",
         "delete_account": "Delete account",
         "delete_title": "Delete Account",
         "delete_body": "This permanently deletes your account and all your data. This cannot be undone.",

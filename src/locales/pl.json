@@ -205,6 +205,10 @@
     "profile_screen": {
         "signout": "Wyloguj się",
         "signout_confirm": "Czy na pewno chcesz się wylogować?",
+        "edit_name": "Zmień nazwę",
+        "edit_name_placeholder": "Twoje imię",
+        "save": "Zapisz",
+        "edit_name_failed": "Nie udało się zaktualizować nazwy. Spróbuj ponownie.",
         "delete_account": "Usuń konto",
         "delete_title": "Usuń konto",
         "delete_body": "To trwale usunie Twoje konto i wszystkie Twoje dane. Tej operacji nie można cofnąć.",
