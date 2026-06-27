@@ -4,6 +4,7 @@ import "@/lib/i18n";
 import { useEffect } from "react";
 import { Platform } from "react-native";
 import * as Notifications from "expo-notifications";
+import * as ScreenOrientation from "expo-screen-orientation";
 import { Slot, SplashScreen, useRouter } from "expo-router";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useFonts } from "expo-font";
@@ -83,6 +84,19 @@ export default function RootLayout() {
   useEffect(() => {
     restoreToken();
   }, [restoreToken]);
+
+  // Keep the app portrait by default. The native config (`orientation:
+  // "default"`) permits all orientations so the call screen can rotate; this
+  // baseline lock ensures every other screen stays portrait. The call screen
+  // unlocks on mount and re-locks portrait on unmount (BL-004).
+  useEffect(() => {
+    if (Platform.OS === "web") {
+      return;
+    }
+    void ScreenOrientation.lockAsync(
+      ScreenOrientation.OrientationLock.PORTRAIT_UP,
+    );
+  }, []);
 
   useEffect(() => {
     if (!isRestoringToken && fontsReady) {

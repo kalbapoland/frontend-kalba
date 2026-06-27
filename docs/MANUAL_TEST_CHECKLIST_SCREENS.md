@@ -138,6 +138,7 @@ Zakres: frontend Kalba (Expo), flow dla roli `user` i `trainer`, web + mobile (A
 - host wysyla `mute all` -> user zostaje wyciszony
 - host wysyla `cameras off all` -> user traci video
 5. Leave call -> powrot do poprzedniego ekranu bez zawieszenia.
+6. Orientacja (mobile): obroc telefon w poziom -> ekran przechodzi w landscape i tam zostaje; obroc w pion -> wraca do portrait. Po Leave aplikacja jest z powrotem w portrait.
 
 ### Ekran 8: My Kalba
 
