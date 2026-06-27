@@ -1,0 +1,75 @@
+appId: com.kalba.app
+---
+# SMOKE: user_negative_enroll_full — disabled-state regression guard dla pełnego warsztatu
+#
+# Co testuje:
+#   1. Ekran warsztatu pełnego: workshop.enroll.button widoczny, workshop.unenroll.button niewidoczny
+#   2. Tapnięcie przycisku (disabled={isFull && !isEnrolled} w React Native) nie zmienia stanu —
+#      po tapnięciu workshop.enroll.button nadal widoczny, workshop.unenroll.button nadal niewidoczny
+#
+# UWAGA — charakter testu:
+#   To jest UI disabled-affordance regression guard: potwierdza że atrybut `disabled`
+#   na przycisku nie zostanie przypadkowo usunięty w przyszłym refaktorze.
+#   NIE jest to guard na API side-effect — React Native Pressable z disabled=true
+#   nie odpala onPress, więc POST /workshops/{id}/enroll nigdy nie jest wywołany.
+#   Tekst przycisku ("Full" / "Brak miejsc") NIE jest asercjonowany — zależy od locale
+#   urządzenia (analogicznie do user_workshop_full_smoke.yaml).
+#
+# Różnica względem user_workshop_full_smoke:
+#   Tamten test weryfikuje stan UI bez próby interakcji.
+#   Ten test tapnina wyłączony przycisk i weryfikuje brak zmiany stanu.
+#
+# Prereq: seed_mobile_e2e_fixtures.py
+#   - workshop_full: max_participants=1, fuller enrolled → isFull=true
+#   - e2e.user@kalba.dev jest członkiem E2E Trainer Group → widzi warsztat w home feed
+#   - e2e.user@kalba.dev NIE jest zapisany na workshop_full
+#
+# Dane wejściowe:
+#   - konto: e2e.user@kalba.dev / Pass1234
+#   - warsztat: "E2E Workshop Full" (id: home.workshop.card.e2e-workshop-full)
+
+- launchApp:
+    clearState: true
+
+# --- Logowanie jako user ---
+- runFlow: ../common/login_user.yaml
+
+# --- Nawigacja do pełnego warsztatu ---
+- tapOn:
+    id: tab.index.button
+- extendedWaitUntil:
+    visible:
+      id: home.workshop.card.e2e-workshop-full
+    timeout: 15000
+
+- tapOn:
+    id: home.workshop.card.e2e-workshop-full
+- extendedWaitUntil:
+    visible:
+      id: workshop.enroll.button
+    timeout: 15000
+
+# --- Weryfikacja stanu przed tapnięciem ---
+# workshop.enroll.button widoczny (not enrolled, isFull=true → disabled)
+# workshop.unenroll.button niewidoczny — user nie jest zapisany
+- assertNotVisible:
+    id: workshop.unenroll.button
+
+# --- Tapnięcie wyłączonego przycisku ---
+# Maestro wysyła tap, ale React Native Pressable z disabled=true nie odpala onPress
+# → POST /workshops/{id}/enroll NIE jest wywołany
+- tapOn:
+    id: workshop.enroll.button
+
+# Poczekanie na ewentualną zmianę stanu (daje czas na odpowiedź API gdyby tap przeszedł)
+- wait:
+    millis: 2000
+
+# --- Weryfikacja: stan identyczny jak przed tapnięciem ---
+# workshop.enroll.button nadal widoczny — disabled-state nie zmienił się
+- assertVisible:
+    id: workshop.enroll.button
+
+# workshop.unenroll.button nadal niewidoczny — enrollment nie nastąpił
+- assertNotVisible:
+    id: workshop.unenroll.button

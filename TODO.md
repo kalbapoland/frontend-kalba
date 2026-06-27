@@ -28,7 +28,7 @@ Brakujące przepływy dla lepszego pokrycia E2E (kolejność wg priorytetu):
 
 ### Średni priorytet
 
-- **`user_negative_register_smoke`** — Rejestracja ze zduplikowanym emailem: próba rejestracji z emailem `e2e.user@kalba.dev` (który już istnieje) → komunikat błędu `USER_ALREADY_EXISTS`. Symetrycznie do `user_negative_login_smoke`.
+- ~~**`user_negative_register_smoke`**~~ — **GOTOWE** (`flows/smoke/user_negative_register_smoke.yaml`). Rejestracja z `e2e.user@kalba.dev` (już istnieje) → Alert "Sign Up Failed" / "User already exists".
 
 - **`user_notification_deep_link_smoke`** — Tapnięcie notyfikacji push otwiera właściwy ekran warsztatu (deep link). Wymaga symulacji notyfikacji lub testowego endpointu wyzwalającego notyfikację w urządzeniu.
 
@@ -36,7 +36,7 @@ Brakujące przepływy dla lepszego pokrycia E2E (kolejność wg priorytetu):
 
 ### Niski priorytat / odłożone
 
-- **`user_negative_enroll_full_smoke`** — Próba zapisu na pełny warsztat przez API (button ukryty w UI, test wysyła request bezpośrednio lub wymaga otwarcia warsztatu w innym stanie). Niski priorytet bo `user_workshop_full_smoke` już weryfikuje UI.
+- ~~**`user_negative_enroll_full_smoke`**~~ — **GOTOWE** (`flows/smoke/user_negative_enroll_full_smoke.yaml`). Tap na wyłączony przycisk "Full" nie wywołuje enrollmentu — weryfikacja że stan nie zmienia się po tapnięciu.
 
 - **`trainer_workshop_full_smoke`** — Warsztat zapełniony blokuje zapis: trainer tworzy warsztat z max_participants=1, pierwszy user się zapisuje, drugi user próbuje → widzi komunikat "warsztat pełny". Testuje logikę limitu uczestników.
 
