@@ -292,6 +292,8 @@ def main() -> None:
         flow("test/automated/maestro/flows/smoke/trainer_delete_workshop_smoke.yaml")
         print("[smoke] running Android user signout Maestro flow")
         flow("test/automated/maestro/flows/smoke/user_signout_smoke.yaml")
+        print("[smoke] running Android user delete account Maestro flow")
+        flow("test/automated/maestro/flows/smoke/user_delete_account_smoke.yaml")
     except BaseException as err:
         primary_error = err
     finally:
