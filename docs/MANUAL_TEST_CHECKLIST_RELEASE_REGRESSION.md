@@ -113,6 +113,9 @@ Zakres: frontend Kalba (web + mobile), role `user` i `trainer`.
 - [ ] P1-19: Mobile permissions camera/mic (allow/deny) obsluzone.
 - [ ] P1-20: Web call (iframe) dziala i poprawnie wychodzi z meetingu.
 - [ ] P1-21: Mobile DateTimePicker dziala poprawnie dla create workshop.
+- [ ] P1-22: Ekran Call obraca sie z telefonem - poziomo daje widok landscape, pionowo wraca do portrait (obraz kamery nie wraca samoczynnie do pionu).
+- [ ] P1-23: Po wyjsciu z Call (leave / back / blad) aplikacja wraca do orientacji portrait.
+- [ ] P1-24: Pozostale ekrany (Home, Groups, Workshop detail, Profile) NIE obracaja sie - zostaja w portrait mimo obracania telefonu.
 
 ## P2 - Uzupelniajace / Edge Cases
 

@@ -9,8 +9,9 @@ import {
   ActivityIndicator,
   StyleSheet,
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as ScreenOrientation from "expo-screen-orientation";
 import Daily, { DailyMediaView } from "@daily-co/react-native-daily-js";
 import type {
   DailyCall,
@@ -224,6 +225,23 @@ export default function NativeCallScreen() {
     return () => clearInterval(id);
   }, [callState]);
 
+  // Allow the call screen to follow the device orientation (BL-004). The app is
+  // portrait-locked everywhere else (see root layout). We use focus (not mount)
+  // so portrait is re-locked on every way out — leave / error / back / unmount
+  // AND when another screen is pushed on top (e.g. a notification deep-link
+  // mid-call), which does not unmount this screen.
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS === "web") return;
+      void ScreenOrientation.unlockAsync();
+      return () => {
+        void ScreenOrientation.lockAsync(
+          ScreenOrientation.OrientationLock.PORTRAIT_UP,
+        );
+      };
+    }, []),
+  );
+
   /* ── Actions ───────────────────────────────────────────── */
 
   const toggleMic = useCallback(() => {
@@ -280,7 +298,16 @@ export default function NativeCallScreen() {
   /* ── In-call UI ────────────────────────────────────────── */
 
   return (
-    <View style={[s.root, { paddingTop: insets.top }]}>
+    <View
+      style={[
+        s.root,
+        {
+          paddingTop: insets.top,
+          paddingLeft: insets.left,
+          paddingRight: insets.right,
+        },
+      ]}
+    >
       {/* ── Top bar ── */}
       <View style={s.topBar}>
         <View style={s.row}>
