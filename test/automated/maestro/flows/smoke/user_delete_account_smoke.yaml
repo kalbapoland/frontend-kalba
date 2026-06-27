@@ -1,0 +1,102 @@
+appId: com.kalba.app
+---
+# SMOKE: User delete-account — usunięcie konta z poziomu Profilu
+#
+# Co testuje:
+#   1. Rejestracja świeżego konta (dedykowany email — nie e2e.user@kalba.dev)
+#   2. Nawigacja do zakładki Profil
+#   3. Tapnięcie "Delete account" otwiera pierwszy dialog potwierdzenia
+#   4. Potwierdzenie "Delete" otwiera drugi (ostateczny) dialog
+#   5. Potwierdzenie "Delete account" wywołuje DELETE /users/me
+#   6. Po usunięciu aplikacja wylogowuje i wraca do ekranu logowania
+#      (JWT usunięty, signin.email.input widoczny)
+#
+# Zależność: standalone — nie wymaga danych z seeda.
+#   Konto jest tworzone i niszczone w tym samym teście.
+#   seed_mobile_e2e_fixtures.py --cleanup usuwa e2e.delete.smoke@kalba.dev jeśli
+#   test nie dobiegnie do końca.
+#
+# Dane wejściowe:
+#   - email: e2e.delete.smoke@kalba.dev (dedykowany adres dla tego flow)
+#   - password: Pass1234
+#   - name: E2E Delete Smoke
+
+- launchApp:
+    clearState: true
+
+# --- Rejestracja świeżego konta ---
+# Ekran logowania pojawia się po clearState (brak tokenu JWT)
+- extendedWaitUntil:
+    visible:
+      id: signin.email.input
+    timeout: 15000
+
+- tapOn:
+    id: signin.mode.register.button
+- extendedWaitUntil:
+    visible:
+      text: "Create your account"
+    timeout: 10000
+
+- tapOn:
+    id: signin.name.input
+- inputText: "E2E Delete Smoke"
+- hideKeyboard
+
+- tapOn:
+    id: signin.email.input
+- inputText: "e2e.delete.smoke@kalba.dev"
+- hideKeyboard
+
+- tapOn:
+    id: signin.password.input
+- inputText: "Pass1234"
+- hideKeyboard
+
+- tapOn:
+    id: signin.submit.button
+
+# Weryfikacja: rejestracja powiodła się — home załadowany
+- extendedWaitUntil:
+    visible:
+      id: home.workshops.list
+    timeout: 20000
+
+# --- Nawigacja do profilu ---
+- tapOn:
+    id: tab.profile.button
+- extendedWaitUntil:
+    visible:
+      id: profile.deleteaccount.button
+    timeout: 10000
+
+# --- Usunięcie konta — krok 1: pierwszy dialog ---
+# Tapnięcie "Delete account" otwiera Alert z ostrzeżeniem
+- tapOn:
+    id: profile.deleteaccount.button
+
+- extendedWaitUntil:
+    visible:
+      text: "Delete Account"
+    timeout: 5000
+
+# Potwierdzenie pierwszego dialogu — tapnięcie "Delete" otwiera drugi dialog
+- tapOn:
+    text: "Delete"
+
+# --- Usunięcie konta — krok 2: ostateczne potwierdzenie ---
+- extendedWaitUntil:
+    visible:
+      text: "Are you sure?"
+    timeout: 5000
+
+# Potwierdzenie ostateczne — wywołuje DELETE /users/me i wylogowanie
+- tapOn:
+    text: "Delete account"
+
+# --- Weryfikacja: konto usunięte, sesja zakończona ---
+# Aplikacja wraca do ekranu logowania — JWT wyczyszczony
+- extendedWaitUntil:
+    visible:
+      id: signin.email.input
+    timeout: 15000
