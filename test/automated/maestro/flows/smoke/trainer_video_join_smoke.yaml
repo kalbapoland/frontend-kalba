@@ -1,0 +1,81 @@
+appId: com.kalba.app
+---
+# SMOKE: trainer_video_join — trainer dołącza do sesji wideo i opuszcza ją
+#
+# Co testuje:
+#   1. POST /video/workshops/{id}/join jako host → token Daily.co zwrócony
+#   2. Ekran call.tsx załadowany (call.screen widoczny)
+#   3. Kontrolki widoczne: mikrofon, kamera, opuść rozmowę
+#   4. Host controls widoczne (Mute All / Cameras)
+#   5. Tapnięcie "Leave" → powrót do ekranu szczegółów warsztatu
+#
+# UWAGA — wymagania środowiskowe:
+#   - Backend musi mieć skonfigurowany DAILY_API_KEY (tworzy pokój Daily.co)
+#   - Emulator musi mieć dostęp do internetu (WebRTC łączy się z serwerami Daily.co)
+#   - Nie testujemy jakości audio/video — tylko UI flow i API integration
+#
+# Prereq: seed_mobile_e2e_fixtures.py
+#   - workshop_trainer: warsztat należący do e2e.trainer@kalba.dev
+#     (start_time=now+3d — host może dołączyć o każdej porze, bez okna czasowego)
+#   - home.workshop.card.e2e-workshop-trainer widoczny po zalogowaniu jako trainer
+#
+# Dane wejściowe:
+#   - konto: e2e.trainer@kalba.dev / Pass1234
+#   - warsztat: "E2E Workshop Trainer" (home.workshop.card.e2e-workshop-trainer)
+
+- launchApp:
+    clearState: true
+
+# --- Logowanie jako trainer ---
+- runFlow: ../common/login_trainer.yaml
+
+# --- Nawigacja do warsztatu trainera ---
+- tapOn:
+    id: tab.index.button
+- extendedWaitUntil:
+    visible:
+      id: home.workshop.card.e2e-workshop-trainer
+    timeout: 15000
+
+- tapOn:
+    id: home.workshop.card.e2e-workshop-trainer
+- extendedWaitUntil:
+    visible:
+      id: workshop.join.button
+    timeout: 15000
+
+# --- Dołączenie do sesji wideo ---
+# POST /video/workshops/{id}/join → token + room_url zwrócone → nawigacja do call.tsx
+- tapOn:
+    id: workshop.join.button
+
+# Oczekiwanie na załadowanie ekranu połączenia (WebRTC init + Daily.co join może zająć chwilę)
+- extendedWaitUntil:
+    visible:
+      id: call.screen
+    timeout: 30000
+
+# --- Weryfikacja: ekran połączenia załadowany ---
+# Kontrolki dolnego paska widoczne
+- assertVisible:
+    id: call.mic.button
+- assertVisible:
+    id: call.camera.button
+- assertVisible:
+    id: call.leave.button
+
+# Host controls widoczne (trainer = host)
+- assertVisible:
+    id: call.host.mute.button
+- assertVisible:
+    id: call.host.cameras.button
+
+# --- Opuszczenie rozmowy ---
+- tapOn:
+    id: call.leave.button
+
+# Powrót do ekranu szczegółów warsztatu
+- extendedWaitUntil:
+    visible:
+      id: workshop.join.button
+    timeout: 15000

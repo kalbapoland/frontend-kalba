@@ -299,6 +299,7 @@ export default function NativeCallScreen() {
 
   return (
     <View
+      testID="call.screen"
       style={[
         s.root,
         {
@@ -351,6 +352,7 @@ export default function NativeCallScreen() {
       {isHost && (
         <View style={s.hostRow}>
           <Pressable
+            testID="call.host.mute.button"
             onPress={() =>
               doHostAction(allMuted ? "unmute_all" : "mute_all")
             }
@@ -371,6 +373,7 @@ export default function NativeCallScreen() {
           </Pressable>
 
           <Pressable
+            testID="call.host.cameras.button"
             onPress={() =>
               doHostAction(
                 allCamerasOff ? "cameras_on_all" : "cameras_off_all",
@@ -397,18 +400,20 @@ export default function NativeCallScreen() {
       {/* ── Bottom control bar ── */}
       <View style={[s.controlBar, { paddingBottom: Math.max(insets.bottom, 20) }]}>
         <ControlBtn
+          testID="call.mic.button"
           icon={isMicOn ? "mic" : "mic-off"}
           on={isMicOn}
           onPress={toggleMic}
         />
         <ControlBtn
+          testID="call.camera.button"
           icon={isCameraOn ? "videocam" : "videocam-off"}
           on={isCameraOn}
           onPress={toggleCamera}
           disabled={!rules.allow_camera_toggle && !isHost}
         />
-        <ControlBtn icon="camera-reverse" on onPress={flipCamera} />
-        <ControlBtn icon="call" on={false} danger onPress={leaveCall} />
+        <ControlBtn testID="call.flip.button" icon="camera-reverse" on onPress={flipCamera} />
+        <ControlBtn testID="call.leave.button" icon="call" on={false} danger onPress={leaveCall} />
       </View>
     </View>
   );
@@ -479,12 +484,14 @@ function VideoTile({
 /* ─── Control Button ─────────────────────────────────────────── */
 
 function ControlBtn({
+  testID,
   icon,
   on,
   danger,
   disabled,
   onPress,
 }: {
+  testID?: string;
   icon: keyof typeof Ionicons.glyphMap;
   on: boolean;
   danger?: boolean;
@@ -493,6 +500,7 @@ function ControlBtn({
 }) {
   return (
     <Pressable
+      testID={testID}
       onPress={onPress}
       disabled={disabled}
       style={({ pressed }) => [
