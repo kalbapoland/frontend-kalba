@@ -211,10 +211,11 @@ export async function joinWorkshop(
 export async function sendHostAction(
   workshopId: string,
   action: HostActionType,
+  targetUserId?: string,
 ): Promise<HostActionResponse> {
   const { data } = await apiClient.post<HostActionResponse>(
     `/video/workshops/${workshopId}/host-action`,
-    { action },
+    targetUserId ? { action, target_user_id: targetUserId } : { action },
   );
   return data;
 }

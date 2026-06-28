@@ -36,14 +36,17 @@ export default function WebCallScreen() {
 
   const performHostAction = useCallback(
     (action: HostActionType) => {
-      hostAction.mutate(action, {
-        onSuccess: (data) => {
-          if (data.action === "mute_all") setAllMuted(true);
-          else if (data.action === "unmute_all") setAllMuted(false);
-          else if (data.action === "cameras_off_all") setAllCamerasOff(true);
-          else if (data.action === "cameras_on_all") setAllCamerasOff(false);
+      hostAction.mutate(
+        { action },
+        {
+          onSuccess: (data) => {
+            if (data.action === "mute_all") setAllMuted(true);
+            else if (data.action === "unmute_all") setAllMuted(false);
+            else if (data.action === "cameras_off_all") setAllCamerasOff(true);
+            else if (data.action === "cameras_on_all") setAllCamerasOff(false);
+          },
         },
-      });
+      );
     },
     [hostAction],
   );

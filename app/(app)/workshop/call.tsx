@@ -19,6 +19,7 @@ import type {
   DailyEventObjectParticipant,
   DailyEventObjectParticipantLeft,
   DailyEventObjectAppMessage,
+  DailyEventObjectFatalError,
 } from "@daily-co/react-native-daily-js";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
@@ -81,6 +82,9 @@ export default function NativeCallScreen() {
   const isHost = params.role === "host";
 
   const callRef = useRef<DailyCall | null>(null);
+  // Ensures we navigate away from the call exactly once, even when an eject
+  // fires both an "error" (type: ejected) and a "left-meeting" event.
+  const exitedRef = useRef(false);
   const [participants, setParticipants] = useState<
     Record<string, DailyParticipant>
   >({});
@@ -132,21 +136,34 @@ export default function NativeCallScreen() {
     [updateParticipants],
   );
 
-  const handleLeft = useCallback(() => {
+  const exitCall = useCallback(() => {
+    if (exitedRef.current) return;
+    exitedRef.current = true;
     setCallState("left");
     router.back();
   }, [router]);
 
+  const handleLeft = useCallback(() => {
+    exitCall();
+  }, [exitCall]);
+
   const handleError = useCallback(
-    (event: unknown) => {
+    (event: DailyEventObjectFatalError) => {
+      // The host removed this participant: Daily reports a fatal error of
+      // type "ejected". Show a clear message rather than a generic failure.
+      if (event?.error?.type === "ejected") {
+        Alert.alert("Removed", "The host removed you from the call.");
+        exitCall();
+        return;
+      }
       console.error("Daily call error:", event);
       Alert.alert(
         "Connection Error",
         "Could not connect to the video call. Please try again.",
       );
-      router.back();
+      exitCall();
     },
-    [router],
+    [exitCall],
   );
 
   const handleAppMessage = useCallback(
@@ -269,10 +286,42 @@ export default function NativeCallScreen() {
 
   const doHostAction = useCallback(
     (action: HostActionType) => {
-      hostAction.mutate(action, {
-        onError: () =>
-          Alert.alert("Error", "Could not perform action. Try again."),
-      });
+      hostAction.mutate(
+        { action },
+        {
+          onError: () =>
+            Alert.alert("Error", "Could not perform action. Try again."),
+        },
+      );
+    },
+    [hostAction],
+  );
+
+  // Host-only: eject a participant from the live call. The host holds a Daily
+  // owner token, so updateParticipant({ eject: true }) is the enforced removal;
+  // the backend host-action call is fire-and-forget audit (and a future seam for
+  // removing from the group).
+  const kickParticipant = useCallback(
+    (p: DailyParticipant) => {
+      const name = p.user_name ?? "this participant";
+      // NOTE: copy is hardcoded English to match the rest of this screen.
+      // Localization is deferred to BL-001 (app-wide i18n audit).
+      Alert.alert("Remove participant", `Remove ${name} from the call?`, [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Remove",
+          style: "destructive",
+          onPress: () => {
+            callRef.current?.updateParticipant(p.session_id, { eject: true });
+            if (p.user_id) {
+              hostAction.mutate({
+                action: "remove_participant",
+                targetUserId: p.user_id,
+              });
+            }
+          },
+        },
+      ]);
     },
     [hostAction],
   );
@@ -328,7 +377,10 @@ export default function NativeCallScreen() {
         ) : remotes.length === 1 ? (
           <View style={s.flex1}>
             <View style={s.soloTile}>
-              <VideoTile participant={remotes[0]} />
+              <VideoTile
+                participant={remotes[0]}
+                onRemove={isHost ? kickParticipant : undefined}
+              />
             </View>
             {local && (
               <View style={s.pip}>
@@ -340,7 +392,11 @@ export default function NativeCallScreen() {
           <View style={s.grid}>
             {participantList.map((p) => (
               <View key={p.session_id} style={s.gridCell}>
-                <VideoTile participant={p} mirror={p.local} />
+                <VideoTile
+                  participant={p}
+                  mirror={p.local}
+                  onRemove={isHost ? kickParticipant : undefined}
+                />
               </View>
             ))}
           </View>
@@ -420,10 +476,12 @@ function VideoTile({
   participant,
   mirror = false,
   small = false,
+  onRemove,
 }: {
   participant: DailyParticipant;
   mirror?: boolean;
   small?: boolean;
+  onRemove?: (p: DailyParticipant) => void;
 }) {
   const vTrack = getVideoTrack(participant);
   const aTrack = participant.local ? null : getAudioTrack(participant);
@@ -472,6 +530,18 @@ function VideoTile({
         )}
         <Text style={[s.nameText, small && s.nameTextSmall]}>{name}</Text>
       </View>
+
+      {/* Host-only remove button */}
+      {onRemove && !participant.local && (
+        <Pressable
+          onPress={() => onRemove(participant)}
+          hitSlop={8}
+          style={({ pressed }) => [s.removeBtn, { opacity: pressed ? 0.6 : 1 }]}
+          accessibilityLabel={`Remove ${name}`}
+        >
+          <Ionicons name="person-remove" size={14} color="#fff" />
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -628,6 +698,17 @@ const s = StyleSheet.create({
   },
   nameText: { fontSize: 11, color: "rgba(255,255,255,0.8)", fontWeight: "400" },
   nameTextSmall: { fontSize: 9 },
+  removeBtn: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(196,84,84,0.92)",
+  },
 
   // Host controls
   hostRow: {
