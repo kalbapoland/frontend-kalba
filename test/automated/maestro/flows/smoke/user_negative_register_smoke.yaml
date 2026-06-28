@@ -1,0 +1,76 @@
+appId: com.kalba.app
+---
+# SMOKE: user_negative_register — próba rejestracji z już zajętym adresem email
+#
+# Co testuje:
+#   1. Ekran rejestracji jest dostępny po tapnięciu "Sign Up"
+#   2. Wpisanie emaila który już istnieje w DB (e2e.user@kalba.dev) i hasła → submit
+#   3. Backend zwraca 409 → Alert "Sign Up Failed" z komunikatem "User already exists"
+#   4. Po zamknięciu dialogu aplikacja pozostaje na ekranie logowania/rejestracji
+#
+# Symetrycznie do user_negative_login_smoke (błędne hasło → "Log In Failed").
+#
+# Prereq: seed_mobile_e2e_fixtures.py — e2e.user@kalba.dev musi istnieć w DB.
+#
+# Dane wejściowe:
+#   - email: e2e.user@kalba.dev (istniejące konto z seeda)
+#   - password: Pass1234
+#   - name: Any Name
+
+- launchApp:
+    clearState: true
+
+# Ekran logowania pojawia się automatycznie po clearState (brak tokenu JWT)
+- extendedWaitUntil:
+    visible:
+      id: signin.email.input
+    timeout: 15000
+
+# Przejście do trybu rejestracji
+- tapOn:
+    id: signin.mode.register.button
+- extendedWaitUntil:
+    visible:
+      text: "Create your account"
+    timeout: 10000
+
+# Wypełnienie formularza rejestracji — email który już istnieje
+- tapOn:
+    id: signin.name.input
+- inputText: "Any Name"
+- hideKeyboard
+
+- tapOn:
+    id: signin.email.input
+- inputText: e2e.user@kalba.dev
+- hideKeyboard
+
+- tapOn:
+    id: signin.password.input
+- inputText: "Pass1234"
+- hideKeyboard
+
+# Submit — backend zwróci 409 CONFLICT → resolveAuthError → "User already exists"
+- tapOn:
+    id: signin.submit.button
+
+# Weryfikacja: natywny Alert z tytułem "Sign Up Failed" jest widoczny
+- extendedWaitUntil:
+    visible:
+      text: "Sign Up Failed"
+    timeout: 10000
+
+# Weryfikacja: komunikat błędu pochodzi z backendu (409 detail: "User already exists")
+# UWAGA: ten string jest sprzężony z literałem w app/api/v1/auth.py:95.
+# Jeśli backend zostanie zmigrowany na kody błędów (TODO.md: "Migracja błędów API na kody"),
+# należy zaktualizować tę asercję.
+- assertVisible:
+    text: "User already exists"
+
+# Zamknięcie dialogu
+- tapOn:
+    text: "OK"
+
+# Weryfikacja: po odrzuceniu dialogu aplikacja pozostaje na ekranie logowania — brak nawigacji do home
+- assertVisible:
+    id: signin.email.input

@@ -1,0 +1,61 @@
+appId: com.kalba.app
+---
+# SMOKE: user_edit_profile_name — zmiana nazwy wyświetlanej z poziomu Profilu
+#
+# Co testuje:
+#   1. User może zalogować się i przejść do zakładki Profil
+#   2. Przycisk ołówka przy nazwie (profile.editname.button) otwiera modal edycji
+#   3. Wpisanie nowej nazwy i tapnięcie Save wywołuje PATCH /users/me
+#   4. Po zapisie modal się zamyka i karta profilu wyświetla nową nazwę
+#
+# Zależność: wymaga seeda (e2e.user@kalba.dev z full_name="E2E User").
+#   Seed na początku każdego runu tworzy konto od nowa, więc test zawsze
+#   startuje z czystą nazwą "E2E User".
+#
+# Dane wejściowe:
+#   - konto: e2e.user@kalba.dev / Pass1234
+
+- launchApp:
+    clearState: true
+
+# --- Logowanie jako user ---
+- runFlow: ../common/login_user.yaml
+
+# --- Nawigacja do profilu ---
+- tapOn:
+    id: tab.profile.button
+- extendedWaitUntil:
+    visible:
+      id: profile.editname.button
+    timeout: 10000
+
+# --- Otwarcie modalu edycji nazwy ---
+- tapOn:
+    id: profile.editname.button
+- extendedWaitUntil:
+    visible:
+      id: profile.editname.input
+    timeout: 5000
+
+# --- Wpisanie nowej nazwy ---
+- clearText:
+    id: profile.editname.input
+- tapOn:
+    id: profile.editname.input
+- inputText: "E2E User Edited"
+- hideKeyboard
+
+# --- Zapis ---
+- tapOn:
+    id: profile.editname.save.button
+
+# --- Weryfikacja: modal się zamknął i nowa nazwa widoczna na karcie ---
+- extendedWaitUntil:
+    notVisible:
+      id: profile.editname.input
+    timeout: 10000
+
+- extendedWaitUntil:
+    visible:
+      text: "E2E User Edited"
+    timeout: 5000

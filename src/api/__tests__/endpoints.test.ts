@@ -1,5 +1,5 @@
 import { apiClient } from "../client";
-import { exchangeGoogleToken } from "../endpoints";
+import { exchangeGoogleToken, sendHostAction } from "../endpoints";
 
 jest.mock("../client", () => ({
   apiClient: {
@@ -41,6 +41,31 @@ describe("exchangeGoogleToken", () => {
 
     await expect(exchangeGoogleToken("google-id-token")).rejects.toThrow(
       "Invalid auth response field access_token",
+    );
+  });
+});
+
+describe("sendHostAction", () => {
+  beforeEach(() => {
+    mockedPost.mockReset();
+    mockedPost.mockResolvedValue({
+      data: { status: "accepted", action: "remove_participant", broadcast_sent: false },
+    });
+  });
+
+  test("includes target_user_id when removing a participant", async () => {
+    await sendHostAction("ws-1", "remove_participant", "user-9");
+    expect(mockedPost).toHaveBeenCalledWith(
+      "/video/workshops/ws-1/host-action",
+      { action: "remove_participant", target_user_id: "user-9" },
+    );
+  });
+
+  test("omits target_user_id for broadcast actions", async () => {
+    await sendHostAction("ws-1", "mute_all");
+    expect(mockedPost).toHaveBeenCalledWith(
+      "/video/workshops/ws-1/host-action",
+      { action: "mute_all" },
     );
   });
 });

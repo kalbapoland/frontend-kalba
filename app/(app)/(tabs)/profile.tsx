@@ -4,8 +4,10 @@ import {
   Pressable,
   Alert,
   Linking,
+  Modal,
   Platform,
   StyleSheet,
+  TextInput,
 } from "react-native";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -16,6 +18,7 @@ import { useTranslation } from "react-i18next";
 
 import { deleteAccount } from "@/api/endpoints";
 import { useAuthStore } from "@/store/auth";
+import { useUpdateUser } from "@/hooks/useUser";
 import { displayName, initials as userInitials } from "@/lib/user";
 import { AppText } from "@/components/AppText";
 import { Button } from "@/components/Button";
@@ -31,6 +34,9 @@ export default function ProfileScreen() {
   const queryClient = useQueryClient();
   const insets = useSafeAreaInsets();
   const [deleting, setDeleting] = useState(false);
+  const [editNameVisible, setEditNameVisible] = useState(false);
+  const [nameInput, setNameInput] = useState("");
+  const updateUser = useUpdateUser();
 
   const handleSignOut = () => {
     const doSignOut = async () => {
@@ -112,6 +118,31 @@ export default function ProfileScreen() {
     ]);
   };
 
+  const handleOpenEditName = () => {
+    setNameInput(user?.full_name ?? "");
+    setEditNameVisible(true);
+  };
+
+  const handleSaveName = () => {
+    const trimmed = nameInput.trim();
+    if (!trimmed) return;
+
+    updateUser.mutate(
+      { full_name: trimmed },
+      {
+        onSuccess: () => setEditNameVisible(false),
+        onError: () => {
+          const msg = t("profile_screen.edit_name_failed");
+          if (Platform.OS === "web") {
+            window.alert(msg);
+          } else {
+            Alert.alert(t("profile_screen.edit_name"), msg);
+          }
+        },
+      },
+    );
+  };
+
   const handleOpenPrivacy = () => {
     void Linking.openURL(PRIVACY_POLICY_URL);
   };
@@ -145,7 +176,18 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        <AppText variant="title">{displayName(user)}</AppText>
+        <View style={s.nameRow}>
+          <AppText variant="title">{displayName(user)}</AppText>
+          <Pressable
+            onPress={handleOpenEditName}
+            accessibilityLabel={t("profile_screen.edit_name")}
+            testID="profile.editname.button"
+            hitSlop={8}
+            style={s.editNameButton}
+          >
+            <Ionicons name="pencil-outline" size={16} color={colors.inkMuted} />
+          </Pressable>
+        </View>
         <AppText variant="caption" tone="muted" style={s.email}>
           {user.email}
         </AppText>
@@ -159,6 +201,55 @@ export default function ProfileScreen() {
 
       <View style={{ flex: 1 }} />
 
+      {/* Edit name modal */}
+      <Modal
+        visible={editNameVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setEditNameVisible(false)}
+      >
+        <View style={s.modalBackdrop}>
+          <View style={s.modalSheet}>
+            <AppText variant="title" style={s.modalTitle}>
+              {t("profile_screen.edit_name")}
+            </AppText>
+            <TextInput
+              value={nameInput}
+              onChangeText={setNameInput}
+              placeholder={t("profile_screen.edit_name_placeholder")}
+              placeholderTextColor={colors.inkMuted}
+              autoFocus
+              maxLength={100}
+              style={s.modalInput}
+              testID="profile.editname.input"
+            />
+            <View style={s.modalActions}>
+              <View style={s.modalActionButton}>
+                <Button
+                  label={t("cancel")}
+                  onPress={() => setEditNameVisible(false)}
+                  variant="ghost"
+                  fullWidth
+                />
+              </View>
+              <View style={s.modalActionButton}>
+                <Button
+                  label={
+                    updateUser.isPending
+                      ? t("profile_screen.save") + "…"
+                      : t("profile_screen.save")
+                  }
+                  onPress={handleSaveName}
+                  disabled={updateUser.isPending || !nameInput.trim()}
+                  fullWidth
+                  testID="profile.editname.save.button"
+                />
+              </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       {/* Account actions */}
       <View style={[s.bottomGroup, { marginBottom: Math.max(insets.bottom, 16) + 80 }]}>
         <Button
@@ -167,7 +258,7 @@ export default function ProfileScreen() {
           variant="danger"
           icon="log-out-outline"
           fullWidth
-          accessibilityLabel="Sign out"
+          accessibilityLabel={t("profile_screen.signout")}
           testID="profile.signout.button"
         />
 
@@ -175,7 +266,7 @@ export default function ProfileScreen() {
           onPress={handleDeleteAccount}
           disabled={deleting}
           accessibilityRole="button"
-          accessibilityLabel="Delete account"
+          accessibilityLabel={t("profile_screen.delete_account")}
           testID="profile.deleteaccount.button"
           style={({ pressed }) => [
             s.deleteButton,
@@ -193,7 +284,7 @@ export default function ProfileScreen() {
         <Pressable
           onPress={handleOpenPrivacy}
           accessibilityRole="link"
-          accessibilityLabel="Privacy policy"
+          accessibilityLabel={t("profile_screen.privacy_policy")}
           testID="profile.privacy.link"
           hitSlop={8}
         >
@@ -271,5 +362,46 @@ const s = StyleSheet.create({
   privacyText: {
     textAlign: "center",
     textDecorationLine: "underline",
+  },
+  nameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  editNameButton: {
+    padding: 4,
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    justifyContent: "flex-end",
+  },
+  modalSheet: {
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: radii.card,
+    borderTopRightRadius: radii.card,
+    padding: spacing.screenPadding,
+    paddingBottom: 40,
+    gap: 16,
+  },
+  modalTitle: {
+    textAlign: "center",
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: colors.lineWhisper,
+    borderRadius: radii.button,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    color: colors.ink,
+    fontSize: 16,
+    backgroundColor: colors.canvas,
+  },
+  modalActions: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  modalActionButton: {
+    flex: 1,
   },
 });

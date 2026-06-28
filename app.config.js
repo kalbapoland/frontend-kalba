@@ -62,7 +62,10 @@ module.exports = {
     owner: "kalba",
     version: "1.0.0",
     scheme: "kalba",
-    orientation: "portrait",
+    // "default" lets the native build permit all orientations so the video
+    // call screen can rotate. Every other screen is re-locked to portrait at
+    // runtime (root layout + call-screen cleanup) — see BL-004.
+    orientation: "default",
     icon: "./assets/icon.png",
     userInterfaceStyle: "light",
     newArchEnabled: true,

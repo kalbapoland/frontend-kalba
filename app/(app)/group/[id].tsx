@@ -294,7 +294,7 @@ export default function GroupDetailScreen() {
                 style={({ pressed }) => [s.createWorkshopBtn, { opacity: pressed ? 0.85 : 1 }]}
               >
                 <Ionicons name="add" size={18} color={colors.primary} />
-                <Text style={s.createWorkshopText}>{t("create_workshop")}</Text>
+                <Text style={s.createWorkshopText}>{t("create_workshop.label")}</Text>
               </Pressable>
             )}
             {workshops.isLoading ? (

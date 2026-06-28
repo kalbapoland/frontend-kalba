@@ -3,6 +3,11 @@
 Cel: pelna regresja przed release.
 Zakres: frontend Kalba (web + mobile), role `user` i `trainer`.
 
+> **Pokrycie automatyczne:** Przypadki oznaczone ~~przekreśleniem~~ są pokryte przez
+> suite 20 testów Maestro (`test/automated/run_android_smoke_local.py`) i nie wymagają
+> ręcznego sprawdzania w normalnym przebiegu release. Poniższa lista zawiera tylko
+> scenariusze, których Maestro nie może zweryfikować.
+
 ## Jak czytac priorytety
 
 - P0: blocker / krytyczne flow biznesowe. Musi przejsc 100%.
@@ -13,44 +18,20 @@ Zakres: frontend Kalba (web + mobile), role `user` i `trainer`.
 
 ### Auth
 
-- [ ] P0-1: Sign In email+haslo (happy path).
 - [ ] P0-2: Sign In Google (happy path).
-- [ ] P0-3: Sign Out zawsze czysci sesje i wraca do Sign In.
 - [ ] P0-4: Bez tokena nie da sie wejsc do strefy chronionej.
 - [ ] P0-4a: Sign Up email+haslo wymaga imienia (Name); puste imie blokuje rejestracje.
 - [ ] P0-4b: Reset hasla E2E: Forgot password -> mail z linkiem -> nowe haslo -> stare haslo NIE dziala.
-- [ ] P0-4c: Usuwanie konta (Profile -> Delete account, podwojne potwierdzenie) usuwa konto i dane oraz wylogowuje; ponowne logowanie tymi danymi NIE dziala.
-
-### Workshop Core
-
-- [ ] P0-5: Home lista warsztatow laduje sie poprawnie.
-- [ ] P0-6: Otwieranie Workshop Detail dziala.
-- [ ] P0-7: User moze Enroll i Unenroll.
-- [ ] P0-8: Full workshop blokuje Enroll (stan Full).
-
-### Groups Core
-
-- [ ] P0-9: Groups tab laduje sekcje My Groups i Discover Groups.
-- [ ] P0-10: User moze Subscribe i Unsubscribe grupy.
-- [ ] P0-11: Group Detail otwiera sie i pokazuje poprawne dane grupy.
-- [ ] P0-12: Dla ownera grupy widoczne sa akcje admina (Edit group, Create workshop).
 
 ### Video Call
 
-- [ ] P0-13: Join przechodzi do Call i laczy pokoj.
-- [ ] P0-14: Leave zawsze dziala i wraca do app.
-- [ ] P0-15: Host controls Mute All/Unmute All dzialaja.
-- [ ] P0-16: Host controls Cameras Off/On dzialaja.
+- [ ] P0-15: Host controls Mute All/Unmute All dzialaja i maja efekt na uczestnikach.
+- [ ] P0-16: Host controls Cameras Off/On dzialaja i maja efekt na uczestnikach.
 - [ ] P0-16a: Daily budzet — gdy miesieczny limit minut przekroczony, Join zwraca komunikat "video temporarily unavailable" (503) i NIE laczy pokoju (host i uczestnik). Sprawdz GET /api/v1/video/budget: used_minutes blisko cap_minutes.
 - [ ] P0-16b: Pokoj Daily jest prywatny — sam URL pokoju (bez tokenu) nie pozwala dolaczyc.
 
 ### Trainer CRUD
 
-- [ ] P0-17: Trainer moze Create group.
-- [ ] P0-18: Trainer-owner moze Edit group.
-- [ ] P0-19: Trainer-owner moze Create workshop w kontekscie grupy.
-- [ ] P0-20: Trainer moze Edit workshop.
-- [ ] P0-21: Trainer moze Delete workshop.
 - [ ] P0-22: User bez roli trainer nie moze create/edit/delete group/workshop.
 
 ## P1 - Wazne
@@ -113,6 +94,9 @@ Zakres: frontend Kalba (web + mobile), role `user` i `trainer`.
 - [ ] P1-19: Mobile permissions camera/mic (allow/deny) obsluzone.
 - [ ] P1-20: Web call (iframe) dziala i poprawnie wychodzi z meetingu.
 - [ ] P1-21: Mobile DateTimePicker dziala poprawnie dla create workshop.
+- [ ] P1-22: Ekran Call obraca sie z telefonem - poziomo daje widok landscape, pionowo wraca do portrait (obraz kamery nie wraca samoczynnie do pionu).
+- [ ] P1-23: Po wyjsciu z Call (leave / back / blad) aplikacja wraca do orientacji portrait.
+- [ ] P1-24: Pozostale ekrany (Home, Groups, Workshop detail, Profile) NIE obracaja sie - zostaja w portrait mimo obracania telefonu.
 
 ## P2 - Uzupelniajace / Edge Cases
 
@@ -136,11 +120,10 @@ Zakres: frontend Kalba (web + mobile), role `user` i `trainer`.
 
 ## Sugerowana kolejnosc testu release
 
-1. Auth P0 (login/logout).
-2. User P0 (home -> groups -> group detail -> workshop detail -> enroll -> call).
-3. Trainer P0 (create/edit group -> create/edit/delete workshop -> call host controls).
-4. P1 (my kalba, calendar, states, platform-specific).
-5. P2 (edge, UX, a11y).
+1. Auth P0 (Google login, reset hasla E2E).
+2. Video P0 (host controls efekt na uczestnikach, budget, prywatnosc pokoju).
+3. P1 (stany loading/error, redesign UI, my kalba, calendar, platform-specific).
+4. P2 (edge, UX, a11y).
 
 ## Decyzja release
 

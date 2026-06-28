@@ -1,0 +1,57 @@
+appId: com.kalba.app
+---
+# SMOKE: user_my_kalba — zakładka My Kalba: schedule, statystyki, powiadomienia
+#
+# Co testuje:
+#   1. User loguje się i nawiguje do zakładki My Kalba
+#   2. Sekcja "My schedule" pokazuje warsztat "E2E Workshop Free" (user enrolled w seedzie)
+#   3. Sekcja "Notifications" w trybie Unread pokazuje "E2E Reminder" (1 unread z seeda)
+#   4. "E2E Rescheduled" (read) nie jest widoczne w trybie Unread
+#   5. Tapnięcie "Mark all as read" usuwa wszystkie z listy Unread (notifications.empty)
+#
+# Prereq: seed_mobile_e2e_fixtures.py (user enrolled w workshop_free i workshop_past)
+#
+# Dane wejściowe:
+#   - konto usera: e2e.user@kalba.dev / Pass1234
+#   - workshop: "E2E Workshop Free" (enrolled — widoczny w schedule)
+#   - notification (unread): "E2E Reminder"
+#   - notification (read):   "E2E Rescheduled"
+
+- launchApp:
+    clearState: true
+
+# --- Logowanie jako user ---
+- runFlow: ../common/login_user.yaml
+
+# --- Nawigacja do My Kalba ---
+- tapOn:
+    id: tab.my-kalba.button
+- extendedWaitUntil:
+    visible:
+      id: my-kalba.schedule.item.e2e-workshop-free
+    timeout: 15000
+
+# --- Weryfikacja sekcji Schedule ---
+- assertVisible:
+    id: my-kalba.schedule.item.e2e-workshop-free
+
+# --- Weryfikacja sekcji Notifications (domyślny filtr: Unread) ---
+# "E2E Reminder" jest unread → widoczne
+- extendedWaitUntil:
+    visible:
+      id: my-kalba.notification.item.e2e-reminder
+    timeout: 10000
+
+# "E2E Rescheduled" jest read → nie widoczne przy filtrze Unread
+- assertNotVisible:
+    id: my-kalba.notification.item.e2e-rescheduled
+
+# --- Mark all as read ---
+# Tapnięcie "Mark all as read" → PATCH /notifications/read-all → wszystkie read
+# Po mutacji filtr Unread powinien być pusty (my-kalba.notifications.empty widoczne)
+- tapOn:
+    id: my-kalba.notifications.mark-all-read
+- extendedWaitUntil:
+    visible:
+      id: my-kalba.notifications.empty
+    timeout: 15000

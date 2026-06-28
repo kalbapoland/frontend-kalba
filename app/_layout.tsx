@@ -4,6 +4,7 @@ import "@/lib/i18n";
 import { useEffect } from "react";
 import { Platform } from "react-native";
 import * as Notifications from "expo-notifications";
+import * as ScreenOrientation from "expo-screen-orientation";
 import { Slot, SplashScreen, useRouter } from "expo-router";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useFonts } from "expo-font";
@@ -34,12 +35,12 @@ if (Platform.OS !== "web" && !isNotificationHandlerConfigured) {
   Notifications.setNotificationHandler({
     handleNotification: async (notification) => {
       const type = notification.request.content.data?.type;
-      const isReminder = type === "reminder";
+      const shouldAlert = type === "reminder" || type === "cancelled";
 
       return {
-        shouldShowBanner: isReminder,
-        shouldShowList: isReminder,
-        shouldPlaySound: isReminder,
+        shouldShowBanner: shouldAlert,
+        shouldShowList: shouldAlert,
+        shouldPlaySound: shouldAlert,
         shouldSetBadge: false,
       };
     },
@@ -84,6 +85,19 @@ export default function RootLayout() {
     restoreToken();
   }, [restoreToken]);
 
+  // Keep the app portrait by default. The native config (`orientation:
+  // "default"`) permits all orientations so the call screen can rotate; this
+  // baseline lock ensures every other screen stays portrait. The call screen
+  // unlocks on mount and re-locks portrait on unmount (BL-004).
+  useEffect(() => {
+    if (Platform.OS === "web") {
+      return;
+    }
+    void ScreenOrientation.lockAsync(
+      ScreenOrientation.OrientationLock.PORTRAIT_UP,
+    );
+  }, []);
+
   useEffect(() => {
     if (!isRestoringToken && fontsReady) {
       SplashScreen.hideAsync();
@@ -95,21 +109,27 @@ export default function RootLayout() {
       return;
     }
 
-    const subscription = Notifications.addNotificationResponseReceivedListener(
-      (response) => {
-        const workshopId = extractWorkshopId(response);
-        if (workshopId) {
-          router.push(`/workshop/${workshopId}`);
-        }
-      },
-    );
-
-    void (async () => {
-      const response = await Notifications.getLastNotificationResponseAsync();
+    const handleNotificationResponse = (
+      response: Notifications.NotificationResponse | null,
+    ) => {
+      const type = response?.notification.request.content.data?.type;
+      if (type === "cancelled") {
+        router.push("/my-kalba");
+        return;
+      }
       const workshopId = extractWorkshopId(response);
       if (workshopId) {
         router.push(`/workshop/${workshopId}`);
       }
+    };
+
+    const subscription = Notifications.addNotificationResponseReceivedListener(
+      handleNotificationResponse,
+    );
+
+    void (async () => {
+      const response = await Notifications.getLastNotificationResponseAsync();
+      handleNotificationResponse(response);
     })();
 
     return () => {

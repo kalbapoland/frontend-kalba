@@ -79,6 +79,13 @@ export async function fetchCurrentUser(): Promise<User> {
   return data;
 }
 
+export async function updateCurrentUser(payload: {
+  full_name?: string;
+}): Promise<User> {
+  const { data } = await apiClient.patch<User>("/users/me", payload);
+  return data;
+}
+
 export async function deleteAccount(): Promise<void> {
   await apiClient.delete("/users/me");
 }
@@ -211,10 +218,11 @@ export async function joinWorkshop(
 export async function sendHostAction(
   workshopId: string,
   action: HostActionType,
+  targetUserId?: string,
 ): Promise<HostActionResponse> {
   const { data } = await apiClient.post<HostActionResponse>(
     `/video/workshops/${workshopId}/host-action`,
-    { action },
+    targetUserId ? { action, target_user_id: targetUserId } : { action },
   );
   return data;
 }

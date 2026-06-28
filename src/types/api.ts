@@ -109,7 +109,8 @@ export type HostActionType =
   | "mute_all"
   | "unmute_all"
   | "cameras_off_all"
-  | "cameras_on_all";
+  | "cameras_on_all"
+  | "remove_participant";
 
 export interface HostActionResponse {
   status: string;
@@ -130,7 +131,8 @@ export interface PushTokenUnregister {
 
 export type MyKalbaNotificationType =
   | "workshop_rescheduled"
-  | "workshop_reminder";
+  | "workshop_reminder"
+  | "workshop_cancelled";
 
 export interface MyKalbaGoal {
   user_id: string;
