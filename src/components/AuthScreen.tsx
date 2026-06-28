@@ -97,7 +97,11 @@ function showAuthAlert(title: string, message: string) {
   Alert.alert(title, message);
 }
 
-function resolveAuthError(error: unknown, mode: AuthMode): string {
+function resolveAuthError(
+  error: unknown,
+  mode: AuthMode,
+  t: (key: string) => string,
+): string {
   if (axios.isAxiosError(error)) {
     const detail = error.response?.data?.detail;
 
@@ -114,7 +118,7 @@ function resolveAuthError(error: unknown, mode: AuthMode): string {
 
           const field = item.loc?.at(-1);
           if (field === "email") {
-            return "Enter a valid email address.";
+            return t("invalid_email");
           }
 
           if (field === "password") {
@@ -132,8 +136,8 @@ function resolveAuthError(error: unknown, mode: AuthMode): string {
   }
 
   return mode === "register"
-    ? "Unable to create account right now. Please try again."
-    : "Invalid credentials";
+    ? t("register_failed")
+    : t("invalid_credentials");
 }
 
 export default function AuthScreen() {
@@ -195,8 +199,8 @@ export default function AuthScreen() {
       await signIn(authResponse.access_token, authResponse.refresh_token);
     } catch (error) {
       showAuthAlert(
-        mode === "register" ? "Sign Up Failed" : "Log In Failed",
-        resolveAuthError(error, mode),
+        mode === "register" ? t("signup_failed") : t("login_failed"),
+        resolveAuthError(error, mode, t),
       );
     } finally {
       setLoading(false);
@@ -210,7 +214,7 @@ export default function AuthScreen() {
 
       if (result.type !== "success") {
         if (result.type !== "dismiss") {
-          showAuthAlert("Google Sign-In Failed", "Please try again.");
+          showAuthAlert(t("google_signin_failed"), t("common.try_again"));
         }
         return;
       }
@@ -242,18 +246,18 @@ export default function AuthScreen() {
       }
 
       if (!idToken) {
-        showAuthAlert("Google Sign-In Failed", "Please try again.");
+        showAuthAlert(t("google_signin_failed"), t("common.try_again"));
         return;
       }
 
       const authResponse = await exchangeGoogleToken(idToken);
       await signIn(authResponse.access_token, authResponse.refresh_token);
     } catch {
-      showAuthAlert("Google Sign-In Failed", "Please try again.");
+      showAuthAlert(t("google_signin_failed"), t("common.try_again"));
     } finally {
       setGoogleLoading(false);
     }
-  }, [promptAsync, request, signIn]);
+  }, [promptAsync, request, signIn, t]);
 
   if (token) {
     return <Redirect href="/(app)/(tabs)" />;
@@ -277,7 +281,7 @@ export default function AuthScreen() {
       >
         <View style={s.hero}>
           <Text style={s.brand}>Kalba</Text>
-          <Text style={s.tagline}>A calmer way to join workshops and live sessions</Text>
+          <Text style={s.tagline}>{t("tagline")}</Text>
         </View>
 
         <View style={s.card}>
@@ -354,7 +358,7 @@ export default function AuthScreen() {
 
                   void handleNativeAuth();
                 }}
-                placeholder={isRegister ? "At least 8 characters, letters and numbers" : "Enter your password"}
+                placeholder={isRegister ? t("password_placeholder_register") : t("password_placeholder_login")}
                 placeholderTextColor={colors.inkMuted}
                 returnKeyType={isRegister ? "done" : "go"}
                 secureTextEntry

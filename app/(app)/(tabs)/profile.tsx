@@ -167,7 +167,7 @@ export default function ProfileScreen() {
           variant="danger"
           icon="log-out-outline"
           fullWidth
-          accessibilityLabel="Sign out"
+          accessibilityLabel={t("profile_screen.signout")}
           testID="profile.signout.button"
         />
 
@@ -175,7 +175,7 @@ export default function ProfileScreen() {
           onPress={handleDeleteAccount}
           disabled={deleting}
           accessibilityRole="button"
-          accessibilityLabel="Delete account"
+          accessibilityLabel={t("profile_screen.delete_account")}
           testID="profile.deleteaccount.button"
           style={({ pressed }) => [
             s.deleteButton,
@@ -193,7 +193,7 @@ export default function ProfileScreen() {
         <Pressable
           onPress={handleOpenPrivacy}
           accessibilityRole="link"
-          accessibilityLabel="Privacy policy"
+          accessibilityLabel={t("profile_screen.privacy_policy")}
           testID="profile.privacy.link"
           hitSlop={8}
         >

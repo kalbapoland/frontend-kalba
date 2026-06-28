@@ -1,11 +1,13 @@
 import { useEffect, useCallback, useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 import type { HostActionType, WorkshopRules } from "@/types/api";
 import { useHostAction } from "@/hooks/useHostAction";
 
 export default function WebCallScreen() {
+  const { t } = useTranslation();
   const params = useLocalSearchParams<{
     workshopId: string;
     token: string;
@@ -97,7 +99,7 @@ export default function WebCallScreen() {
             {formatTime(elapsed)}
           </Text>
           <Text style={{ color: "rgba(255,255,255,0.4)", fontSize: 13 }}>
-            {isHost ? "Host" : "Participant"}
+            {isHost ? t("call.host") : t("call.participant")}
           </Text>
         </View>
 
@@ -105,14 +107,14 @@ export default function WebCallScreen() {
           {isHost && (
             <>
               <HostWebButton
-                label={allMuted ? "Unmute All" : "Mute All"}
+                label={allMuted ? t("call.unmute_all") : t("call.mute_all")}
                 onPress={() =>
                   performHostAction(allMuted ? "unmute_all" : "mute_all")
                 }
                 loading={hostAction.isPending}
               />
               <HostWebButton
-                label={allCamerasOff ? "Cameras On" : "Cameras Off"}
+                label={allCamerasOff ? t("call.cameras_on") : t("call.cameras_off")}
                 onPress={() =>
                   performHostAction(
                     allCamerasOff ? "cameras_on_all" : "cameras_off_all",
@@ -135,7 +137,7 @@ export default function WebCallScreen() {
             <Text
               style={{ color: "#fff", fontWeight: "600", fontSize: 13 }}
             >
-              Leave
+              {t("call.leave")}
             </Text>
           </Pressable>
         </View>

@@ -10,6 +10,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as ScreenOrientation from "expo-screen-orientation";
 import Daily, { DailyMediaView } from "@daily-co/react-native-daily-js";
@@ -76,6 +77,7 @@ export default function NativeCallScreen() {
   }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
 
   const rules: WorkshopRules = JSON.parse(params.rules ?? "{}");
   const isHost = params.role === "host";
@@ -141,12 +143,12 @@ export default function NativeCallScreen() {
     (event: unknown) => {
       console.error("Daily call error:", event);
       Alert.alert(
-        "Connection Error",
-        "Could not connect to the video call. Please try again.",
+        t("call.err_connection_title"),
+        t("call.err_connection_body"),
       );
       router.back();
     },
-    [router],
+    [router, t],
   );
 
   const handleAppMessage = useCallback(
@@ -189,8 +191,8 @@ export default function NativeCallScreen() {
       const perms = await requestMediaPermissions();
       if (!perms.camera && !perms.mic) {
         Alert.alert(
-          "Permissions Required",
-          "Camera and microphone access are needed for video workshops.",
+          t("call.perms_title"),
+          t("call.perms_body"),
         );
         router.back();
         return;
@@ -271,10 +273,10 @@ export default function NativeCallScreen() {
     (action: HostActionType) => {
       hostAction.mutate(action, {
         onError: () =>
-          Alert.alert("Error", "Could not perform action. Try again."),
+          Alert.alert(t("errors.title"), t("call.err_action_body")),
       });
     },
-    [hostAction],
+    [hostAction, t],
   );
 
   /* ── Derived data ──────────────────────────────────────── */
@@ -290,7 +292,7 @@ export default function NativeCallScreen() {
     return (
       <View style={[s.root, s.center]}>
         <ActivityIndicator size="large" color="#8A9A7E" />
-        <Text style={s.joiningText}>Connecting...</Text>
+        <Text style={s.joiningText}>{t("call.connecting")}</Text>
       </View>
     );
   }
@@ -315,7 +317,7 @@ export default function NativeCallScreen() {
           <Text style={s.timerText}>{formatTime(elapsed)}</Text>
         </View>
         <Text style={s.countText}>
-          {totalCount} {totalCount === 1 ? "person" : "people"}
+          {t("call.people", { count: totalCount })}
         </Text>
       </View>
 
@@ -366,7 +368,7 @@ export default function NativeCallScreen() {
               color="#fff"
             />
             <Text style={s.hostBtnText}>
-              {allMuted ? "Unmute All" : "Mute All"}
+              {allMuted ? t("call.unmute_all") : t("call.mute_all")}
             </Text>
           </Pressable>
 
@@ -388,7 +390,7 @@ export default function NativeCallScreen() {
               color="#fff"
             />
             <Text style={s.hostBtnText}>
-              {allCamerasOff ? "Cameras On" : "Cameras Off"}
+              {allCamerasOff ? t("call.cameras_on") : t("call.cameras_off")}
             </Text>
           </Pressable>
         </View>
@@ -425,13 +427,14 @@ function VideoTile({
   mirror?: boolean;
   small?: boolean;
 }) {
+  const { t } = useTranslation();
   const vTrack = getVideoTrack(participant);
   const aTrack = participant.local ? null : getAudioTrack(participant);
   const isMuted = participant.tracks?.audio?.state !== "playable";
 
   const name = participant.local
-    ? "You"
-    : (participant.user_name ?? "Guest");
+    ? t("call.you")
+    : (participant.user_name ?? t("call.guest"));
 
   const initials = (participant.user_name ?? "?")
     .split(" ")

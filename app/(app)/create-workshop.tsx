@@ -13,6 +13,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -60,6 +61,7 @@ const CREATE_WORKSHOP_TEST_IDS = {
 } as const;
 
 export default function CreateWorkshopScreen() {
+  const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -92,7 +94,7 @@ export default function CreateWorkshopScreen() {
     return (
       <View style={[s.centered, { backgroundColor: colors.canvas }]}>
         <Ionicons name="lock-closed-outline" size={48} color={colors.line} />
-        <Text style={s.lockedText}>Only trainers can create workshops</Text>
+        <Text style={s.lockedText}>{t("create_workshop.only_trainers")}</Text>
       </View>
     );
   }
@@ -102,7 +104,7 @@ export default function CreateWorkshopScreen() {
       <View style={[s.centered, { backgroundColor: colors.canvas }]}>
         <Ionicons name="people-outline" size={48} color={colors.line} />
         <Text style={s.lockedText}>
-          Open a group you own and tap “Create workshop” to add one.
+          {t("create_workshop.no_group_hint")}
         </Text>
       </View>
     );
@@ -112,7 +114,7 @@ export default function CreateWorkshopScreen() {
     if (Platform.OS === "web") {
       window.alert(msg);
     } else {
-      Alert.alert("Error", msg);
+      Alert.alert(t("errors.title"), msg);
     }
   };
 
@@ -158,15 +160,15 @@ export default function CreateWorkshopScreen() {
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      showAlert("Title is required");
+      showAlert(t("create_workshop.err_title_required"));
       return;
     }
     if (!date.trim() || !time.trim()) {
-      showAlert("Date and time are required");
+      showAlert(t("create_workshop.err_datetime_required"));
       return;
     }
     if (!duration.trim() || isNaN(Number(duration)) || Number(duration) < 1) {
-      showAlert("Duration must be at least 1 minute");
+      showAlert(t("create_workshop.err_duration_min"));
       return;
     }
     if (
@@ -174,7 +176,7 @@ export default function CreateWorkshopScreen() {
       isNaN(Number(maxParticipants)) ||
       Number(maxParticipants) < 1
     ) {
-      showAlert("Max participants must be at least 1");
+      showAlert(t("create_workshop.err_max_participants_min"));
       return;
     }
 
@@ -195,8 +197,8 @@ export default function CreateWorkshopScreen() {
     }
     if (parsedSchedule.value <= new Date(nowMs + minimumOffsetMs)) {
       showAlert(__DEV__
-        ? "Start time must be at least 1 minute in the future."
-        : "Start time must be in the future. Please choose a later date or time.");
+        ? t("create_workshop.err_future_dev")
+        : t("create_workshop.err_future"));
       return;
     }
 
@@ -216,7 +218,7 @@ export default function CreateWorkshopScreen() {
           successFeedback();
           router.back();
         },
-        onError: () => showAlert("Failed to create workshop"),
+        onError: () => showAlert(t("create_workshop.err_create_failed")),
       },
     );
   };
@@ -239,12 +241,12 @@ export default function CreateWorkshopScreen() {
           <Pressable
             onPress={() => router.back()}
             accessibilityRole="button"
-            accessibilityLabel="Go back"
+            accessibilityLabel={t("create_workshop.a11y_back")}
             style={({ pressed }) => [s.backButton, { opacity: pressed ? 0.5 : 1 }]}
           >
             <Ionicons name="chevron-back" size={24} color={colors.ink} />
           </Pressable>
-          <Text style={s.pageTitle}>New Workshop</Text>
+          <Text style={s.pageTitle}>{t("create_workshop.title")}</Text>
         </View>
 
         {/* Form fields — scrollable only if keyboard pushes them */}
@@ -255,32 +257,32 @@ export default function CreateWorkshopScreen() {
           showsVerticalScrollIndicator={false}
         >
           <FormField
-            label="Title"
+            label={t("create_workshop.field_title")}
             value={title}
             onChangeText={setTitle}
-            placeholder="e.g. Morning Yoga Flow"
+            placeholder={t("create_workshop.title_placeholder")}
             testID={CREATE_WORKSHOP_TEST_IDS.titleInput}
           />
           <View style={s.fieldContainer}>
-            <Text style={s.fieldLabel}>Description (optional)</Text>
+            <Text style={s.fieldLabel}>{t("create_workshop.field_description")}</Text>
             <HashtagTextInput
               value={description}
               onChangeText={setDescription}
-              placeholder="What will participants experience? Use #hashtags (up to 5)."
+              placeholder={t("create_workshop.description_placeholder")}
               testID={CREATE_WORKSHOP_TEST_IDS.descriptionInput}
             />
           </View>
           <View style={s.fieldContainer}>
-            <Text style={s.fieldLabel}>Group</Text>
+            <Text style={s.fieldLabel}>{t("create_workshop.field_group")}</Text>
             <View style={s.groupBanner}>
               <Ionicons name="people" size={16} color={colors.primary} />
               <Text style={s.groupBannerText} numberOfLines={1}>
-                {group.data?.title ?? "This group"}
+                {group.data?.title ?? t("create_workshop.this_group")}
               </Text>
             </View>
           </View>
           <View style={s.fieldContainer}>
-            <Text style={s.fieldLabel}>Schedule ({timezone})</Text>
+            <Text style={s.fieldLabel}>{t("create_workshop.schedule_label", { timezone })}</Text>
             <View style={s.scheduleCard}>
               <View style={s.schedulePreviewRow}>
                 <Ionicons name="calendar-outline" size={16} color={colors.inkMuted} />
@@ -295,7 +297,7 @@ export default function CreateWorkshopScreen() {
                   <Pressable
                     onPress={() => setPickerMode("date")}
                     accessibilityRole="button"
-                    accessibilityLabel="Pick workshop date"
+                    accessibilityLabel={t("create_workshop.a11y_pick_date")}
                     testID={CREATE_WORKSHOP_TEST_IDS.dateButton}
                     style={({ pressed }) => [
                       s.scheduleButton,
@@ -303,12 +305,12 @@ export default function CreateWorkshopScreen() {
                     ]}
                   >
                     <Ionicons name="calendar" size={16} color={colors.primary} />
-                    <Text style={s.scheduleButtonText}>Pick Date</Text>
+                    <Text style={s.scheduleButtonText}>{t("create_workshop.pick_date")}</Text>
                   </Pressable>
                   <Pressable
                     onPress={() => setPickerMode("time")}
                     accessibilityRole="button"
-                    accessibilityLabel="Pick workshop time"
+                    accessibilityLabel={t("create_workshop.a11y_pick_time")}
                     testID={CREATE_WORKSHOP_TEST_IDS.timeButton}
                     style={({ pressed }) => [
                       s.scheduleButton,
@@ -316,14 +318,14 @@ export default function CreateWorkshopScreen() {
                     ]}
                   >
                     <Ionicons name="time" size={16} color={colors.primary} />
-                    <Text style={s.scheduleButtonText}>Pick Time</Text>
+                    <Text style={s.scheduleButtonText}>{t("create_workshop.pick_time")}</Text>
                   </Pressable>
                 </View>
               ) : (
                 <View style={s.row}>
                   <View style={{ flex: 1 }}>
                     <FormField
-                      label="Date"
+                      label={t("create_workshop.field_date")}
                       value={date}
                       onChangeText={setDate}
                       placeholder="YYYY-MM-DD"
@@ -331,7 +333,7 @@ export default function CreateWorkshopScreen() {
                   </View>
                   <View style={{ flex: 1 }}>
                     <FormField
-                      label="Time"
+                      label={t("create_workshop.field_time")}
                       value={time}
                       onChangeText={setTime}
                       placeholder="HH:MM"
@@ -341,20 +343,20 @@ export default function CreateWorkshopScreen() {
               )}
 
               <Text style={s.scheduleHint}>
-                Time is in your local timezone ({timezone}). Participants see it in their own timezone.
+                {t("create_workshop.schedule_hint", { timezone })}
               </Text>
             </View>
           </View>
           <View style={s.row}>
             <View style={{ flex: 1 }}>
-              <FormField label="Duration (min)" value={duration} onChangeText={setDuration} placeholder="60" keyboardType="numeric" testID={CREATE_WORKSHOP_TEST_IDS.durationInput} />
+              <FormField label={t("create_workshop.field_duration")} value={duration} onChangeText={setDuration} placeholder="60" keyboardType="numeric" testID={CREATE_WORKSHOP_TEST_IDS.durationInput} />
             </View>
             <View style={{ flex: 1 }}>
-              <FormField label="Price ($)" value={price} onChangeText={setPrice} placeholder="0.00" keyboardType="decimal-pad" testID={CREATE_WORKSHOP_TEST_IDS.priceInput} />
+              <FormField label={t("create_workshop.field_price")} value={price} onChangeText={setPrice} placeholder="0.00" keyboardType="decimal-pad" testID={CREATE_WORKSHOP_TEST_IDS.priceInput} />
             </View>
           </View>
           <FormField
-            label="Max participants"
+            label={t("create_workshop.field_max_participants")}
             value={maxParticipants}
             onChangeText={setMaxParticipants}
             placeholder="20"
@@ -369,7 +371,7 @@ export default function CreateWorkshopScreen() {
             onPress={handleSubmit}
             disabled={isPending}
             accessibilityRole="button"
-            accessibilityLabel={isPending ? "Creating workshop" : "Create workshop"}
+            accessibilityLabel={isPending ? t("create_workshop.a11y_creating") : t("create_workshop.a11y_create")}
             testID={CREATE_WORKSHOP_TEST_IDS.submitButton}
             style={({ pressed }) => [
               s.submitButton,
@@ -384,7 +386,7 @@ export default function CreateWorkshopScreen() {
             ) : (
               <View style={s.submitInner}>
                 <Ionicons name="add-circle-outline" size={18} color={colors.surface} />
-                <Text style={s.submitText}>Create Workshop</Text>
+                <Text style={s.submitText}>{t("create_workshop.submit")}</Text>
               </View>
             )}
           </Pressable>
@@ -412,15 +414,15 @@ export default function CreateWorkshopScreen() {
             <View style={s.pickerSheet}>
               <View style={s.pickerSheetHeader}>
                 <Text style={s.pickerSheetTitle}>
-                  {pickerMode === "date" ? "Choose Date" : "Choose Time"}
+                  {pickerMode === "date" ? t("create_workshop.choose_date") : t("create_workshop.choose_time")}
                 </Text>
                 <Pressable
                   onPress={() => setPickerMode(null)}
                   accessibilityRole="button"
-                  accessibilityLabel="Close date picker"
+                  accessibilityLabel={t("create_workshop.a11y_close_picker")}
                   style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
                 >
-                  <Text style={s.pickerDoneText}>Done</Text>
+                  <Text style={s.pickerDoneText}>{t("create_workshop.done")}</Text>
                 </Pressable>
               </View>
 
