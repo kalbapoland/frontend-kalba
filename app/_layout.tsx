@@ -35,12 +35,12 @@ if (Platform.OS !== "web" && !isNotificationHandlerConfigured) {
   Notifications.setNotificationHandler({
     handleNotification: async (notification) => {
       const type = notification.request.content.data?.type;
-      const isReminder = type === "reminder";
+      const shouldAlert = type === "reminder" || type === "cancelled";
 
       return {
-        shouldShowBanner: isReminder,
-        shouldShowList: isReminder,
-        shouldPlaySound: isReminder,
+        shouldShowBanner: shouldAlert,
+        shouldShowList: shouldAlert,
+        shouldPlaySound: shouldAlert,
         shouldSetBadge: false,
       };
     },
@@ -109,21 +109,27 @@ export default function RootLayout() {
       return;
     }
 
-    const subscription = Notifications.addNotificationResponseReceivedListener(
-      (response) => {
-        const workshopId = extractWorkshopId(response);
-        if (workshopId) {
-          router.push(`/workshop/${workshopId}`);
-        }
-      },
-    );
-
-    void (async () => {
-      const response = await Notifications.getLastNotificationResponseAsync();
+    const handleNotificationResponse = (
+      response: Notifications.NotificationResponse | null,
+    ) => {
+      const type = response?.notification.request.content.data?.type;
+      if (type === "cancelled") {
+        router.push("/my-kalba");
+        return;
+      }
       const workshopId = extractWorkshopId(response);
       if (workshopId) {
         router.push(`/workshop/${workshopId}`);
       }
+    };
+
+    const subscription = Notifications.addNotificationResponseReceivedListener(
+      handleNotificationResponse,
+    );
+
+    void (async () => {
+      const response = await Notifications.getLastNotificationResponseAsync();
+      handleNotificationResponse(response);
     })();
 
     return () => {
