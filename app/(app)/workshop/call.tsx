@@ -10,6 +10,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as ScreenOrientation from "expo-screen-orientation";
 import Daily, { DailyMediaView } from "@daily-co/react-native-daily-js";
@@ -77,6 +78,7 @@ export default function NativeCallScreen() {
   }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
 
   const rules: WorkshopRules = JSON.parse(params.rules ?? "{}");
   const isHost = params.role === "host";
@@ -152,18 +154,18 @@ export default function NativeCallScreen() {
       // The host removed this participant: Daily reports a fatal error of
       // type "ejected". Show a clear message rather than a generic failure.
       if (event?.error?.type === "ejected") {
-        Alert.alert("Removed", "The host removed you from the call.");
+        Alert.alert(t("call.removed_title"), t("call.removed_body"));
         exitCall();
         return;
       }
       console.error("Daily call error:", event);
       Alert.alert(
-        "Connection Error",
-        "Could not connect to the video call. Please try again.",
+        t("call.err_connection_title"),
+        t("call.err_connection_body"),
       );
       exitCall();
     },
-    [exitCall],
+    [exitCall, t],
   );
 
   const handleAppMessage = useCallback(
@@ -206,8 +208,8 @@ export default function NativeCallScreen() {
       const perms = await requestMediaPermissions();
       if (!perms.camera && !perms.mic) {
         Alert.alert(
-          "Permissions Required",
-          "Camera and microphone access are needed for video workshops.",
+          t("call.perms_title"),
+          t("call.perms_body"),
         );
         router.back();
         return;
@@ -290,11 +292,11 @@ export default function NativeCallScreen() {
         { action },
         {
           onError: () =>
-            Alert.alert("Error", "Could not perform action. Try again."),
+            Alert.alert(t("errors.title"), t("call.err_action_body")),
         },
       );
     },
-    [hostAction],
+    [hostAction, t],
   );
 
   // Host-only: eject a participant from the live call. The host holds a Daily
@@ -303,13 +305,11 @@ export default function NativeCallScreen() {
   // removing from the group).
   const kickParticipant = useCallback(
     (p: DailyParticipant) => {
-      const name = p.user_name ?? "this participant";
-      // NOTE: copy is hardcoded English to match the rest of this screen.
-      // Localization is deferred to BL-001 (app-wide i18n audit).
-      Alert.alert("Remove participant", `Remove ${name} from the call?`, [
-        { text: "Cancel", style: "cancel" },
+      const name = p.user_name ?? t("call.this_participant");
+      Alert.alert(t("call.remove_title"), t("call.remove_confirm", { name }), [
+        { text: t("cancel"), style: "cancel" },
         {
-          text: "Remove",
+          text: t("call.remove_action"),
           style: "destructive",
           onPress: () => {
             callRef.current?.updateParticipant(p.session_id, { eject: true });
@@ -323,7 +323,7 @@ export default function NativeCallScreen() {
         },
       ]);
     },
-    [hostAction],
+    [hostAction, t],
   );
 
   /* ── Derived data ──────────────────────────────────────── */
@@ -339,7 +339,7 @@ export default function NativeCallScreen() {
     return (
       <View style={[s.root, s.center]}>
         <ActivityIndicator size="large" color="#8A9A7E" />
-        <Text style={s.joiningText}>Connecting...</Text>
+        <Text style={s.joiningText}>{t("call.connecting")}</Text>
       </View>
     );
   }
@@ -348,6 +348,7 @@ export default function NativeCallScreen() {
 
   return (
     <View
+      testID="call.screen"
       style={[
         s.root,
         {
@@ -364,7 +365,7 @@ export default function NativeCallScreen() {
           <Text style={s.timerText}>{formatTime(elapsed)}</Text>
         </View>
         <Text style={s.countText}>
-          {totalCount} {totalCount === 1 ? "person" : "people"}
+          {t("call.people", { count: totalCount })}
         </Text>
       </View>
 
@@ -407,6 +408,7 @@ export default function NativeCallScreen() {
       {isHost && (
         <View style={s.hostRow}>
           <Pressable
+            testID="call.host.mute.button"
             onPress={() =>
               doHostAction(allMuted ? "unmute_all" : "mute_all")
             }
@@ -422,11 +424,12 @@ export default function NativeCallScreen() {
               color="#fff"
             />
             <Text style={s.hostBtnText}>
-              {allMuted ? "Unmute All" : "Mute All"}
+              {allMuted ? t("call.unmute_all") : t("call.mute_all")}
             </Text>
           </Pressable>
 
           <Pressable
+            testID="call.host.cameras.button"
             onPress={() =>
               doHostAction(
                 allCamerasOff ? "cameras_on_all" : "cameras_off_all",
@@ -444,7 +447,7 @@ export default function NativeCallScreen() {
               color="#fff"
             />
             <Text style={s.hostBtnText}>
-              {allCamerasOff ? "Cameras On" : "Cameras Off"}
+              {allCamerasOff ? t("call.cameras_on") : t("call.cameras_off")}
             </Text>
           </Pressable>
         </View>
@@ -453,18 +456,20 @@ export default function NativeCallScreen() {
       {/* ── Bottom control bar ── */}
       <View style={[s.controlBar, { paddingBottom: Math.max(insets.bottom, 20) }]}>
         <ControlBtn
+          testID="call.mic.button"
           icon={isMicOn ? "mic" : "mic-off"}
           on={isMicOn}
           onPress={toggleMic}
         />
         <ControlBtn
+          testID="call.camera.button"
           icon={isCameraOn ? "videocam" : "videocam-off"}
           on={isCameraOn}
           onPress={toggleCamera}
           disabled={!rules.allow_camera_toggle && !isHost}
         />
-        <ControlBtn icon="camera-reverse" on onPress={flipCamera} />
-        <ControlBtn icon="call" on={false} danger onPress={leaveCall} />
+        <ControlBtn testID="call.flip.button" icon="camera-reverse" on onPress={flipCamera} />
+        <ControlBtn testID="call.leave.button" icon="call" on={false} danger onPress={leaveCall} />
       </View>
     </View>
   );
@@ -483,13 +488,14 @@ function VideoTile({
   small?: boolean;
   onRemove?: (p: DailyParticipant) => void;
 }) {
+  const { t } = useTranslation();
   const vTrack = getVideoTrack(participant);
   const aTrack = participant.local ? null : getAudioTrack(participant);
   const isMuted = participant.tracks?.audio?.state !== "playable";
 
   const name = participant.local
-    ? "You"
-    : (participant.user_name ?? "Guest");
+    ? t("call.you")
+    : (participant.user_name ?? t("call.guest"));
 
   const initials = (participant.user_name ?? "?")
     .split(" ")
@@ -537,7 +543,7 @@ function VideoTile({
           onPress={() => onRemove(participant)}
           hitSlop={8}
           style={({ pressed }) => [s.removeBtn, { opacity: pressed ? 0.6 : 1 }]}
-          accessibilityLabel={`Remove ${name}`}
+          accessibilityLabel={t("call.remove_a11y", { name })}
         >
           <Ionicons name="person-remove" size={14} color="#fff" />
         </Pressable>
@@ -549,12 +555,14 @@ function VideoTile({
 /* ─── Control Button ─────────────────────────────────────────── */
 
 function ControlBtn({
+  testID,
   icon,
   on,
   danger,
   disabled,
   onPress,
 }: {
+  testID?: string;
   icon: keyof typeof Ionicons.glyphMap;
   on: boolean;
   danger?: boolean;
@@ -563,6 +571,7 @@ function ControlBtn({
 }) {
   return (
     <Pressable
+      testID={testID}
       onPress={onPress}
       disabled={disabled}
       style={({ pressed }) => [

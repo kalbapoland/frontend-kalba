@@ -79,6 +79,13 @@ export async function fetchCurrentUser(): Promise<User> {
   return data;
 }
 
+export async function updateCurrentUser(payload: {
+  full_name?: string;
+}): Promise<User> {
+  const { data } = await apiClient.patch<User>("/users/me", payload);
+  return data;
+}
+
 export async function deleteAccount(): Promise<void> {
   await apiClient.delete("/users/me");
 }

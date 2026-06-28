@@ -1,5 +1,6 @@
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import { Redirect, Stack } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 import { useAuthStore } from "@/store/auth";
 import { useUser } from "@/hooks/useUser";
@@ -7,6 +8,7 @@ import { usePushRegistration } from "@/hooks/usePushRegistration";
 import { colors } from "@/theme/tokens";
 
 export default function AppLayout() {
+  const { t } = useTranslation();
   const token = useAuthStore((s) => s.token);
   const signOut = useAuthStore((s) => s.signOut);
   const { isLoading, isError, error, refetch } = useUser();
@@ -32,19 +34,19 @@ export default function AppLayout() {
     return (
       <View className="flex-1 items-center justify-center gap-4 bg-canvas px-10">
         <Text className="text-center text-base font-light text-ink-body">
-          Could not reach the server.
+          {t("common.server_unreachable")}
         </Text>
         <Text className="text-center text-xs text-ink-muted">
-          {(error as Error)?.message ?? "Unknown error"}
+          {(error as Error)?.message ?? t("common.unknown_error")}
         </Text>
         <Pressable
           onPress={() => refetch()}
           className="mt-2 rounded-full bg-primary px-8 py-4"
         >
-          <Text className="font-medium tracking-wide text-surface">Retry</Text>
+          <Text className="font-medium tracking-wide text-surface">{t("common.retry")}</Text>
         </Pressable>
         <Pressable onPress={() => signOut()} className="mt-1 py-2">
-          <Text className="text-sm text-ink-muted">Sign out</Text>
+          <Text className="text-sm text-ink-muted">{t("signout")}</Text>
         </Pressable>
       </View>
     );

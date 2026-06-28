@@ -12,6 +12,28 @@ What lives here:
 Backend fixture setup lives in `../../../backend/tests/automated/` because the seed
 script depends on backend models and the local database.
 
+## Normative test execution
+
+**Each smoke run must start from a fully clean environment — new emulator, fresh database.**
+
+`run_android_smoke_local.py` is the canonical runner. It creates everything from scratch:
+
+1. Destroys any stale AVD and ephemeral DB containers left from a previous failed run
+2. Creates a new Android emulator AVD
+3. Starts a new ephemeral PostgreSQL container (`docker run --rm`)
+4. Runs Alembic migrations on the empty database
+5. Seeds deterministic E2E fixtures
+6. Builds and installs a release APK on the emulator
+7. Executes all Maestro flows
+
+On **success**: emulator and DB container are destroyed automatically.
+
+On **failure**: emulator and DB are **preserved for debugging** (inspect logs, connect to DB, replay flows manually). The next `run_android_smoke_local.py` call will clean stale state before creating a new environment.
+
+**Never re-run tests on the same emulator or database** (except when debugging locally — in that case use `run_android_smoke.py` directly, which skips environment setup and connects to whatever is already running).
+
+Because the database is always brand new, E2E accounts created during a test run (e.g. accounts registered and then deleted within the same flow) are never orphaned — the next run starts with an empty DB regardless.
+
 ## Quick start
 
 ### Required environment variables (mandatory)

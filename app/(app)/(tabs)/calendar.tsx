@@ -97,7 +97,7 @@ export default function CalendarScreen() {
             onPress={() => step(-1)}
             style={({ pressed }) => [s.iconButton, pressed && { opacity: 0.6 }]}
             accessibilityRole="button"
-            accessibilityLabel="Previous"
+            accessibilityLabel={t("common.previous")}
           >
             <Ionicons name="chevron-back" size={22} color={colors.ink} />
           </Pressable>
@@ -107,7 +107,7 @@ export default function CalendarScreen() {
             onPress={() => step(1)}
             style={({ pressed }) => [s.iconButton, pressed && { opacity: 0.6 }]}
             accessibilityRole="button"
-            accessibilityLabel="Next"
+            accessibilityLabel={t("common.next")}
           >
             <Ionicons name="chevron-forward" size={22} color={colors.ink} />
           </Pressable>

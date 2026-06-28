@@ -251,6 +251,8 @@ def main() -> None:
 
         print("[smoke] running Android user negative login Maestro flow")
         flow("test/automated/maestro/flows/smoke/user_negative_login_smoke.yaml")
+        print("[smoke] running Android user negative register Maestro flow")
+        flow("test/automated/maestro/flows/smoke/user_negative_register_smoke.yaml")
         print("[smoke] running Android user register Maestro flow")
         # max_attempts=1: hardcoded email e2e.register.smoke@kalba.dev — retry after successful
         # registration would hit 409 and convert a transient flake into a guaranteed failure.
@@ -266,6 +268,10 @@ def main() -> None:
         flow("test/automated/maestro/flows/smoke/user_calendar_smoke.yaml")
         print("[smoke] running Android user workshop full Maestro flow")
         flow("test/automated/maestro/flows/smoke/user_workshop_full_smoke.yaml")
+        print("[smoke] running Android user negative enroll full Maestro flow")
+        flow("test/automated/maestro/flows/smoke/user_negative_enroll_full_smoke.yaml")
+        print("[smoke] running Android trainer video join Maestro flow")
+        flow("test/automated/maestro/flows/smoke/trainer_video_join_smoke.yaml")
         print("[smoke] running Android trainer Maestro flow")
         flow("test/automated/maestro/flows/smoke/trainer_create_smoke.yaml")
         print("[smoke] running Android trainer create workshop date Maestro flow")
@@ -286,6 +292,8 @@ def main() -> None:
         flow("test/automated/maestro/flows/smoke/trainer_delete_workshop_smoke.yaml")
         print("[smoke] running Android user signout Maestro flow")
         flow("test/automated/maestro/flows/smoke/user_signout_smoke.yaml")
+        print("[smoke] running Android user delete account Maestro flow")
+        flow("test/automated/maestro/flows/smoke/user_delete_account_smoke.yaml")
     except BaseException as err:
         primary_error = err
     finally:
