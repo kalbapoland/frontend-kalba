@@ -116,6 +116,7 @@ def main() -> None:
         flow("test/automated/maestro/flows/smoke/user_group_unsubscribe_smoke.yaml")
         flow("test/automated/maestro/flows/smoke/trainer_edit_group_smoke.yaml")
         flow("test/automated/maestro/flows/smoke/trainer_delete_workshop_smoke.yaml")
+        flow("test/automated/maestro/flows/smoke/trainer_delete_group_smoke.yaml")
         flow("test/automated/maestro/flows/smoke/user_signout_smoke.yaml")
     except BaseException as err:
         primary_error = err

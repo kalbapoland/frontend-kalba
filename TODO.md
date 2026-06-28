@@ -24,8 +24,7 @@ Brakujące przepływy dla lepszego pokrycia E2E (kolejność wg priorytetu):
 
 - **`user_change_password_smoke`** — Zmiana hasła z poziomu profilu. Brak ekranu zmiany hasła w UI. Wymaga: (1) endpointu POST /auth/change-password (backend), (2) ekranu w profilu (frontend), (3) testu Maestro.
 
-- **`trainer_delete_group_smoke`** — Trainer usuwa grupę: nawigacja do grupy → long-press lub przycisk delete → potwierdzenie → weryfikacja że karta grupy znikła z listy. Testuje DELETE /groups/{id} + cascade na warsztatach i uczestnikach. **Zablokowane przez**: nieokreślone zachowanie kasowania grupy (patrz sekcja Architektura).
-
+- **`trainer_create_workshop_date_smoke`** — Trainer tworzy warsztat z datą/godziną: weryfikacja działania date/time pickera, zapis daty w DB, wyświetlenie na szczegółach warsztatu. Testuje najbardziej złożony element formularza tworzenia warsztatu.
 ### Średni priorytet
 
 - ~~**`user_negative_register_smoke`**~~ — **GOTOWE** (`flows/smoke/user_negative_register_smoke.yaml`). Rejestracja z `e2e.user@kalba.dev` (już istnieje) → Alert "Sign Up Failed" / "User already exists".

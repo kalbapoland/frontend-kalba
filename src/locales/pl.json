@@ -237,7 +237,12 @@
         "remove_member_failed": "Nie udało się usunąć członka.",
         "remove": "Usuń",
         "remove_member_a11y": "Usuń {{name}}",
-        "subscribe_to_name": "Subskrybuj {{title}}"
+        "subscribe_to_name": "Subskrybuj {{title}}",
+        "delete_group": "Usuń grupę",
+        "deleting": "Usuwanie...",
+        "delete_confirm_title": "Usuń grupę",
+        "delete_confirm_body": "Czy na pewno chcesz usunąć tę grupę? Wszystkie warsztaty i członkowie zostaną usunięci. Tej operacji nie można cofnąć.",
+        "failed_delete": "Nie udało się usunąć grupy"
     },
     "profile_screen": {
         "signout": "Wyloguj się",

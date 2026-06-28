@@ -49,6 +49,16 @@ def run(command: list[str], *, cwd: Path, env: dict[str, str] | None = None) -> 
     subprocess.run(command, cwd=str(cwd), env=env, check=True)
 
 
+def clear_app_state(adb: str, cwd: Path) -> None:
+    """Force-stop the app between Maestro flows.
+
+    Maestro's clearState:true handles data clearing; a separate pm clear from
+    the script causes a double-clear race that intermittently prevents the app
+    from launching. force-stop is synchronous and only kills running processes.
+    """
+    run([adb, "shell", "am", "force-stop", APP_ID], cwd=cwd)
+
+
 def run_best_effort(command: list[str], *, cwd: Path) -> None:
     try:
         run(command, cwd=cwd)
@@ -116,10 +126,6 @@ def kill_processes_on_backend_port(port: int) -> None:
     print(f"[smoke] killing stale process(es) on port {port}: {', '.join(pids)}")
     for pid in pids:
         subprocess.run(["taskkill", "/PID", pid, "/F", "/T"], check=False, capture_output=True, text=True)
-
-
-def clear_app_state(adb: str, cwd: Path) -> None:
-    run([adb, "shell", "pm", "clear", APP_ID], cwd=cwd)
 
 
 def run_maestro_flow(
@@ -290,6 +296,8 @@ def main() -> None:
         flow("test/automated/maestro/flows/smoke/trainer_edit_group_smoke.yaml")
         print("[smoke] running Android trainer delete Maestro flow")
         flow("test/automated/maestro/flows/smoke/trainer_delete_workshop_smoke.yaml")
+        print("[smoke] running Android trainer delete group Maestro flow")
+        flow("test/automated/maestro/flows/smoke/trainer_delete_group_smoke.yaml")
         print("[smoke] running Android user signout Maestro flow")
         flow("test/automated/maestro/flows/smoke/user_signout_smoke.yaml")
         print("[smoke] running Android user delete account Maestro flow")

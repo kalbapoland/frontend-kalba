@@ -26,6 +26,7 @@ import {
   useSubscribeGroup,
   useUnsubscribeGroup,
   useRemoveGroupMember,
+  useDeleteGroup,
 } from "@/hooks/useGroups";
 import type { Workshop } from "@/types/api";
 import {
@@ -94,6 +95,7 @@ export default function GroupDetailScreen() {
   const subscribe = useSubscribeGroup();
   const unsubscribe = useUnsubscribeGroup();
   const removeMember = useRemoveGroupMember(id!);
+  const deleteGroup = useDeleteGroup();
 
   const showError = (msg: string) => {
     if (Platform.OS === "web") window.alert(msg);
@@ -129,6 +131,23 @@ export default function GroupDetailScreen() {
 
   const g = group.data;
   const memberCount = g.member_count ?? members.data?.length ?? 0;
+
+  const handleDeleteGroup = () => {
+    const doDelete = () => {
+      deleteGroup.mutate(g.id, {
+        onSuccess: () => router.back(),
+        onError: () => showError(t("group.failed_delete")),
+      });
+    };
+    if (Platform.OS === "web") {
+      if (window.confirm(t("group.delete_confirm_body"))) doDelete();
+    } else {
+      Alert.alert(t("group.delete_confirm_title"), t("group.delete_confirm_body"), [
+        { text: t("cancel"), style: "cancel" },
+        { text: t("delete"), style: "destructive", onPress: doDelete },
+      ]);
+    }
+  };
 
   const confirmRemove = (memberUserId: string, name: string) => {
     const doRemove = () =>
@@ -326,6 +345,22 @@ export default function GroupDetailScreen() {
               )}
             </View>
           ))
+        )}
+
+        {g.is_owner && (
+          <Pressable
+            onPress={handleDeleteGroup}
+            disabled={deleteGroup.isPending}
+            accessibilityRole="button"
+            accessibilityLabel={t("group.delete_group")}
+            testID="trainer.delete.group.button"
+            style={({ pressed }) => [s.deleteGroupButton, { opacity: pressed || deleteGroup.isPending ? 0.7 : 1 }]}
+          >
+            <Ionicons name="trash-outline" size={16} color={colors.danger} />
+            <Text style={s.deleteGroupButtonText}>
+              {deleteGroup.isPending ? t("group.deleting") : t("group.delete_group")}
+            </Text>
+          </Pressable>
         )}
       </ScrollView>
     </View>
@@ -526,5 +561,22 @@ const s = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 15,
     color: colors.ink,
+  },
+  deleteGroupButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    marginTop: 32,
+    marginBottom: 8,
+    paddingVertical: 14,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.danger,
+  },
+  deleteGroupButtonText: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 15,
+    color: colors.danger,
   },
 });

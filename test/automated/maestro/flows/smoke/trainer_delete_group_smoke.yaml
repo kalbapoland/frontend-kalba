@@ -1,0 +1,64 @@
+appId: com.kalba.app
+---
+# SMOKE: trainer_delete_group — usunięcie grupy z potwierdzeniem
+#
+# Co testuje:
+#   1. Trainer może zalogować się i nawigować do zakładki Grupy
+#   2. Karta grupy "E2E Trainer Group Smoke Updated" jest widoczna na liście
+#   3. Po wejściu do grupy przycisk "Usuń grupę" jest widoczny (tylko dla właściciela)
+#   4. Tapnięcie "Usuń grupę" wyświetla dialog potwierdzenia
+#   5. Potwierdzenie wysyła DELETE /groups/{id} i wraca do listy grup
+#   6. Karta grupy znika z listy (soft-delete zadziałał, cache odświeżony)
+#
+# Zależność: musi być uruchomiony po trainer_delete_workshop_smoke.yaml.
+#   Używa grupy "E2E Trainer Group Smoke Updated" (zmienionej przez trainer_edit_group_smoke).
+#
+# Dane wejściowe:
+#   - konto trainera: e2e.trainer@kalba.dev / Pass1234
+#   - istniejąca grupa: "E2E Trainer Group Smoke Updated" (warsztat już usunięty przez trainer_delete_workshop_smoke)
+
+- launchApp:
+    clearState: true
+
+# --- Logowanie jako trainer ---
+- runFlow: ../common/login_trainer.yaml
+
+# --- Nawigacja do grupy ---
+- tapOn:
+    id: tab.groups.button
+- extendedWaitUntil:
+    visible:
+      id: group.card.e2e-trainer-group-smoke-updated
+    timeout: 15000
+- tapOn:
+    id: group.card.e2e-trainer-group-smoke-updated
+- extendedWaitUntil:
+    visible:
+      id: trainer.delete.group.button
+    timeout: 10000
+
+# --- Usunięcie grupy ---
+# Tapnięcie przycisku otwiera Alert z potwierdzeniem
+- tapOn:
+    id: trainer.delete.group.button
+
+# Weryfikacja: dialog potwierdzenia jest widoczny
+- extendedWaitUntil:
+    visible:
+      text: "Delete Group"
+    timeout: 5000
+
+# Potwierdzenie — tapnięcie "Delete" wysyła DELETE /groups/{id}
+- tapOn:
+    text: "Delete"
+
+# --- Weryfikacja usunięcia ---
+# Po usunięciu router.back() wraca do listy grup (zakładka Groups)
+- extendedWaitUntil:
+    visible:
+      id: tab.groups.button
+    timeout: 15000
+
+# Weryfikacja: karta grupy zniknęła (soft-delete + cache invalidation)
+- assertNotVisible:
+    id: group.card.e2e-trainer-group-smoke-updated
