@@ -242,7 +242,7 @@ export default function WorkshopDetailScreen() {
         {!isOwner && (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={isEnrolled ? "Unenroll from workshop" : "Enroll in workshop"}
+            accessibilityLabel={isEnrolled ? t("workshop.unenroll") : t("workshop.enroll")}
             testID={isEnrolled ? "workshop.unenroll.button" : "workshop.enroll.button"}
             style={({ pressed }) => [
               s.enrollButton,
