@@ -130,7 +130,8 @@ export interface PushTokenUnregister {
 
 export type MyKalbaNotificationType =
   | "workshop_rescheduled"
-  | "workshop_reminder";
+  | "workshop_reminder"
+  | "workshop_cancelled";
 
 export interface MyKalbaGoal {
   user_id: string;
