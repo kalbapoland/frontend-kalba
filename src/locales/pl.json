@@ -283,7 +283,14 @@
         "err_connection_body": "Nie udało się połączyć z rozmową wideo. Spróbuj ponownie.",
         "perms_title": "Wymagane uprawnienia",
         "perms_body": "Dostęp do kamery i mikrofonu jest niezbędny do warsztatów wideo.",
-        "err_action_body": "Nie udało się wykonać akcji. Spróbuj ponownie."
+        "err_action_body": "Nie udało się wykonać akcji. Spróbuj ponownie.",
+        "remove_title": "Usuń uczestnika",
+        "remove_confirm": "Usunąć {{name}} z rozmowy?",
+        "remove_action": "Usuń",
+        "remove_a11y": "Usuń {{name}}",
+        "this_participant": "tego uczestnika",
+        "removed_title": "Usunięto",
+        "removed_body": "Gospodarz usunął Cię z rozmowy."
     },
     "common": {
         "retry": "Spróbuj ponownie",

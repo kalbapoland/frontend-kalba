@@ -275,7 +275,14 @@
         "err_connection_body": "Could not connect to the video call. Please try again.",
         "perms_title": "Permissions Required",
         "perms_body": "Camera and microphone access are needed for video workshops.",
-        "err_action_body": "Could not perform action. Try again."
+        "err_action_body": "Could not perform action. Try again.",
+        "remove_title": "Remove participant",
+        "remove_confirm": "Remove {{name}} from the call?",
+        "remove_action": "Remove",
+        "remove_a11y": "Remove {{name}}",
+        "this_participant": "this participant",
+        "removed_title": "Removed",
+        "removed_body": "The host removed you from the call."
     },
     "common": {
         "retry": "Retry",

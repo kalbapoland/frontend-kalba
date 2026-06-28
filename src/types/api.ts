@@ -109,7 +109,8 @@ export type HostActionType =
   | "mute_all"
   | "unmute_all"
   | "cameras_off_all"
-  | "cameras_on_all";
+  | "cameras_on_all"
+  | "remove_participant";
 
 export interface HostActionResponse {
   status: string;
