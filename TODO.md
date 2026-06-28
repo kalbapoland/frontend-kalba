@@ -10,8 +10,6 @@ Najlepiej byloby zaprojektowac go tak aby nie trzeba bylo scrollowac.
 
 - **Migracja błędów API na kody** — Backend powinien zwracać kody błędów (`SCREAMING_SNAKE_CASE`, np. `INVALID_CREDENTIALS`, `USER_ALREADY_EXISTS`, `WORKSHOP_FULL`) zamiast angielskich stringów. Frontend mapuje kody na zlokalizowane teksty przez `t()`. Dotyczy wszystkich endpointów (auth, groups, workshops, video). Zmiany w obu repozytoriach (oba).
 
-- **Zdefiniować zachowanie przy usunięciu grupy** — Obecny `DELETE /groups/{id}` robi tylko soft-delete grupy bez kaskady. Brak zdefiniowanego zachowania dla: workshopów w grupie (duchy w feedzie bo `_caller_group_ids` nie filtruje po `Group.deleted_at`), membershipów, enrollmentów, pokoi Daily.co. PR #87 (frontend: przycisk Delete Group + smoke test) zdraftowany do czasu rozwiązania. Opcje: (a) blokuj usunięcie jeśli grupa ma workshopy `422`; (b) cascade soft-delete workshopów wraz z grupą; (c) blokuj tylko przy przyszłych workshopach. Zmiany w obu repozytoriach (oba).
-
 ## Smoke testy — do zaimplementowania
 
 Brakujące przepływy dla lepszego pokrycia E2E (kolejność wg priorytetu):
@@ -20,11 +18,12 @@ Brakujące przepływy dla lepszego pokrycia E2E (kolejność wg priorytetu):
 
 - ~~**`user_delete_account_smoke`**~~ — **GOTOWE** (`flows/smoke/user_delete_account_smoke.yaml`). Rejestracja świeżego konta → profil → podwójne potwierdzenie usunięcia → weryfikacja powrotu do ekranu logowania.
 
-- **`user_edit_profile_name_smoke`** — ⚠️ **WYMAGA IMPLEMENTACJI FUNKCJI NAJPIERW**: Zmiana imienia/nazwy wyświetlanej użytkownika. Brak ekranu edycji profilu i endpointu PATCH /users/me. Kroki do zbudowania: (1) backend: PATCH /users/me z walidacją `full_name`, (2) frontend: przycisk/modal edycji nazwy na ekranie Profil + testID `profile.editname.button`, (3) maestro test: profil → edit → zmiana nazwy → weryfikacja że karta wyświetla nową nazwę.
+- ~~**`user_edit_profile_name_smoke`**~~ — **GOTOWE** (`flows/smoke/user_edit_profile_name_smoke.yaml`). Edycja imienia via Profile; weryfikacja PATCH /users/me; modal zamknięty; nazwa zaktualizowana na karcie.
 
 - **`user_change_password_smoke`** — Zmiana hasła z poziomu profilu. Brak ekranu zmiany hasła w UI. Wymaga: (1) endpointu POST /auth/change-password (backend), (2) ekranu w profilu (frontend), (3) testu Maestro.
 
-- **`trainer_create_workshop_date_smoke`** — Trainer tworzy warsztat z datą/godziną: weryfikacja działania date/time pickera, zapis daty w DB, wyświetlenie na szczegółach warsztatu. Testuje najbardziej złożony element formularza tworzenia warsztatu.
+- ~~**`trainer_create_workshop_date_smoke`**~~ — **GOTOWE** (`flows/smoke/trainer_create_workshop_date_smoke.yaml`). Trainer tworzy warsztat z natywnym DatePicker + TimePicker; dialogi zamykają się bez crasha; warsztat pojawia się na liście.
+
 ### Średni priorytet
 
 - ~~**`user_negative_register_smoke`**~~ — **GOTOWE** (`flows/smoke/user_negative_register_smoke.yaml`). Rejestracja z `e2e.user@kalba.dev` (już istnieje) → Alert "Sign Up Failed" / "User already exists".
@@ -35,11 +34,9 @@ Brakujące przepływy dla lepszego pokrycia E2E (kolejność wg priorytetu):
 
 ### Niski priorytat / odłożone
 
-- ~~**`user_negative_enroll_full_smoke`**~~ — **GOTOWE** (`flows/smoke/user_negative_enroll_full_smoke.yaml`). Tap na wyłączony przycisk "Full" nie wywołuje enrollmentu — weryfikacja że stan nie zmienia się po tapnięciu.
+- ~~**`user_negative_enroll_full_smoke`**~~ — **GOTOWE** (`flows/smoke/user_negative_enroll_full_smoke.yaml`). Pełny warsztat: brak przycisków trainera + tap na wyłączony przycisk Enroll nie wywołuje enrollmentu — weryfikacja że stan nie zmienia się po tapnięciu.
 
 - **`trainer_workshop_full_smoke`** — Warsztat zapełniony blokuje zapis: trainer tworzy warsztat z max_participants=1, pierwszy user się zapisuje, drugi user próbuje → widzi komunikat "warsztat pełny". Testuje logikę limitu uczestników.
-
-- **`trainer_video_join_smoke`** / **`user_video_join_smoke`** — Flow wideo (Daily.co). Odkładamy do Phase 4 implementacji wideo.
 
 ## Smoke testy — infrastruktura
 

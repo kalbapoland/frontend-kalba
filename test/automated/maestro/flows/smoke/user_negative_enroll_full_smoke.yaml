@@ -1,10 +1,11 @@
 appId: com.kalba.app
 ---
-# SMOKE: user_negative_enroll_full — disabled-state regression guard dla pełnego warsztatu
+# SMOKE: user_negative_enroll_full — pełny warsztat: brak przycisków trainera + disabled-state guard
 #
 # Co testuje:
 #   1. Ekran warsztatu pełnego: workshop.enroll.button widoczny, workshop.unenroll.button niewidoczny
-#   2. Tapnięcie przycisku (disabled={isFull && !isEnrolled} w React Native) nie zmienia stanu —
+#   2. Przyciski właściciela (edit/delete) niewidoczne — user nie jest trainerem tego warsztatu
+#   3. Tapnięcie przycisku (disabled={isFull && !isEnrolled} w React Native) nie zmienia stanu —
 #      po tapnięciu workshop.enroll.button nadal widoczny, workshop.unenroll.button nadal niewidoczny
 #
 # UWAGA — charakter testu:
@@ -13,11 +14,7 @@ appId: com.kalba.app
 #   NIE jest to guard na API side-effect — React Native Pressable z disabled=true
 #   nie odpala onPress, więc POST /workshops/{id}/enroll nigdy nie jest wywołany.
 #   Tekst przycisku ("Full" / "Brak miejsc") NIE jest asercjonowany — zależy od locale
-#   urządzenia (analogicznie do user_workshop_full_smoke.yaml).
-#
-# Różnica względem user_workshop_full_smoke:
-#   Tamten test weryfikuje stan UI bez próby interakcji.
-#   Ten test tapnina wyłączony przycisk i weryfikuje brak zmiany stanu.
+#   urządzenia.
 #
 # Prereq: seed_mobile_e2e_fixtures.py
 #   - workshop_full: max_participants=1, fuller enrolled → isFull=true
@@ -54,6 +51,12 @@ appId: com.kalba.app
 # workshop.unenroll.button niewidoczny — user nie jest zapisany
 - assertNotVisible:
     id: workshop.unenroll.button
+
+# Przyciski właściciela niewidoczne — user nie jest trainerem tego warsztatu
+- assertNotVisible:
+    id: trainer.edit.workshop.button
+- assertNotVisible:
+    id: trainer.delete.workshop.button
 
 # --- Tapnięcie wyłączonego przycisku ---
 # Maestro wysyła tap, ale React Native Pressable z disabled=true nie odpala onPress

@@ -272,8 +272,6 @@ def main() -> None:
         flow("test/automated/maestro/flows/smoke/user_my_kalba_smoke.yaml")
         print("[smoke] running Android user Calendar Maestro flow")
         flow("test/automated/maestro/flows/smoke/user_calendar_smoke.yaml")
-        print("[smoke] running Android user workshop full Maestro flow")
-        flow("test/automated/maestro/flows/smoke/user_workshop_full_smoke.yaml")
         print("[smoke] running Android user negative enroll full Maestro flow")
         flow("test/automated/maestro/flows/smoke/user_negative_enroll_full_smoke.yaml")
         print("[smoke] running Android trainer video join Maestro flow")

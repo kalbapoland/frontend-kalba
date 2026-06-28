@@ -4,7 +4,7 @@ Cel: pelna regresja przed release.
 Zakres: frontend Kalba (web + mobile), role `user` i `trainer`.
 
 > **Pokrycie automatyczne:** Przypadki oznaczone ~~przekreśleniem~~ są pokryte przez
-> suite 20 testów Maestro (`test/automated/run_android_smoke_local.py`) i nie wymagają
+> suite 21 testów Maestro (`test/automated/run_android_smoke_local.py`) i nie wymagają
 > ręcznego sprawdzania w normalnym przebiegu release. Poniższa lista zawiera tylko
 > scenariusze, których Maestro nie może zweryfikować.
 
@@ -74,14 +74,10 @@ Zakres: frontend Kalba (web + mobile), role `user` i `trainer`.
 - [ ] P1-8: Zmiana monthly goal (+/- i presety) dziala.
 - [ ] P1-9: Stats i progress sa spojne z danymi.
 - [ ] P1-10: Schedule item otwiera Workshop Detail.
-- [ ] P1-11: Notifications: unread/all, mark read/unread, delete.
-- [ ] P1-12: Mark all as read dziala.
+- [ ] P1-11: Notifications: mark pojedynczego jako read/unread; usuniecie pojedynczego powiadomienia.
 
 ### Calendar
 
-- [ ] P1-13: Przelaczanie Month/Week/Day dziala.
-- [ ] P1-14: Nawigacja poprzedni/nastepny okres dziala.
-- [ ] P1-15: Today resetuje widok do aktualnej daty.
 - [ ] P1-16: Eventy owner/enrolled sa widoczne i rozroznialne.
 
 ### Group Management
@@ -93,7 +89,6 @@ Zakres: frontend Kalba (web + mobile), role `user` i `trainer`.
 
 - [ ] P1-19: Mobile permissions camera/mic (allow/deny) obsluzone.
 - [ ] P1-20: Web call (iframe) dziala i poprawnie wychodzi z meetingu.
-- [ ] P1-21: Mobile DateTimePicker dziala poprawnie dla create workshop.
 - [ ] P1-22: Ekran Call obraca sie z telefonem - poziomo daje widok landscape, pionowo wraca do portrait (obraz kamery nie wraca samoczynnie do pionu).
 - [ ] P1-23: Po wyjsciu z Call (leave / back / blad) aplikacja wraca do orientacji portrait.
 - [ ] P1-24: Pozostale ekrany (Home, Groups, Workshop detail, Profile) NIE obracaja sie - zostaja w portrait mimo obracania telefonu.
