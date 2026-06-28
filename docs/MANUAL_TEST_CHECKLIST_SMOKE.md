@@ -5,7 +5,7 @@ Czas: okolo 20-30 minut.
 Zakres: najwazniejsze flow end-to-end (user + trainer).
 
 > **Pokrycie automatyczne:** Większość happy-path flowów jest pokryta przez suite
-> 20 testów Maestro (`test/automated/run_android_smoke_local.py`). Poniższa lista
+> 21 testów Maestro (`test/automated/run_android_smoke_local.py`). Poniższa lista
 > zawiera **wyłącznie scenariusze NIE pokryte automatycznie** — czyli te, których
 > Maestro nie może zweryfikować (Google OAuth, dostarczanie maili, UX/haptyka,
 > web platform, host-control skuteczność).

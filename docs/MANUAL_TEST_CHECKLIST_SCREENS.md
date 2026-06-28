@@ -3,10 +3,11 @@
 Cel: lista czynnosci dla testera, aby przejsc ekran po ekranie bez zgadywania kolejnosci.
 Zakres: frontend Kalba (Expo), flow dla roli `user` i `trainer`, web + mobile (Android/iOS) tam gdzie zachowanie sie rozni.
 
-> **Pokrycie automatyczne:** Suite 20 testów Maestro (`test/automated/run_android_smoke_local.py`)
+> **Pokrycie automatyczne:** Suite 21 testów Maestro (`test/automated/run_android_smoke_local.py`)
 > pokrywa happy-path dla: login email/haslo, rejestracja, wylogowanie, usunięcie konta,
-> home lista, enroll/unenroll, subscribe/unsubscribe grup, create/edit/delete warsztatów,
-> edit grupy, join video call (trainer), My Kalba, Calendar.
+> edycja imienia, odzyskiwanie hasła (forgot), home lista, enroll/unenroll, subscribe/unsubscribe grup,
+> create/edit/delete warsztatów z natywnym date/time pickerem, create/edit/delete grup,
+> join video call (trainer), My Kalba, Calendar.
 > Poniższa lista zawiera wyłącznie kroki NIE pokryte automatycznie.
 
 ## 1. Przygotowanie przed testem
