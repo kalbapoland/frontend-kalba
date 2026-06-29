@@ -181,7 +181,9 @@
         "event_timezone": "Strefa wydarzenia",
         "delete_confirm_title": "Usuń warsztat",
         "delete_confirm_body": "Czy na pewno chcesz usunąć ten warsztat? Tej operacji nie można cofnąć.",
-        "go_back": "Wróć"
+        "go_back": "Wróć",
+        "status_ongoing": "Trwa teraz",
+        "status_starting_in": "Za {{minutes}} min"
     },
     "group": {
         "admin": "Admin",

@@ -177,7 +177,9 @@
         "event_timezone": "Event timezone",
         "delete_confirm_title": "Delete Workshop",
         "delete_confirm_body": "Are you sure you want to delete this workshop? This cannot be undone.",
-        "go_back": "Go back"
+        "go_back": "Go back",
+        "status_ongoing": "Ongoing",
+        "status_starting_in": "Starting in {{minutes}} min"
     },
     "group": {
         "admin": "Admin",
