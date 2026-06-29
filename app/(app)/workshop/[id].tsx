@@ -46,6 +46,10 @@ export default function WorkshopDetailScreen() {
   const enrollMutation = useEnrollWorkshop();
   const unenrollMutation = useUnenrollWorkshop();
   const user = useAuthStore((s) => s.user);
+  const status = useWorkshopStatus(
+    workshop?.start_time ?? "",
+    workshop?.duration_minutes ?? 0,
+  );
 
   const handleJoin = () => {
     joinMutation.mutate(id!, {
@@ -142,7 +146,6 @@ export default function WorkshopDetailScreen() {
   const weekday = formatWeekdayLong(workshop.start_time);
   const monthDay = formatMonthDayYear(workshop.start_time);
   const time = formatTime(workshop.start_time);
-  const status = useWorkshopStatus(workshop.start_time, workshop.duration_minutes);
   const eventTZ = workshop.timezone || "UTC";
   const viewerTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const showOriginalTZ = eventTZ !== viewerTZ;
