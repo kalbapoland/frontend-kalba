@@ -18,7 +18,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useTranslation } from "react-i18next";
+import type { AxiosError } from "axios";
 
+import { translateApiError } from "@/lib/apiErrors";
 import {
   useGroup,
   useGroupMembers,
@@ -136,7 +138,10 @@ export default function GroupDetailScreen() {
     const doDelete = () => {
       deleteGroup.mutate(g.id, {
         onSuccess: () => router.back(),
-        onError: () => showError(t("group.failed_delete")),
+        onError: (err) => {
+          const detail = (err as AxiosError<{ detail?: string }>).response?.data?.detail;
+          showError(translateApiError(detail, t, t("group.failed_delete")));
+        },
       });
     };
     if (Platform.OS === "web") {
