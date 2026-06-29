@@ -24,6 +24,7 @@ import { formatWeekdayLong, formatMonthDayYear, formatTime, formatTimeWithTZ } f
 import { EmptyState } from "@/components/EmptyState";
 import { SkeletonList } from "@/components/Skeleton";
 import { successFeedback } from "@/lib/haptics";
+import { translateApiError } from "@/lib/apiErrors";
 import { colors, fonts } from "@/theme/tokens";
 
 function formatPrice(price: string | number, freeLabel: string): string {
@@ -60,7 +61,7 @@ export default function WorkshopDetailScreen() {
       },
       onError: (error) => {
         const axiosErr = error as AxiosError<{ detail?: string }>;
-        const msg = axiosErr.response?.data?.detail ?? t("errors.could_not_join");
+        const msg = translateApiError(axiosErr.response?.data?.detail, t, t("errors.could_not_join"));
         if (Platform.OS === "web") {
           window.alert(msg);
         } else {
@@ -127,7 +128,7 @@ export default function WorkshopDetailScreen() {
       onSuccess: () => successFeedback(),
       onError: (err) => {
         const axiosErr = err as AxiosError<{ detail?: string }>;
-        const msg = axiosErr.response?.data?.detail ?? t("errors.action_failed");
+        const msg = translateApiError(axiosErr.response?.data?.detail, t, t("errors.action_failed"));
         if (Platform.OS === "web") {
           window.alert(msg);
         } else {
