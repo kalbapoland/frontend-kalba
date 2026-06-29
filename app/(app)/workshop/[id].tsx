@@ -14,6 +14,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { useTranslation } from "react-i18next";
 import type { AxiosError } from "axios";
 
+import { Badge } from "@/components/Badge";
 import { DescriptionWithHashtags } from "@/components/DescriptionWithHashtags";
 import { useWorkshopDetail } from "@/hooks/useWorkshopDetail";
 import { useJoinWorkshop } from "@/hooks/useJoinWorkshop";
@@ -21,6 +22,7 @@ import { useDeleteWorkshop } from "@/hooks/useDeleteWorkshop";
 import { useEnrollWorkshop, useUnenrollWorkshop } from "@/hooks/useEnrollment";
 import { useAuthStore } from "@/store/auth";
 import { formatWeekdayLong, formatMonthDayYear, formatTime, formatTimeWithTZ } from "@/lib/date";
+import { useWorkshopStatus } from "@/hooks/useWorkshopStatus";
 import { EmptyState } from "@/components/EmptyState";
 import { SkeletonList } from "@/components/Skeleton";
 import { successFeedback } from "@/lib/haptics";
@@ -140,6 +142,7 @@ export default function WorkshopDetailScreen() {
   const weekday = formatWeekdayLong(workshop.start_time);
   const monthDay = formatMonthDayYear(workshop.start_time);
   const time = formatTime(workshop.start_time);
+  const status = useWorkshopStatus(workshop.start_time, workshop.duration_minutes);
   const eventTZ = workshop.timezone || "UTC";
   const viewerTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const showOriginalTZ = eventTZ !== viewerTZ;
@@ -173,6 +176,7 @@ export default function WorkshopDetailScreen() {
             <Ionicons name="time-outline" size={14} color={colors.inkMuted} />
             <Text style={s.dateText}>{time}</Text>
           </View>
+          {status && <Badge label={status.label} tone={status.tone} />}
         </View>
 
         {/* Description */}

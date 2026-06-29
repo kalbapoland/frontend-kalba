@@ -17,6 +17,7 @@ import {
   formatMonthLong,
   formatTime,
 } from "@/lib/date";
+import { useWorkshopStatus } from "@/hooks/useWorkshopStatus";
 import { AppText } from "@/components/AppText";
 import { Badge } from "@/components/Badge";
 import { BreathingCircle } from "@/components/BreathingCircle";
@@ -60,6 +61,7 @@ function WorkshopCard({
   const time = formatTime(workshop.start_time);
   const price = formatPrice(workshop.price);
   const isFree = Number(workshop.price) === 0;
+  const status = useWorkshopStatus(workshop.start_time, workshop.duration_minutes);
 
   return (
     <Animated.View entering={listItemEntering(index)}>
@@ -101,6 +103,7 @@ function WorkshopCard({
               {t("home.spots_count", { count: workshop.max_participants })}
             </AppText>
           </View>
+          {status && <Badge label={status.label} tone={status.tone} />}
         </View>
 
         <View style={s.cardSide}>
