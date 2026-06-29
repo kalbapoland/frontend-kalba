@@ -16,6 +16,7 @@ import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 
 import { resetPassword } from "@/api/endpoints";
 import { useAuthStore } from "@/store/auth";
+import { translateApiError } from "@/lib/apiErrors";
 import { colors, fonts, radii, spacing } from "@/theme/tokens";
 
 const RESET_TEST_IDS = {
@@ -29,11 +30,11 @@ function firstParam(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
 }
 
-function resolveResetError(error: unknown, fallback: string): string {
+function resolveResetError(error: unknown, fallback: string, t: (key: string) => string): string {
   if (axios.isAxiosError(error)) {
     const detail = error.response?.data?.detail;
     if (typeof detail === "string" && detail) {
-      return detail;
+      return translateApiError(detail, t, fallback);
     }
     if (Array.isArray(detail)) {
       const msg = detail.find((item) => typeof item?.msg === "string")?.msg;
@@ -78,6 +79,7 @@ export default function ResetPasswordScreen() {
         resolveResetError(
           err,
           t("reset_password_failed", "This reset link is invalid or has expired."),
+          t,
         ),
       );
     } finally {

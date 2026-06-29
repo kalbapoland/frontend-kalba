@@ -27,6 +27,7 @@ import {
   registerWithEmail,
 } from "@/api/endpoints";
 import { useAuthStore } from "@/store/auth";
+import { translateApiError } from "@/lib/apiErrors";
 import { colors, fonts, radii, spacing } from "@/theme/tokens";
 
 WebBrowser.maybeCompleteAuthSession();
@@ -106,7 +107,8 @@ function resolveAuthError(
     const detail = error.response?.data?.detail;
 
     if (typeof detail === "string" && detail) {
-      return detail;
+      const fallback = mode === "register" ? t("register_failed") : t("invalid_credentials");
+      return translateApiError(detail, t, fallback);
     }
 
     if (Array.isArray(detail)) {
