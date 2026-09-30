@@ -1,6 +1,7 @@
 import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
 import { useMemo } from "react";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 import type { Workshop } from "@/types/api";
 import { colors, fonts } from "@/theme/tokens";
@@ -22,6 +23,7 @@ type Props = {
 
 export function DayView({ workshops, date, emptyLabel }: Props) {
   const router = useRouter();
+  const { t } = useTranslation();
 
   const dayEvents = useMemo(
     () =>
@@ -80,7 +82,8 @@ export function DayView({ workshops, date, emptyLabel }: Props) {
                   {w.title}
                 </Text>
                 <Text style={s.eventTime}>
-                  {formatTime(w.start_time)} · {w.duration_minutes} min
+                  {formatTime(w.start_time)} ·{" "}
+                  {t("common.duration_min", { count: w.duration_minutes })}
                 </Text>
               </Pressable>
             );

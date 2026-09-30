@@ -196,7 +196,11 @@ export default function WorkshopDetailScreen() {
         <View style={s.section}>
           <Text style={s.sectionLabel}>{t("details")}</Text>
           <View style={s.detailCard}>
-            <DetailRow icon="time-outline" label={t("duration")} value={`${workshop.duration_minutes} min`} />
+            <DetailRow
+              icon="time-outline"
+              label={t("duration")}
+              value={t("common.duration_min", { count: workshop.duration_minutes })}
+            />
             <DetailRow
               icon="people-outline"
               label={t("spots")}

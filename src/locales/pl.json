@@ -1,7 +1,4 @@
 {
-    "greeting": "Cześć",
-    "welcome": "Witamy w Kalba",
-    "signin_with_google": "Zaloguj przez Google",
     "continue_with_google": "Kontynuuj z Google",
     "workshops": "Warsztaty",
     "groups": "Grupy",
@@ -85,7 +82,6 @@
     "edit": "Edytuj",
     "delete": "Usuń",
     "cancel": "Anuluj",
-    "empty_workshops": "Obecnie nie ma żadnych warsztatów.",
     "workshop_not_found": "Nie znaleziono warsztatu",
     "workshop_one": "{{count}} warsztat",
     "workshop_few": "{{count}} warsztaty",
@@ -103,7 +99,6 @@
         "error_subtitle": "Sprawdź połączenie i spróbuj ponownie",
         "try_again": "Spróbuj ponownie",
         "retry_a11y": "Ponów ładowanie warsztatów",
-        "duration_min": "{{count}} min",
         "spots_count_one": "{{count}} miejsce",
         "spots_count_few": "{{count}} miejsca",
         "spots_count_many": "{{count}} miejsc",
@@ -345,6 +340,7 @@
         "removed_body": "Gospodarz usunął Cię z rozmowy."
     },
     "common": {
+        "duration_min": "{{count}} min",
         "retry": "Spróbuj ponownie",
         "previous": "Poprzedni",
         "next": "Następny",

@@ -65,7 +65,7 @@ type Props = {
 
 export function MonthView({ workshops, selectedDate, onSelectDate, emptyLabel }: Props) {
   const router = useRouter();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   // Flip the calendar grid labels (weekday + month) to match the active i18n
   // language. The english locale ships as a default with the library, so we
@@ -176,7 +176,9 @@ export function MonthView({ workshops, selectedDate, onSelectDate, emptyLabel }:
               </View>
               <View style={s.cardMeta}>
                 <Ionicons name="time-outline" size={12} color={colors.inkMuted} />
-                <Text style={s.cardMetaText}>{w.duration_minutes} min</Text>
+                <Text style={s.cardMetaText}>
+                  {t("common.duration_min", { count: w.duration_minutes })}
+                </Text>
                 <Text style={s.cardMetaDot}>·</Text>
                 <Ionicons name="people-outline" size={12} color={colors.inkMuted} />
                 <Text style={s.cardMetaText}>

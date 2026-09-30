@@ -89,7 +89,7 @@ function WorkshopCard({
               ·
             </AppText>
             <AppText variant="caption" tone="body">
-              {t("home.duration_min", { count: workshop.duration_minutes })}
+              {t("common.duration_min", { count: workshop.duration_minutes })}
             </AppText>
           </View>
 
