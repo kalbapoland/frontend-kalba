@@ -1,0 +1,7 @@
+# Files executed or sourced by POSIX shells on EAS builders (macOS/Linux). With
+# core.autocrlf=true on Windows they get CRLF in the working tree, so `sh` tries
+# to run a stray `\r` and the build fails (EAS ships working-tree bytes, not the
+# blob). Force LF for both files; a clone that already holds CRLF copies needs a
+# one-time `git checkout -- android/gradlew ios/.xcode.env`.
+android/gradlew text eol=lf
+ios/.xcode.env text eol=lf
