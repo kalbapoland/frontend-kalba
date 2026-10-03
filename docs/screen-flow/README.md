@@ -8,30 +8,16 @@ Androida, a nie makiety.
 - Dane: syntetyczne fixtures E2E w tymczasowej, odizolowanej bazie
 - Backend: lokalny; bez używania produkcyjnego API i danych użytkowników
 
-## Przepływ ekranów
+## Mapa przejść
 
-```mermaid
-flowchart TD
-  SI[Sign In] --> SU[Sign Up]
-  SI --> FP[Forgot Password] --> RP[Reset Password]
-  SI --> OR[OAuth Redirect] --> H[Home]
+| Obszar | Mapa SVG |
+|---|---|
+| Autoryzacja i wejścia zewnętrzne | [Mapa autoryzacji (SVG)](./NAVIGATION-01-auth.svg) |
+| Nawigacja użytkownika | [Mapa ekranów użytkownika (SVG)](./NAVIGATION-02-user.svg) |
+| Flow trenera | [Mapa flow trenera (SVG)](./NAVIGATION-03-trainer.svg) |
 
-  H --> G[Groups — member]
-  G --> GD[Group Detail — member]
-  H --> WD[Workshop Detail — member]
-  H --> MK[My Kalba]
-  H --> CAL[Calendar: month / week / day]
-  H --> PR[Profile]
-
-  G --> TG[Groups — trainer]
-  TG --> CG[Create Group]
-  TG --> GTD[Group Detail — trainer]
-  GTD --> EG[Edit Group]
-  GTD --> CW[Create Workshop]
-  GTD --> WTD[Workshop Detail — trainer]
-  WTD --> EW[Edit Workshop]
-  WTD --> CALL[Workshop Call — connecting preview]
-```
+Pełna mapa z edytowalnym diagramem Mermaid, opisem przejść i odnośnikami do
+wywołań nawigacji w kodzie: [NAVIGATION.md](./NAVIGATION.md).
 
 ## Zrzuty
 
@@ -98,6 +84,22 @@ zapisuj jako osobne zestawy, nie nadpisując `DEFAULT`.
 
 Zestaw `DEFAULT` odtwarzaj tylko wtedy, gdy chcesz świadomie zmienić
 baseline. Nowe eksperymenty zapisuj w osobnym katalogu.
+
+## Jak ponownie wyrenderować mapy SVG
+
+Źródłem diagramów są trzy bloki Mermaid w [NAVIGATION.md](./NAVIGATION.md).
+Do renderowania potrzebujesz Node.js, Mermaid CLI 12.0.0, Puppeteer 25.12.0
+i jego przeglądarki Chromium:
+
+```powershell
+npm install --global @mermaid-js/mermaid-cli@12.0.0 puppeteer@25.12.0
+python docs/screen-flow/render_navigation.py
+```
+
+Skrypt [render_navigation.py](./render_navigation.py) odczytuje trzy bloki
+Mermaid z `NAVIGATION.md` i nadpisuje odpowiadające im pliki SVG. Nie wymaga
+dodatkowych paczek Python. Jeśli Puppeteer ma użyć innej przeglądarki, przekaż
+plik konfiguracyjny przez `--puppeteer-config-file`.
 
 ## Uwagi
 
