@@ -572,3 +572,46 @@ navigation, or business-logic changes.
   `<TextField>`.
 - Shared-element transition from workshop card to detail.
 - Subtle sound design toggle for breathing/meditation moments.
+
+---
+
+## Screen-Flow Gallery
+
+**Status:** shipped (2026-10-03)
+
+### Overview
+
+A reproducible visual gallery of every app screen, captured from a real
+Android emulator render rather than mockups. It exists to make visual
+changes reviewable: a style experiment can be captured as a new set and
+compared side by side against the baseline.
+
+### Decisions
+
+- **Baseline set:** `docs/screen-flow/DEFAULT/` holds 22 screenshots plus a
+  contact sheet. New style experiments are written to their own sibling
+  directory so the baseline is never overwritten.
+- **Capture mechanism:** Maestro flows in
+  `test/automated/maestro/flows/screen-flow/` drive the app and call
+  `takeScreenshot` per screen. They assert the expected screen is visible
+  before each capture, but never submit a form or tap a destructive action,
+  so repeated runs are side-effect free.
+- **Isolation:** captures run against a local backend and the synthetic
+  fixtures from `seed_mobile_e2e_fixtures.py` in a throwaway database — no
+  production API or user data.
+- **Call screen:** the video-call screen is captured in its "Connecting…"
+  state using a placeholder token and the RFC 2606 reserved domain
+  `example.invalid`, so the flow can never reach the real Daily service.
+  The in-call chrome is not captured.
+
+### Current limitations
+
+- Android only. iOS Simulator requires macOS; there is no web capture set.
+- The call screen shows the connecting state, not an active call.
+- The sold-out workshop state is not captured.
+
+### Future improvements
+
+- Capture the sold-out workshop state and the profile edit sub-screen.
+- Add a web capture set for the future browser/desktop target.
+- Script the screenshot collection step so regeneration is one command.

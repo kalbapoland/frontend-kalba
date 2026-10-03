@@ -337,7 +337,7 @@ export default function NativeCallScreen() {
 
   if (callState === "joining") {
     return (
-      <View style={[s.root, s.center]}>
+      <View testID="call.connecting" style={[s.root, s.center]}>
         <ActivityIndicator size="large" color="#8A9A7E" />
         <Text style={s.joiningText}>{t("call.connecting")}</Text>
       </View>
