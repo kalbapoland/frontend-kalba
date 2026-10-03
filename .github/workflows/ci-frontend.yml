@@ -7,16 +7,30 @@ on:
       - "app/**"
       - "src/**"
       - "package.json"
+      - "package-lock.json"
       - "tsconfig.json"
       - "app.config.js"
+      - "tailwind.config.js"
+      - "metro.config.js"
+      - "global.css"
+      - "nativewind-env.d.ts"
+      - "android/app/src/main/AndroidManifest.xml"
+      - ".github/workflows/ci-frontend.yml"
   pull_request:
     branches: [main]
     paths:
       - "app/**"
       - "src/**"
       - "package.json"
+      - "package-lock.json"
       - "tsconfig.json"
       - "app.config.js"
+      - "tailwind.config.js"
+      - "metro.config.js"
+      - "global.css"
+      - "nativewind-env.d.ts"
+      - "android/app/src/main/AndroidManifest.xml"
+      - ".github/workflows/ci-frontend.yml"
 
 jobs:
   typecheck:
@@ -55,4 +69,4 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: Run tests
-        run: npm test -- --watchAll=false --passWithNoTests
+        run: npm test -- --watchAll=false
