@@ -145,7 +145,7 @@ export default function WorkshopListScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 bg-canvas" style={{ paddingTop: insets.top + 32 }}>
+      <View style={[s.screen, { paddingTop: insets.top + 32 }]}>
         <SkeletonList />
       </View>
     );
@@ -153,7 +153,7 @@ export default function WorkshopListScreen() {
 
   if (error) {
     return (
-      <View className="flex-1 justify-center bg-canvas">
+      <View style={[s.screen, s.center]}>
         <EmptyState
           icon="cloud-offline-outline"
           title={t("home.error_title")}
@@ -167,7 +167,7 @@ export default function WorkshopListScreen() {
   }
 
   return (
-    <View className="flex-1 bg-canvas">
+    <View style={s.screen}>
       <LinearGradient
         colors={[colors.canvas, colors.canvasDeep]}
         locations={[0, 1]}
@@ -176,6 +176,7 @@ export default function WorkshopListScreen() {
         style={StyleSheet.absoluteFill}
       />
       <FlatList
+        style={s.list}
         data={data}
         keyExtractor={(item) => item.id}
         renderItem={({ item, index }) => (
@@ -183,6 +184,7 @@ export default function WorkshopListScreen() {
         )}
         testID="home.workshops.list"
         contentContainerStyle={{
+          flexGrow: 1,
           paddingHorizontal: spacing.screenPadding,
           paddingTop: insets.top + spacing.sectionGap,
           paddingBottom: 140,
@@ -210,6 +212,16 @@ export default function WorkshopListScreen() {
 }
 
 const s = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: colors.canvas,
+  },
+  list: {
+    flex: 1,
+  },
+  center: {
+    justifyContent: "center",
+  },
   card: {
     flexDirection: "row",
     alignItems: "center",

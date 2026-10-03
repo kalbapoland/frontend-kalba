@@ -69,7 +69,7 @@ export default function GroupsScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 bg-canvas" style={{ paddingTop: insets.top + 32 }}>
+      <View style={[s.screen, { paddingTop: insets.top + 32 }]}>
         <SkeletonList />
       </View>
     );
@@ -77,7 +77,7 @@ export default function GroupsScreen() {
 
   if (mine.error || all.error) {
     return (
-      <View className="flex-1 justify-center bg-canvas">
+      <View style={[s.screen, s.center]}>
         <EmptyState
           icon="cloud-offline-outline"
           title={t("group.unable_to_load")}
@@ -93,7 +93,7 @@ export default function GroupsScreen() {
   const myGroups = mine.data ?? [];
 
   return (
-    <View className="flex-1 bg-canvas">
+    <View style={s.screen}>
       <LinearGradient
         colors={[colors.canvas, colors.canvasDeep]}
         locations={[0, 1]}
@@ -102,7 +102,9 @@ export default function GroupsScreen() {
         style={StyleSheet.absoluteFill}
       />
       <ScrollView
+        style={s.list}
         contentContainerStyle={{
+          flexGrow: 1,
           paddingHorizontal: spacing.screenPadding,
           paddingTop: insets.top + spacing.sectionGap,
           paddingBottom: 140,
@@ -169,6 +171,16 @@ export default function GroupsScreen() {
 }
 
 const s = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: colors.canvas,
+  },
+  list: {
+    flex: 1,
+  },
+  center: {
+    justifyContent: "center",
+  },
   pageTitle: {
     marginBottom: 8,
     paddingHorizontal: 4,
