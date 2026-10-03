@@ -1,0 +1,33 @@
+{
+  "colors": {
+    "canvas": "#F5F1EB",
+    "canvasDeep": "#EDE8E0",
+    "surface": "#FAF8F4",
+    "elevated": "#FFFFFF",
+
+    "primary": "#566B52",
+    "primarySoft": "#8A9A7E",
+    "primaryWash": "#E8EDE5",
+
+    "accent": "#B8877A",
+    "accentSoft": "#F2E4DE",
+
+    "ink": "#2E2E2B",
+    "inkBody": "#57564F",
+    "inkMuted": "#8C8A82",
+
+    "line": "#DDD9D1",
+    "lineWhisper": "#EDE9E2",
+
+    "danger": "#C4836E",
+    "dangerWash": "#F8EDE8"
+  },
+  "fonts": {
+    "displayLight": "Fraunces_300Light",
+    "display": "Fraunces_400Regular",
+    "displayMedium": "Fraunces_500Medium",
+    "body": "Inter_400Regular",
+    "bodyMedium": "Inter_500Medium",
+    "bodySemiBold": "Inter_600SemiBold"
+  }
+}

@@ -1,28 +1,16 @@
 import type { TextStyle, ViewStyle } from "react-native";
 
-export const colors = {
-  canvas:        "#F5F1EB",
-  canvasDeep:    "#EDE8E0",
-  surface:       "#FAF8F4",
-  elevated:      "#FFFFFF",
+import palette from "./palette.json";
 
-  primary:       "#566B52",
-  primarySoft:   "#8A9A7E",
-  primaryWash:   "#E8EDE5",
-
-  accent:        "#B8877A",
-  accentSoft:    "#F2E4DE",
-
-  ink:           "#2E2E2B",
-  inkBody:       "#57564F",
-  inkMuted:      "#8C8A82",
-
-  line:          "#DDD9D1",
-  lineWhisper:   "#EDE9E2",
-
-  danger:        "#C4836E",
-  dangerWash:    "#F8EDE8",
-} as const;
+/**
+ * Raw palette values live in `palette.json` so that `tailwind.config.js`
+ * (Node, no transpiler) and this module share one source of truth. Edit the
+ * JSON, never the values here.
+ *
+ * `Readonly<typeof ...>` restores the immutability that the previous inline
+ * `as const` literals provided — JSON imports infer mutable `string`.
+ */
+export const colors: Readonly<typeof palette.colors> = palette.colors;
 
 export const spacing = {
   screenPadding: 24,
@@ -49,15 +37,9 @@ export const layout = {
 /**
  * Font families. Loaded in app/_layout.tsx via @expo-google-fonts.
  * Fraunces (warm serif) for display moments, Inter for body text.
+ * Values come from `palette.json` — see the note on `colors`.
  */
-export const fonts = {
-  displayLight:  "Fraunces_300Light",
-  display:       "Fraunces_400Regular",
-  displayMedium: "Fraunces_500Medium",
-  body:          "Inter_400Regular",
-  bodyMedium:    "Inter_500Medium",
-  bodySemiBold:  "Inter_600SemiBold",
-} as const;
+export const fonts: Readonly<typeof palette.fonts> = palette.fonts;
 
 /**
  * Typography scale used by <AppText>. Airy line-heights on purpose —
