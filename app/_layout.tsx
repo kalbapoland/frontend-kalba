@@ -8,17 +8,7 @@ import * as ScreenOrientation from "expo-screen-orientation";
 import { Slot, SplashScreen, useRouter } from "expo-router";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useFonts } from "expo-font";
-import {
-  Fraunces_300Light,
-  Fraunces_400Regular,
-  Fraunces_500Medium,
-} from "@expo-google-fonts/fraunces";
-import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-} from "@expo-google-fonts/inter";
-
+import { fontMap } from "@/theme/fonts";
 import { queryClient } from "@/lib/query-client";
 import { useAuthStore } from "@/store/auth";
 
@@ -71,14 +61,7 @@ export default function RootLayout() {
   const router = useRouter();
   const isRestoringToken = useAuthStore((s) => s.isRestoringToken);
   const restoreToken = useAuthStore((s) => s.restoreToken);
-  const [fontsLoaded, fontError] = useFonts({
-    Fraunces_300Light,
-    Fraunces_400Regular,
-    Fraunces_500Medium,
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-  });
+  const [fontsLoaded, fontError] = useFonts(fontMap);
   const fontsReady = fontsLoaded || fontError != null;
 
   useEffect(() => {
