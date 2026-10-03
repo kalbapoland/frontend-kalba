@@ -149,8 +149,29 @@ Useful flags:
 
 1. `maestro/flows/common/` reusable fragments
 2. `maestro/flows/smoke/` smoke suites
-3. `artifacts/` local screenshots/logs (gitignored)
-4. `tmp/` local temp files (gitignored)
+3. `maestro/flows/screen-flow/` screen-capture flows for the visual gallery
+4. `artifacts/` local screenshots/logs (gitignored)
+5. `tmp/` local temp files (gitignored)
+
+### Screen-flow captures
+
+`maestro/flows/screen-flow/` renders every app screen and saves a PNG per
+screen, producing the gallery in [`docs/screen-flow/`](../../docs/screen-flow/README.md).
+It is a documentation tool, not a pass/fail suite: the flows assert that the
+expected screen is on display before each capture, but they never submit a
+form or tap a destructive action, so repeated runs stay side-effect free.
+
+Prerequisites differ from the `smoke/` suite:
+
+1. Seed the fixtures with `python test/automated/prepare_mobile_e2e.py`
+   (backed by `backend/tests/automated/seed_mobile_e2e_fixtures.py`). These
+   are the `e2e-workshop-free`, `e2e-trainer-group`, and
+   `e2e-workshop-trainer` fixtures — a different, independently seeded set
+   from the order-dependent `-smoke` fixtures used by `smoke/`.
+2. Install a release build on the emulator.
+3. Run the flows, then collect the PNGs into the gallery directory. See
+   [`docs/screen-flow/README.md`](../../docs/screen-flow/README.md) for the
+   exact command sequence.
 
 ## Conventions
 

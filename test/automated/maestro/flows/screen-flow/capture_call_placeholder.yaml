@@ -1,0 +1,15 @@
+appId: com.kalba.app
+---
+- launchApp:
+    clearState: true
+- runFlow: ../common/login_trainer.yaml
+# token and roomUrl must stay fake: `example.invalid` is an RFC 2606 reserved
+# domain that never resolves, so this flow can never reach the real Daily
+# service. Never replace these with a real room URL or token.
+- openLink:
+    link: "kalba://workshop/call?workshopId=screenflow&token=placeholder&roomUrl=https%3A%2F%2Fexample.invalid&role=host&rules=%7B%22force_mic_muted_on_join%22%3Atrue%7D"
+- extendedWaitUntil:
+    visible:
+      id: call.connecting
+    timeout: 15000
+- takeScreenshot: 22-workshop-call-placeholder

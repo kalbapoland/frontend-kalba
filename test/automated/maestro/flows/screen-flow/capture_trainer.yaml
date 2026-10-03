@@ -1,0 +1,72 @@
+appId: com.kalba.app
+---
+- launchApp:
+    clearState: true
+- runFlow: ../common/login_trainer.yaml
+
+- tapOn:
+    id: tab.groups.button
+- extendedWaitUntil:
+    visible:
+      id: group.card.e2e-trainer-group
+    timeout: 15000
+- takeScreenshot: 15-groups-trainer
+
+- tapOn:
+    id: trainer.create.group.button
+- extendedWaitUntil:
+    visible:
+      id: group.create.title.input
+    timeout: 10000
+- takeScreenshot: 16-create-group
+- pressKey: Back
+
+- tapOn:
+    id: group.card.e2e-trainer-group
+- extendedWaitUntil:
+    visible:
+      id: group.edit.button
+    timeout: 10000
+- takeScreenshot: 17-group-detail-trainer
+
+- tapOn:
+    id: group.edit.button
+- extendedWaitUntil:
+    visible:
+      id: group.edit.submit.button
+    timeout: 10000
+- takeScreenshot: 18-edit-group
+- pressKey: Back
+
+- extendedWaitUntil:
+    visible:
+      id: trainer.create.workshop.button
+    timeout: 10000
+- tapOn:
+    id: trainer.create.workshop.button
+- extendedWaitUntil:
+    visible:
+      id: workshop.create.title.input
+    timeout: 10000
+- takeScreenshot: 19-create-workshop
+- pressKey: Back
+
+- extendedWaitUntil:
+    visible:
+      id: group.workshop.row.e2e-workshop-trainer
+    timeout: 10000
+- tapOn:
+    id: group.workshop.row.e2e-workshop-trainer
+- extendedWaitUntil:
+    visible:
+      id: trainer.edit.workshop.button
+    timeout: 10000
+- takeScreenshot: 20-workshop-detail-trainer
+
+- tapOn:
+    id: trainer.edit.workshop.button
+- extendedWaitUntil:
+    visible:
+      id: workshop.edit.submit.button
+    timeout: 10000
+- takeScreenshot: 21-edit-workshop
