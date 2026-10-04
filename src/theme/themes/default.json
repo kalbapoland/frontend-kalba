@@ -8,6 +8,7 @@
     "primary": "#566B52",
     "primarySoft": "#8A9A7E",
     "primaryWash": "#E8EDE5",
+    "primaryDeep": "#3E4F3B",
 
     "accent": "#B8877A",
     "accentSoft": "#F2E4DE",
@@ -20,14 +21,11 @@
     "lineWhisper": "#EDE9E2",
 
     "danger": "#C4836E",
-    "dangerWash": "#F8EDE8"
-  },
-  "fonts": {
-    "displayLight": "Fraunces_300Light",
-    "display": "Fraunces_400Regular",
-    "displayMedium": "Fraunces_500Medium",
-    "body": "Inter_400Regular",
-    "bodyMedium": "Inter_500Medium",
-    "bodySemiBold": "Inter_600SemiBold"
+    "dangerWash": "#F8EDE8",
+
+    "signal": "#A94F1D",
+    "signalWash": "#F9E7D8",
+
+    "deep": "#2A2E28"
   }
 }

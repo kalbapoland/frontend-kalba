@@ -49,41 +49,78 @@ zapisuj jako osobne zestawy, nie nadpisując `DEFAULT`.
 | 21 | Edit Workshop | Trener | [21-edit-workshop.png](./DEFAULT/21-edit-workshop.png) |
 | 22 | Workshop Call | Ekran „Connecting…” | [22-workshop-call-placeholder.png](./DEFAULT/22-workshop-call-placeholder.png) |
 
-## Zbiorczy podgląd
+## Zbiorcze podglądy
 
-![Kontakt sheet wszystkich 22 zrzutów](./DEFAULT/overview.png)
+| Zestaw | Motyw | Data | Zrzuty |
+|---|---|---|---|
+| [DEFAULT](./DEFAULT/overview.png) | Baseline | 2026-10-03 | 22 |
+| [WARM-DEEP](./WARM-DEEP/overview.png) | Ciepły, pogłębiony | 2026-10-04 | 22 |
+| [NIGHT](./NIGHT/overview.png) | Ciemny | 2026-10-04 | 22 |
+
+### DEFAULT
+
+![Kontakt sheet baseline — DEFAULT](./DEFAULT/overview.png)
+
+### WARM-DEEP
+
+![Kontakt sheet motywu WARM-DEEP](./WARM-DEEP/overview.png)
+
+### NIGHT
+
+![Kontakt sheet motywu NIGHT](./NIGHT/overview.png)
 
 ## Jak wygenerować ponownie
 
-1. Uruchom lokalny backend i tymczasową bazę (patrz `backend` — skill
-   `start-local-backend`), a następnie zaseeduj fixtures:
+1. Uruchom backend wskazujący na świeżą, odizolowaną bazę PostgreSQL.
+   Nie używaj bazy z innymi danymi — pojawią się one na ekranach grup i
+   warsztatów. Następnie utwórz deterministyczne fixtures:
 
    ```powershell
    python test/automated/prepare_mobile_e2e.py
    ```
 
-2. Zbuduj i zainstaluj release build na emulatorze:
+   Skill `start-local-backend` uruchamia trwałą bazę developerską `kalba`;
+   screen-flow nie ma jeszcze własnego runnera, który tworzy i usuwa bazę
+   efemeryczną. Ustaw `DATABASE_URL` dla migracji, API i seedera na ten sam
+   świeży kontener. Nie kieruj seedera na stage ani produkcję.
+
+2. Zbuduj i zainstaluj APK dla wybranego motywu:
 
    ```powershell
-   npm run android:release:local
+   npm run android:release:local              # DEFAULT
+   npm run android:release:local:warm-deep    # WARM-DEEP
+   npm run android:release:local:night        # NIGHT
    ```
 
-3. Uruchom flows, wskazując katalog wyjściowy Maestro:
+   Motyw jest wybierany podczas bundlowania przez `EXPO_PUBLIC_THEME`.
+   Zapisuj każdy eksperyment w katalogu odpowiadającym motywowi, nie w
+   `DEFAULT/`.
+
+3. Uruchom wszystkie trzy flows, wskazując ten sam katalog wyjściowy
+   Maestro. Przykład dla `WARM-DEEP`:
 
    ```powershell
    maestro --device emulator-5554 test `
-     --test-output-dir docs/screen-flow/<ZESTAW> `
+     --test-output-dir docs/screen-flow/WARM-DEEP `
      test/automated/maestro/flows/screen-flow/capture_user.yaml
+
+   maestro --device emulator-5554 test `
+     --test-output-dir docs/screen-flow/WARM-DEEP `
+     test/automated/maestro/flows/screen-flow/capture_trainer.yaml
+
+   maestro --device emulator-5554 test `
+     --test-output-dir docs/screen-flow/WARM-DEEP `
+     test/automated/maestro/flows/screen-flow/capture_call_placeholder.yaml
    ```
 
-   Powtórz dla `capture_trainer.yaml` i `capture_call_placeholder.yaml`.
-
 4. Maestro zapisuje PNG w podkatalogu `screenshots/` wewnątrz katalogu
-   wyjściowego. Przenieś je do katalogu zestawu i usuń katalogi debugowe
-   z datami — dopiero wtedy pliki trafiają do `DEFAULT/` lub nowego zestawu.
+   wyjściowego. Przenieś 22 nazwane PNG do katalogu zestawu, wygeneruj
+   `overview.png` i usuń katalogi debugowe z datami.
 
 Zestaw `DEFAULT` odtwarzaj tylko wtedy, gdy chcesz świadomie zmienić
-baseline. Nowe eksperymenty zapisuj w osobnym katalogu.
+baseline. Nowe eksperymenty zapisuj w osobnym katalogu. Flow logowania
+otwierają bezpośrednio kolejne pola formularza — nie dodawaj `hideKeyboard`
+między nimi, bo na Androidzie może to zamknąć aplikację.
 
 ## Jak ponownie wyrenderować mapy SVG
 

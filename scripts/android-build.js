@@ -1,16 +1,37 @@
 #!/usr/bin/env node
 /**
  * Android build helper — used by npm run android:*
- * Usage: node scripts/android-build.js <variant> <backend>
+ * Usage: node scripts/android-build.js <variant> <backend> [theme]
  *   variant: debug | release
  *   backend: local | remote
+ *   theme:   registered in src/theme/themes/registry.json (defaults to "default")
  */
 const fs = require('fs');
+const path = require('path');
 const { spawnSync } = require('child_process');
 
-const [variant, backend] = process.argv.slice(2);
+const [variant, backend, themeArg] = process.argv.slice(2);
 if (!variant || !backend) {
-  console.error('Usage: node scripts/android-build.js <debug|release> <local|remote>');
+  console.error('Usage: node scripts/android-build.js <debug|release> <local|remote> [theme]');
+  process.exit(1);
+}
+
+const THEMES_DIR = path.join(__dirname, '..', 'src', 'theme', 'themes');
+const themeRegistry = JSON.parse(
+  fs.readFileSync(path.join(THEMES_DIR, 'registry.json'), 'utf8'),
+);
+const theme = themeArg || 'default';
+const availableThemes = Object.keys(themeRegistry).sort();
+
+// Fail before Gradle starts rather than after a multi-minute build.
+if (!Object.prototype.hasOwnProperty.call(themeRegistry, theme)) {
+  console.error(`[android-build] Unknown theme "${theme}". Available: ${availableThemes.join(', ')}`);
+  process.exit(1);
+}
+
+const themeFile = themeRegistry[theme];
+if (typeof themeFile !== 'string' || !fs.existsSync(path.join(THEMES_DIR, themeFile))) {
+  console.error(`[android-build] Theme "${theme}" has no palette file in the theme registry.`);
   process.exit(1);
 }
 
@@ -37,6 +58,10 @@ if (backend === 'remote') {
   });
 }
 
+// Set the selected theme after loading backend env so .env.dev cannot override it.
+env.EXPO_PUBLIC_THEME = theme;
+console.log(`[android-build] Theme: ${theme}`);
+
 // Run expo
 const expoArgs = ['expo', 'run:android'];
 if (variant === 'release') {
@@ -47,11 +72,11 @@ console.log(`[android-build] npx ${expoArgs.join(' ')}`);
 const result = spawnSync('npx', expoArgs, { stdio: 'inherit', shell: true, env });
 
 // Copy APK next to the original Gradle output with a descriptive name
-const path = require('path');
 const apkSrc = `android/app/build/outputs/apk/${variant}/app-${variant}.apk`;
 const now = new Date();
 const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-const apkDst = path.join(`android/app/build/outputs/apk/${variant}`, `kalba-${variant}-${backend}-${date}.apk`);
+const themeSuffix = theme === 'default' ? '' : `-${theme}`;
+const apkDst = path.join(`android/app/build/outputs/apk/${variant}`, `kalba-${variant}-${backend}${themeSuffix}-${date}.apk`);
 if (fs.existsSync(apkSrc)) {
   fs.copyFileSync(apkSrc, apkDst);
   console.log(`\n[android-build] APK ready: ${path.resolve(apkDst)}\n`);

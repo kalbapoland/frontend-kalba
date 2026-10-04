@@ -1,0 +1,70 @@
+import themeRegistry from "@/theme/themes/registry.json";
+import { DEFAULT_THEME, THEMES, THEME_NAMES, resolveThemeName } from "@/theme/themes";
+
+/** Every theme must define exactly the same colour keys. */
+describe("theme registry", () => {
+  const referenceKeys = Object.keys(THEMES[DEFAULT_THEME]).sort();
+
+  test("registers at least the default theme", () => {
+    expect(THEME_NAMES).toContain(DEFAULT_THEME);
+    expect(THEME_NAMES.length).toBeGreaterThan(0);
+  });
+
+  test("registry and runtime palettes list exactly the same themes", () => {
+    expect(Object.keys(themeRegistry).sort()).toEqual(Object.keys(THEMES).sort());
+
+    for (const [name, paletteFile] of Object.entries(themeRegistry)) {
+      expect(paletteFile).toBe(`${name}.json`);
+    }
+  });
+
+  test.each(THEME_NAMES)("%s defines the same colour keys as default", (name) => {
+    // A key present in one theme and missing in another resolves to
+    // `undefined`, which React Native treats as "not set" — the style is
+    // silently dropped instead of failing. Catch it here.
+    expect(Object.keys(THEMES[name]).sort()).toEqual(referenceKeys);
+  });
+
+  test.each(THEME_NAMES)("%s uses only 6-digit hex colours", (name) => {
+    for (const [key, value] of Object.entries(THEMES[name])) {
+      expect(`${name}.${key}: ${value}`).toMatch(/: #[0-9A-F]{6}$/i);
+    }
+  });
+
+  test("falls back to the default theme when unset or blank", () => {
+    expect(resolveThemeName(undefined)).toBe(DEFAULT_THEME);
+    expect(resolveThemeName("")).toBe(DEFAULT_THEME);
+    expect(resolveThemeName("   ")).toBe(DEFAULT_THEME);
+  });
+
+  test("accepts every registered theme name", () => {
+    for (const name of THEME_NAMES) {
+      expect(resolveThemeName(name)).toBe(name);
+    }
+  });
+
+  test("throws on an unknown theme instead of silently falling back", () => {
+    // A typo in a build script must fail the build, not ship the wrong palette.
+    expect(() => resolveThemeName("unregistered")).toThrow(/unregistered/);
+  });
+
+  test.each(THEME_NAMES)("the active palette matches EXPO_PUBLIC_THEME=%s", (name) => {
+    const originalTheme = process.env.EXPO_PUBLIC_THEME;
+    process.env.EXPO_PUBLIC_THEME = name;
+
+    try {
+      jest.isolateModules(() => {
+        const { colors, themeName } = require("@/theme/tokens") as typeof import("@/theme/tokens");
+
+        expect(themeName).toBe(name);
+        expect(colors).toEqual(THEMES[name]);
+      });
+    } finally {
+      if (originalTheme === undefined) {
+        delete process.env.EXPO_PUBLIC_THEME;
+      } else {
+        process.env.EXPO_PUBLIC_THEME = originalTheme;
+      }
+    }
+  });
+});
