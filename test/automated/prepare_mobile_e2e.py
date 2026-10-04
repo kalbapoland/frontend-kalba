@@ -15,7 +15,7 @@ def main() -> None:
     backend_root = workspace_root / "backend"
 
     run(
-        ["uv", "run", "python", "tests/automated/seed_mobile_e2e_fixtures.py", "--cleanup"],
+        ["uv", "run", "python", "tests/automated/seed_mobile_e2e_fixtures.py"],
         cwd=backend_root,
     )
 

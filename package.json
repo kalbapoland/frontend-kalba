@@ -22,7 +22,11 @@
     "ios:dev:device": "node -e \"require('fs').copyFileSync('.env.dev','.env.development.local')\" && expo run:ios --device",
     "web": "node -e \"try{require('fs').unlinkSync('.env.development.local')}catch(e){}\" && expo start --web",
     "web:dev": "node -e \"require('fs').copyFileSync('.env.dev','.env.development.local')\" && expo start --web",
-    "test": "jest"
+    "test": "jest",
+    "android:release:local:warm-deep": "adb reverse tcp:8000 tcp:8000 && node scripts/android-build.js release local warm-deep",
+    "android:release:local:night": "adb reverse tcp:8000 tcp:8000 && node scripts/android-build.js release local night",
+    "android:debug:local:warm-deep": "node scripts/android-build.js debug local warm-deep",
+    "android:debug:local:night": "node scripts/android-build.js debug local night"
   },
   "jest": {
     "preset": "jest-expo",

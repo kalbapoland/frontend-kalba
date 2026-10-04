@@ -32,6 +32,7 @@ const EXPECTED_COLOR_TOKENS = [
   "primary.DEFAULT",
   "primary.soft",
   "primary.wash",
+  "primary.deep",
   "accent.DEFAULT",
   "accent.soft",
   "ink.DEFAULT",
@@ -41,6 +42,9 @@ const EXPECTED_COLOR_TOKENS = [
   "line.whisper",
   "danger.DEFAULT",
   "danger.wash",
+  "signal.DEFAULT",
+  "signal.wash",
+  "deep",
 ];
 
 const EXPECTED_FONT_TOKENS = [
@@ -88,6 +92,25 @@ function flattenColors(
 }
 
 describe("tailwind.config.js", () => {
+  test("rejects themes absent from the shared registry", () => {
+    const originalTheme = process.env.EXPO_PUBLIC_THEME;
+    process.env.EXPO_PUBLIC_THEME = "unregistered";
+
+    try {
+      jest.isolateModules(() => {
+        expect(() => require("../../tailwind.config.js")).toThrow(
+          /Unknown theme "unregistered"/,
+        );
+      });
+    } finally {
+      if (originalTheme === undefined) {
+        delete process.env.EXPO_PUBLIC_THEME;
+      } else {
+        process.env.EXPO_PUBLIC_THEME = originalTheme;
+      }
+    }
+  });
+
   test("loads and exposes the theme extensions", () => {
     expect(config.theme?.extend?.colors).toBeDefined();
     expect(config.theme?.extend?.fontFamily).toBeDefined();

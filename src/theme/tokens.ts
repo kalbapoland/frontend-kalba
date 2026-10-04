@@ -1,16 +1,20 @@
 import type { TextStyle, ViewStyle } from "react-native";
 
-import palette from "./palette.json";
+import fontFamilies from "./fonts.json";
+import { colors as activeColors, themeName } from "./themes";
 
 /**
- * Raw palette values live in `palette.json` so that `tailwind.config.js`
- * (Node, no transpiler) and this module share one source of truth. Edit the
- * JSON, never the values here.
+ * Colour values live in `src/theme/themes/*.json` — one file per theme, all
+ * sharing the same key set. `themes/index.ts` picks the active one from
+ * `EXPO_PUBLIC_THEME` at bundle time; `tailwind.config.js` reads the same
+ * files so NativeWind classes and these tokens stay in sync.
  *
- * `Readonly<typeof ...>` restores the immutability that the previous inline
- * `as const` literals provided — JSON imports infer mutable `string`.
+ * Edit the theme JSON, never the values here.
  */
-export const colors: Readonly<typeof palette.colors> = palette.colors;
+export const colors = activeColors;
+
+/** Name of the active theme — useful for diagnostics and test assertions. */
+export { themeName };
 
 export const spacing = {
   screenPadding: 24,
@@ -37,9 +41,9 @@ export const layout = {
 /**
  * Font families. Loaded in app/_layout.tsx via @expo-google-fonts.
  * Fraunces (warm serif) for display moments, Inter for body text.
- * Values come from `palette.json` — see the note on `colors`.
+ * Shared across themes — typography is not part of the theme switch.
  */
-export const fonts: Readonly<typeof palette.fonts> = palette.fonts;
+export const fonts: Readonly<typeof fontFamilies> = fontFamilies;
 
 /**
  * Typography scale used by <AppText>. Airy line-heights on purpose —

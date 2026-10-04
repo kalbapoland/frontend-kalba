@@ -28,9 +28,9 @@ const FONT_ASSETS: Record<string, number> = {
 };
 
 /**
- * Builds the `useFonts` map from `palette.json`, so a family added to the
- * palette cannot be silently left unloaded. Add the matching import to
- * `FONT_ASSETS` when you add a family to the palette.
+ * Builds the `useFonts` map from `src/theme/fonts.json`, so a family added to
+ * the font list cannot be silently left unloaded. Add the matching import to
+ * `FONT_ASSETS` when you add a family.
  *
  * `names` is injectable so the failure path stays testable.
  */
@@ -44,7 +44,7 @@ export function buildFontMap(
 
     if (asset === undefined) {
       throw new Error(
-        `No font asset registered for "${name}" from palette.json. ` +
+        `No font asset registered for "${name}" from src/theme/fonts.json. ` +
           "Add the matching import to FONT_ASSETS in src/theme/fonts.ts.",
       );
     }

@@ -1,0 +1,31 @@
+{
+  "colors": {
+    "canvas": "#1A1917",
+    "canvasDeep": "#121110",
+    "surface": "#232220",
+    "elevated": "#2B2A27",
+
+    "primary": "#A8BFA0",
+    "primarySoft": "#7E9478",
+    "primaryWash": "#2C332A",
+    "primaryDeep": "#C3D6BC",
+
+    "accent": "#D9A08C",
+    "accentSoft": "#3A2E2A",
+
+    "ink": "#EDEAE3",
+    "inkBody": "#C4C1B8",
+    "inkMuted": "#9A978E",
+
+    "line": "#3A3835",
+    "lineWhisper": "#2B2A27",
+
+    "danger": "#E0A08A",
+    "dangerWash": "#3A2A26",
+
+    "signal": "#E8A87C",
+    "signalWash": "#3D2E22",
+
+    "deep": "#0F0E0D"
+  }
+}

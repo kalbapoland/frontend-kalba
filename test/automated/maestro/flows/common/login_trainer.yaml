@@ -30,12 +30,10 @@ appId: com.kalba.app
 - tapOn:
           id: signin.email.input
 - inputText: e2e.trainer@kalba.dev
-- hideKeyboard
 
 - tapOn:
           id: signin.password.input
 - inputText: Pass1234
-- hideKeyboard
 
 - pressKey: Enter
 

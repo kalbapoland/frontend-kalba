@@ -536,7 +536,8 @@ navigation, or business-logic changes.
 - **Tokens are law:** all raw hex values in screens/components were replaced
   with `colors` tokens; new `shadows` (soft, low-opacity) and `motion`
   (durations + stagger) token groups added. Tailwind config mirrors the font
-  families (`font-display`, `font-body`, ...).
+  families (`font-display`, `font-body`, ...). Colour tokens now come from
+  `src/theme/themes/*.json` — see *Theme Switching*.
 - **Motion:** Reanimated v4 (+ `react-native-worklets`). Staggered
   `FadeInDown` entrances for list cards (capped at 8 items via
   `listItemEntering`), spring-sliding active-tab indicator in the
@@ -564,7 +565,8 @@ navigation, or business-logic changes.
   / release build — Expo Go and old dev clients won't run this branch.
 - `<Button>` exists but legacy bespoke buttons remain on detail/auth screens
   (tokenized, not yet migrated to the shared component).
-- No dark mode; palette is light-only.
+- No dark mode; the app is light-only at runtime. A `night` palette exists
+  (see *Theme Switching*) but is not wired to the OS setting.
 
 ### Future improvements
 
@@ -589,8 +591,9 @@ compared side by side against the baseline.
 ### Decisions
 
 - **Baseline set:** `docs/screen-flow/DEFAULT/` holds 22 screenshots plus a
-  contact sheet. New style experiments are written to their own sibling
-  directory so the baseline is never overwritten.
+  contact sheet. `WARM-DEEP/` and `NIGHT/` are separate 22-screen visual
+  experiments, each with its own contact sheet; the baseline is never
+  overwritten. See `docs/screen-flow/README.md`.
 - **Capture mechanism:** Maestro flows in
   `test/automated/maestro/flows/screen-flow/` drive the app and call
   `takeScreenshot` per screen. They assert the expected screen is visible
@@ -615,3 +618,88 @@ compared side by side against the baseline.
 - Capture the sold-out workshop state and the profile edit sub-screen.
 - Add a web capture set for the future browser/desktop target.
 - Script the screenshot collection step so regeneration is one command.
+
+---
+
+## Theme Switching (build-time)
+
+**Status:** shipped (2026-10-04) — three themes coexist in the repo and are
+selected at bundle time via `EXPO_PUBLIC_THEME`.
+
+### Overview
+
+The app ships more than one palette so a visual direction can be evaluated on
+a real device render before it is committed to. `default` is the frozen
+baseline; `warm-deep` and `night` are evaluation candidates with Android
+screen-flow captures in `docs/screen-flow/`. Switching is a build-time
+concern — no runtime toggle yet.
+
+### Decisions
+
+#### Build-time switch, not runtime
+
+`EXPO_PUBLIC_THEME` is inlined by Metro at bundle time, so the active palette
+is resolved before any module is imported. This is what makes the switch work
+without a refactor: 19 files call `StyleSheet.create({...colors.x})` at module
+scope, which captures colour values once at import. A runtime switch would
+require converting all of them to a hook first.
+
+Why not runtime now: the evaluation phase only needs to *see* the palettes.
+Runtime switching is a prerequisite of dark mode (which must follow the OS
+setting), so it is deferred to that work rather than done twice.
+
+#### One JSON file per theme, identical key sets
+
+`src/theme/themes/registry.json` is the shared name-to-file registry read by
+the TypeScript runtime, Android build preflight, and Tailwind config.
+`src/theme/themes/<name>.json` holds colours only; typography is shared and
+lives in `src/theme/fonts.json`. `themes.test.ts` asserts registry/runtime
+parity and that every palette exposes the same keys — a key missing from one
+theme resolves to `undefined`, which React Native treats as "not set",
+silently dropping the style instead of failing.
+
+#### Two resolvers, one source of truth
+
+`src/theme/themes/index.ts` (TypeScript, bundled by Metro) and
+`tailwind.config.js` (CommonJS, loaded by Node without a transpiler) read the
+same registry and palette files. The Android build preflight uses that registry
+too, so an unregistered JSON file cannot be selected accidentally.
+
+#### `palette.json` removed
+
+The old single-file palette was deleted rather than kept as an alias — two
+sources of truth for colour is exactly the drift this change exists to prevent.
+
+#### New tokens
+
+`primaryDeep` (pressed/active states), `signal` + `signalWash` ("live now" /
+"starting soon" — the product's core moment had no colour of its own), and
+`deep` (immersive surfaces). All three are defined in every theme.
+
+### Current limitations
+
+- Switching requires a rebuild (~5–10 min); there is no in-app toggle.
+- The 3 files using NativeWind `className` follow the theme only because
+  Tailwind recompiles per build — they cannot switch at runtime.
+- `night` is build-selectable and has Android captures, but it is not a full
+  system-integrated dark mode. `app.config.js` still pins
+  `userInterfaceStyle: "light"`; there is no automatic OS-following or
+  in-app theme toggle.
+- Contrast is verified by computation, not by a test in CI.
+
+### Future improvements
+
+- Runtime `ThemeProvider` + a toggle in Profile, as part of dark mode.
+- Wire `night` to the OS setting (`userInterfaceStyle: "automatic"`).
+- Add a contrast-ratio test so a future palette edit cannot regress below AA.
+
+### How to build a theme
+
+```powershell
+npm run android:release:local              # default
+npm run android:release:local:warm-deep    # warm-deep
+npm run android:release:local:night        # night
+```
+
+The APK is named `kalba-<variant>-<backend>[-<theme>]-<date>.apk`, so builds
+for different themes do not overwrite each other.

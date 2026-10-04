@@ -1,0 +1,5 @@
+{
+  "default": "default.json",
+  "warm-deep": "warm-deep.json",
+  "night": "night.json"
+}
