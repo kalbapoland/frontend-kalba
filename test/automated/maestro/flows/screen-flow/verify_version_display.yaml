@@ -1,0 +1,37 @@
+appId: com.kalba.app
+---
+# Verify version display: sign-in footer + profile footer + dev build number.
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: signin.email.input
+    timeout: 15000
+- extendedWaitUntil:
+    visible:
+      id: auth.version
+    timeout: 5000
+- takeScreenshot: ver-01-signin
+- runFlow: ../common/login_user.yaml
+- extendedWaitUntil:
+    visible:
+      id: home.workshops.list
+    timeout: 20000
+- tapOn:
+    id: tab.profile.button
+- extendedWaitUntil:
+    visible:
+      id: profile.version
+    timeout: 10000
+- takeScreenshot: ver-02-profile
+
+# Test build: dev options with build number row.
+- extendedWaitUntil:
+    visible:
+      id: profile.devoptions.section
+    timeout: 5000
+- extendedWaitUntil:
+    visible:
+      id: profile.devoptions.build
+    timeout: 5000
+- takeScreenshot: ver-03-dev-build

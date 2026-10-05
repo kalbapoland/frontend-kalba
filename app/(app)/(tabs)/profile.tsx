@@ -29,6 +29,7 @@ import { useTheme } from "@/theme/ThemeProvider";
 import { useThemedStyles } from "@/theme/useThemedStyles";
 import { THEME_NAMES, type ThemeColors, type ThemeName } from "@/theme/themes";
 import { isTestBuild } from "@/lib/buildVariant";
+import { appVersionLabel } from "@/lib/appVersion";
 
 const PRIVACY_POLICY_URL = "https://backend-kalba.fly.dev/privacy";
 
@@ -266,6 +267,10 @@ export default function ProfileScreen() {
 
       {/* Account actions */}
       <View style={[s.bottomGroup, { marginBottom: Math.max(insets.bottom, 16) + 80 }]}>
+        <AppText variant="caption" tone="muted" style={s.versionText} testID="profile.version">
+          {t("profile_screen.version_label", { version: appVersionLabel() })}
+        </AppText>
+
         <Button
           label={t("profile_screen.signout")}
           onPress={handleSignOut}
@@ -373,6 +378,14 @@ export function DeveloperOptionsSection() {
       <AppText variant="caption" tone="muted">
         {t("profile_screen.dev_options_hint")}
       </AppText>
+      <View style={styles.settingsRow}>
+        <AppText variant="caption" tone="muted">
+          {t("profile_screen.dev_options_build_label")}
+        </AppText>
+        <AppText variant="captionMedium" testID="profile.devoptions.build">
+          {appVersionLabel(true)}
+        </AppText>
+      </View>
       {options.map(({ key, label }) => {
         // "None" is selected when the appearance follows the system (no
         // override); a concrete palette is selected when it is the resolved
@@ -489,6 +502,9 @@ function buildStyles(c: ThemeColors) {
     privacyText: {
       textAlign: "center",
       textDecorationLine: "underline",
+    },
+    versionText: {
+      textAlign: "center",
     },
     nameRow: {
       flexDirection: "row",
