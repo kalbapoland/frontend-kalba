@@ -10,6 +10,24 @@ Use script naming convention `platform:mode:backend` for Android:
 - `android:release:local`
 - `android:release:remote`
 
+## Version bump (before a real release)
+
+The app version is displayed in-app (Profile footer, sign-in footer, dev
+options build row) and read from the **native binary** — so it must be bumped
+in the native sources, not just the manifest. One command syncs all three:
+
+```powershell
+npm run release:patch   # 1.0.0 -> 1.0.1, versionCode +1
+npm run release:minor   # 1.0.0 -> 1.1.0, versionCode +1
+npm run release:major   # 1.0.0 -> 2.0.0, versionCode +1
+```
+
+`release:*` updates `app.config.js`, `package.json`, and
+`android/app/build.gradle` (`versionCode` + `versionName`) and creates a
+standalone `chore: bump version to X.Y.Z` commit. Without `--commit`
+(direct script call), files are updated only. Never bump inside a feature
+PR — the bump commit rides to `main` on its own or with a release PR.
+
 ## Goal
 
 - Build an installable release APK locally with Gradle.

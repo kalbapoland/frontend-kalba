@@ -32,6 +32,7 @@ import { fonts, radii, spacing } from "@/theme/tokens";
 import { useTheme } from "@/theme/ThemeProvider";
 import { useThemedStyles } from "@/theme/useThemedStyles";
 import type { ThemeColors } from "@/theme/themes";
+import { appVersionLabel } from "@/lib/appVersion";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -446,6 +447,10 @@ export default function AuthScreen() {
             )}
           </Pressable>
         </View>
+
+        <Text style={s.versionFooter} testID="auth.version">
+          {t("version_footer", { version: appVersionLabel() })}
+        </Text>
       </KeyboardAvoidingView>
     </View>
   );
@@ -636,6 +641,13 @@ function buildStyles(c: ThemeColors) {
       color: c.primary,
       fontSize: 15,
       fontFamily: fonts.bodySemiBold,
+    },
+    versionFooter: {
+      color: c.inkMuted,
+      fontSize: 12,
+      fontFamily: fonts.body,
+      textAlign: "center",
+      marginTop: 24,
     },
   });
 }
