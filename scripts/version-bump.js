@@ -100,11 +100,11 @@ function main() {
   }
 
   // Stand-alone chore commit keeps feature PRs clean.
-  const commit = spawnSync("git", ["add", "app.config.js", "package.json", "android/app/build.gradle"], { cwd: root, stdio: "inherit", shell: true });
+  const commit = spawnSync("git", ["add", "app.config.js", "package.json", "android/app/build.gradle"], { cwd: root, stdio: "inherit" });
   if (commit.status !== 0) process.exit(commit.status ?? 1);
 
   const message = `chore: bump version to ${nextStr}`;
-  const run = spawnSync("git", ["commit", "-m", message], { cwd: root, stdio: "inherit", shell: true });
+  const run = spawnSync("git", ["commit", "-m", message], { cwd: root, stdio: "inherit" });
   if (run.status !== 0) process.exit(run.status ?? 1);
 
   console.log(`[version-bump] Committed: ${message}`);
