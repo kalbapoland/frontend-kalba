@@ -1,6 +1,6 @@
 ---
 name: android-make-release-build
-description: 'Build local Android release APK variants without EAS: android:release:local or android:release:remote.'
+description: 'Build a local Android PRODUCTION-flavour release APK without EAS (no in-app developer options): android:release:local or android:release:remote. For TEST builds with dev options use android-make-test-build.'
 argument-hint: 'variant (android:release:local|android:release:remote) and optional note: install on device now or build artifact only'
 user-invocable: true
 ---

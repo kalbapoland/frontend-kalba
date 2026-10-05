@@ -1,6 +1,10 @@
-# Android Make Release Build (Local APK)
+# Android Make Release Build (production flavour)
 
-Use this skill when the user wants a local Android release APK build without EAS.
+Use this skill when the user wants a local Android release APK build without
+EAS. Builds a **production-flavour** APK: Profile shows no developer options.
+For a TEST build with the developer-options section visible, use
+`android-make-test-build` instead — its npm scripts are the ones containing
+`:test`.
 
 Use script naming convention `platform:mode:backend` for Android:
 - `android:release:local`

@@ -1,22 +1,26 @@
 #!/usr/bin/env node
 /**
  * Android build helper — used by npm run android:*
- * Usage: node scripts/android-build.js <variant> <backend> [theme]
+ * Usage: node scripts/android-build.js <variant> <backend> [theme] [flavour]
  *   variant: debug | release
  *   backend: local | remote
  *   theme:   registered in src/theme/themes/registry.json, "system", or omitted
  *            (defaults to "default"). "system" pins nothing: the app follows
  *            the OS light/dark switch at runtime.
+ *   flavour: local (default) | test — "test" builds a TEST build with the
+ *            developer options section visible in Profile (EXPO_PUBLIC_APP_VARIANT=test).
+ *            Production builds never expose it.
  */
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
-const [variant, backend, themeArg] = process.argv.slice(2);
+const [variant, backend, themeArg, flavour] = process.argv.slice(2);
 if (!variant || !backend) {
-  console.error('Usage: node scripts/android-build.js <debug|release> <local|remote> [theme]');
+  console.error('Usage: node scripts/android-build.js <debug|release> <local|remote> [theme] [local|test]');
   process.exit(1);
 }
+const testFlavour = flavour === 'test';
 
 const THEMES_DIR = path.join(__dirname, '..', 'src', 'theme', 'themes');
 const themeRegistry = JSON.parse(
@@ -72,6 +76,11 @@ if (theme === 'system') {
   console.log(`[android-build] Theme: ${theme} (locked in-app)`);
 }
 
+// Test flavour: developer options (palette override) visible in Profile.
+// Production flavour keeps the section hidden — the flag is inlined by Metro.
+env.EXPO_PUBLIC_APP_VARIANT = testFlavour ? 'test' : 'production';
+console.log(`[android-build] Flavour: ${testFlavour ? 'TEST (dev options visible)' : 'production'}`);
+
 // Run expo
 const expoArgs = ['expo', 'run:android'];
 if (variant === 'release') {
@@ -86,7 +95,8 @@ const apkSrc = `android/app/build/outputs/apk/${variant}/app-${variant}.apk`;
 const now = new Date();
 const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 const themeSuffix = theme === 'default' ? '' : `-${theme}`;
-const apkDst = path.join(`android/app/build/outputs/apk/${variant}`, `kalba-${variant}-${backend}${themeSuffix}-${date}.apk`);
+const flavourSuffix = testFlavour ? '-test' : '';
+const apkDst = path.join(`android/app/build/outputs/apk/${variant}`, `kalba-${variant}-${backend}${themeSuffix}${flavourSuffix}-${date}.apk`);
 if (fs.existsSync(apkSrc)) {
   fs.copyFileSync(apkSrc, apkDst);
   console.log(`\n[android-build] APK ready: ${path.resolve(apkDst)}\n`);

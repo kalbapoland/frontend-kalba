@@ -1,0 +1,57 @@
+appId: com.kalba.app
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: signin.email.input
+    timeout: 15000
+- runFlow: ../common/login_user.yaml
+- extendedWaitUntil:
+    visible:
+      id: home.workshops.list
+    timeout: 15000
+- tapOn:
+    id: tab.profile.button
+- extendedWaitUntil:
+    visible:
+      id: profile.appearance.section
+    timeout: 10000
+- takeScreenshot: dev-01-profile-test-build
+
+# Developer options must be visible on a test build.
+- extendedWaitUntil:
+    visible:
+      id: profile.devoptions.section
+    timeout: 5000
+
+# Switch to night palette via dev options.
+- tapOn:
+    id: profile.theme.option.night
+- extendedWaitUntil:
+    visible:
+      id: profile.theme.option.night
+    timeout: 5000
+- waitForAnimationToEnd
+- takeScreenshot: dev-02-after-night-switch
+
+# Verify the runtime switch re-coloured the tabs (go home in night palette).
+- tapOn:
+    id: tab.index.button
+- extendedWaitUntil:
+    visible:
+      id: home.workshops.list
+    timeout: 15000
+- waitForAnimationToEnd
+- takeScreenshot: dev-03-home-in-night
+
+# Clear the override back to system-following.
+- tapOn:
+    id: tab.profile.button
+- tapOn:
+    id: profile.theme.option.none
+- extendedWaitUntil:
+    visible:
+      id: profile.appearance.section
+    timeout: 5000
+- takeScreenshot: dev-04-override-cleared

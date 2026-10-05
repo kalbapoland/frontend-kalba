@@ -13,11 +13,17 @@
             "environment": "production",
             "android": {
                 "buildType": "apk"
+            },
+            "env": {
+                "EXPO_PUBLIC_APP_VARIANT": "test"
             }
         },
         "production": {
             "distribution": "store",
-            "autoIncrement": true
+            "autoIncrement": true,
+            "env": {
+                "EXPO_PUBLIC_APP_VARIANT": "production"
+            }
         }
     },
     "submit": {

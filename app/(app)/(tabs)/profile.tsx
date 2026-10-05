@@ -7,6 +7,7 @@ import {
   Modal,
   Platform,
   StyleSheet,
+  Switch,
   TextInput,
 } from "react-native";
 import { useQueryClient } from "@tanstack/react-query";
@@ -23,10 +24,11 @@ import { displayName, initials as userInitials } from "@/lib/user";
 import { AppText } from "@/components/AppText";
 import { Button } from "@/components/Button";
 import { listItemEntering } from "@/lib/entrance";
-import { fonts, radii, shadows, spacing } from "@/theme/tokens";
+import { fonts, radii, cardShadow, spacing } from "@/theme/tokens";
 import { useTheme } from "@/theme/ThemeProvider";
 import { useThemedStyles } from "@/theme/useThemedStyles";
-import type { ThemeColors } from "@/theme/themes";
+import { THEME_NAMES, type ThemeColors, type ThemeName } from "@/theme/themes";
+import { isTestBuild } from "@/lib/buildVariant";
 
 const PRIVACY_POLICY_URL = "https://backend-kalba.fly.dev/privacy";
 
@@ -204,6 +206,13 @@ export default function ProfileScreen() {
         </View>
       </Animated.View>
 
+      {/* Appearance + (test builds) dev options sit right under the user card
+          with the same rhythm as the sections' internal gap. */}
+      <View style={s.settingsStack}>
+        <AppearanceSection />
+        {isTestBuild && <DeveloperOptionsSection />}
+      </View>
+
       <View style={{ flex: 1 }} />
 
       {/* Edit name modal */}
@@ -302,6 +311,98 @@ export default function ProfileScreen() {
   );
 }
 
+/**
+ * Production-vs-test contract reviewed here: named exports so the sections
+ * can be rendered directly in tests without auth/modals scaffolding.
+ */
+export function AppearanceSection() {
+  const { t } = useTranslation();
+  const { themeName, preference, systemScheme, setPreference, colors } = useTheme();
+  const styles = useThemedStyles(buildStyles);
+
+  // Appearance switch (review: user wants ON/OFF, not a dead radio):
+  // ON = follow the OS light/dark toggle; OFF = always light. On a locked
+  // build the switch follows the lock state and refuses writes via context.
+  const followSystem = preference === "system";
+  const schemeLabel = followSystem
+    ? systemScheme === "dark"
+      ? t("profile_screen.system_scheme_dark")
+      : t("profile_screen.system_scheme_light")
+    : t("profile_screen.appearance_hint_light_fixed");
+
+  return (
+    <View style={styles.settingsGroup} testID="profile.appearance.section">
+      <AppText variant="overline" tone="muted">
+        {t("profile_screen.appearance_title")}
+      </AppText>
+      <View style={styles.settingsRow}>
+        <AppText variant="body">{t("profile_screen.appearance_option_system")}</AppText>
+        <Switch
+          value={followSystem}
+          onValueChange={(on) => setPreference(on ? "system" : "light")}
+          trackColor={{ false: colors.line, true: colors.primarySoft }}
+          thumbColor={colors.elevated}
+          testID="profile.appearance.switch"
+        />
+      </View>
+      <AppText variant="caption" tone="muted">
+        {schemeLabel}
+      </AppText>
+    </View>
+  );
+}
+
+export function DeveloperOptionsSection() {
+  const { t } = useTranslation();
+  const { preference, systemFollowing, setDevOverride, colors } = useTheme();
+  const styles = useThemedStyles(buildStyles);
+
+  const options: Array<{ key: ThemeName | null; label: string }> = [
+    { key: null, label: t("profile_screen.dev_option_palette_none") },
+    ...THEME_NAMES.map((name) => ({
+      key: name,
+      label: t(`profile_screen.dev_option_theme_${name.replace("-", "_")}`),
+    })),
+  ];
+
+  return (
+    <View style={styles.settingsGroup} testID="profile.devoptions.section">
+      <AppText variant="overline" tone="muted">
+        {t("profile_screen.dev_options_title")}
+      </AppText>
+      <AppText variant="caption" tone="muted">
+        {t("profile_screen.dev_options_hint")}
+      </AppText>
+      {options.map(({ key, label }) => {
+        // "None" is selected when the appearance follows the system (no
+        // override); a concrete palette is selected when it is the resolved
+        // theme AND an override is actually active.
+        const selected = key === null ? systemFollowing : !systemFollowing && preference === key;
+        return (
+          <Pressable
+            key={String(key)}
+            onPress={() => setDevOverride(key)}
+            accessibilityRole="radio"
+            accessibilityState={{ selected }}
+            testID={`profile.theme.option.${key ?? "none"}`}
+            style={({ pressed }) => [
+              styles.settingsRow,
+              { opacity: pressed ? 0.7 : 1 },
+            ]}
+          >
+            <AppText variant="body" tone={selected ? "primary" : "body"}>
+              {label}
+            </AppText>
+            {selected && (
+              <Ionicons name="checkmark" size={16} color={colors.primary} />
+            )}
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
 function buildStyles(c: ThemeColors) {
   return StyleSheet.create({
     screen: {
@@ -316,7 +417,7 @@ function buildStyles(c: ThemeColors) {
       borderColor: c.lineWhisper,
       paddingHorizontal: 32,
       paddingVertical: 40,
-      ...shadows.card,
+      ...cardShadow(c),
     },
     avatarWrapper: {
       width: 88,
@@ -357,6 +458,26 @@ function buildStyles(c: ThemeColors) {
     bottomGroup: {
       gap: 14,
       alignItems: "stretch",
+    },
+    settingsStack: {
+      marginTop: spacing.elementGap,
+      gap: spacing.elementGap,
+    },
+    settingsGroup: {
+      gap: 6,
+      paddingVertical: 8,
+      borderRadius: radii.card,
+      backgroundColor: c.surface,
+      borderWidth: 1,
+      borderColor: c.lineWhisper,
+      paddingHorizontal: spacing.elementGap,
+    },
+    settingsRow: {
+      flexDirection: "row",
+      minHeight: 40,
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 8,
     },
     deleteButton: {
       flexDirection: "row",

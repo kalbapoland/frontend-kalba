@@ -10,7 +10,7 @@ import {
   readRawSettings,
   writeRawSettings,
 } from "@/lib/persistence/storage";
-import type { ThemePreference } from "@/theme/preference";
+import type { ThemeName } from "@/theme/themes";
 
 /**
  * Device-scoped app settings. Deliberately NOT routed through the auth
@@ -24,7 +24,9 @@ type SettingsState = {
   hydrated: boolean;
   settings: SettingsSchema;
   hydrate: () => Promise<void>;
-  setThemePreference: (preference: ThemePreference) => Promise<void>;
+  /** Appearance switch: ON = follow system, OFF = pinned light. */
+  setFollowSystem: (on: boolean) => Promise<void>;
+  setDevThemeOverride: (theme: ThemeName | null) => Promise<void>;
 };
 
 function serialize(settings: SettingsSchema): string {
@@ -88,8 +90,20 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     set({ settings: parsed, hydrated: true });
   },
 
-  setThemePreference: async (preference) => {
-    const next: SettingsSchema = { ...get().settings, themePreference: preference };
+  setFollowSystem: async (on) => {
+    // Appearance switch: ON = follow the OS light/dark toggle; OFF = pin the
+    // light palette regardless of the system setting. The dev override
+    // (test builds) is NOT touched here — Developer options manages it.
+    const next: SettingsSchema = {
+      ...get().settings,
+      themePreference: on ? "system" : "light",
+    };
+    set({ settings: next });
+    await persist(next);
+  },
+
+  setDevThemeOverride: async (theme) => {
+    const next: SettingsSchema = { ...get().settings, devThemeOverride: theme };
     set({ settings: next });
     await persist(next);
   },

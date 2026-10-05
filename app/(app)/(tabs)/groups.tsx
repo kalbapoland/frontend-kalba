@@ -24,7 +24,7 @@ import { SectionHeader } from "@/components/SectionHeader";
 import { SkeletonList } from "@/components/Skeleton";
 import { listItemEntering } from "@/lib/entrance";
 import type { Group } from "@/types/api";
-import { layout, shadows, spacing } from "@/theme/tokens";
+import { layout, raisedShadow, spacing } from "@/theme/tokens";
 import { useTheme } from "@/theme/ThemeProvider";
 import { useThemedStyles } from "@/theme/useThemedStyles";
 import type { ThemeColors } from "@/theme/themes";
@@ -72,7 +72,7 @@ function buildStyles(c: ThemeColors) {
       backgroundColor: c.primary,
       alignItems: "center",
       justifyContent: "center",
-      ...shadows.raised,
+      ...raisedShadow(c),
     },
   });
 }

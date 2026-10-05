@@ -67,11 +67,13 @@ describe("theme registry", () => {
   });
 
   test("isDarkTheme agrees with the system-dark mapping", () => {
-    // resolveTheme maps OS dark to "night" — the same predicate must classify
-    // night as dark, or the status bar would flip against the palette.
+    // resolveTheme(selection, scheme) maps OS dark (system follow) to
+    // "night" — the same predicate must classify night as dark, or chrome
+    // would flip against the palette. The "light" policy never goes dark.
     expect(isDarkTheme(resolveTheme("system", "dark"))).toBe(true);
     expect(isDarkTheme(resolveTheme("system", "light"))).toBe(false);
     expect(isDarkTheme(resolveTheme("system", null))).toBe(false);
+    expect(isDarkTheme(resolveTheme("light", "dark"))).toBe(false);
     expect(isDarkTheme("night")).toBe(true);
     expect(isDarkTheme("default")).toBe(false);
     expect(isDarkTheme("warm-deep")).toBe(false);

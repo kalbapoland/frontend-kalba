@@ -1,7 +1,7 @@
 import type { TextStyle, ViewStyle } from "react-native";
 
 import fontFamilies from "./fonts.json";
-import { colors as activeColors, themeName } from "./themes";
+import { colors as activeColors, themeName, type ThemeColors } from "./themes";
 
 /**
  * Colour values live in `src/theme/themes/*.json` — one file per theme, all
@@ -15,6 +15,8 @@ export const colors = activeColors;
 
 /** Name of the active theme — useful for diagnostics and test assertions. */
 export { themeName };
+
+export type { ThemeColors };
 
 export const spacing = {
   screenPadding: 24,
@@ -102,30 +104,36 @@ export const typography = {
 } as const satisfies Record<string, TextStyle>;
 
 /**
- * Soft elevation presets — low opacity, large radius.
- *
- * `shadowColor` is captured from the BUILD-time palette (module scope): it is
- * the one colour token still outside the runtime `useTheme` pipeline. For
- * `default`/`warm-deep` (dark ink on light canvas) this is visually correct
- * in every theme; a runtime switch TO/FROM `night` would keep the opposite
- * ink as shadow tint — acceptable until PR 3, which moves shadows into the
- * per-theme factories.
+ * Soft elevation presets. The presets are **functions of the palette** (PR 3:
+ * review Minor #5) — shadow tint follows the active theme's ink, so a night
+ * switch does not leave light-theme glow behind translucent cards. The legacy
+ * `shadows.card`/`shadows.raised` constants stay for consumers not yet on the
+ * runtime pipeline (workshop/call.tsx keeps its own chrome).
  */
-export const shadows = {
-  card: {
-    shadowColor: colors.ink,
+export function cardShadow(c: ThemeColors): ViewStyle {
+  return {
+    shadowColor: c.ink,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.06,
     shadowRadius: 16,
     elevation: 3,
-  },
-  raised: {
-    shadowColor: colors.ink,
+  };
+}
+
+export function raisedShadow(c: ThemeColors): ViewStyle {
+  return {
+    shadowColor: c.ink,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.1,
     shadowRadius: 20,
     elevation: 6,
-  },
+  };
+}
+
+/** Build-time presets for non-runtime consumers (see note above). */
+export const shadows = {
+  card: cardShadow(colors),
+  raised: raisedShadow(colors),
 } as const satisfies Record<string, ViewStyle>;
 
 /** Motion durations (ms) and stagger settings for list entrances. */

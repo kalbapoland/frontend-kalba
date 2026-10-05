@@ -24,7 +24,7 @@ import {
 } from "@/hooks/useMyKalba";
 import { SkeletonList } from "@/components/Skeleton";
 import { listItemEntering } from "@/lib/entrance";
-import { fonts, shadows } from "@/theme/tokens";
+import { fonts, cardShadow } from "@/theme/tokens";
 import { useTheme } from "@/theme/ThemeProvider";
 import { useThemedStyles } from "@/theme/useThemedStyles";
 import type { ThemeColors } from "@/theme/themes";
@@ -354,7 +354,7 @@ function buildStyles(c: ThemeColors) {
             backgroundColor: c.surface,
             paddingHorizontal: 16,
             paddingVertical: 16,
-            ...shadows.card,
+            ...cardShadow(c),
         },
         sectionTitle: {
             fontFamily: fonts.displayMedium,
