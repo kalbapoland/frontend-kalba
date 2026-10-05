@@ -1,6 +1,8 @@
 import { Text, type TextProps } from "react-native";
 
-import { colors, typography } from "@/theme/tokens";
+import { typography } from "@/theme/tokens";
+import { useTheme } from "@/theme/ThemeProvider";
+import type { ThemeColors } from "@/theme/themes";
 
 type Variant = keyof typeof typography;
 
@@ -13,14 +15,19 @@ type Tone =
   | "danger"
   | "inverse";
 
-const TONE_COLORS: Record<Tone, string> = {
-  ink: colors.ink,
-  body: colors.inkBody,
-  muted: colors.inkMuted,
-  primary: colors.primary,
-  accent: colors.accent,
-  danger: colors.danger,
-  inverse: colors.elevated,
+/**
+ * Tone → palette key lookup (module constant, zero per-render allocation —
+ * review Minor #4): indexing `colors[key]` stays theme-reactive because
+ * `colors` comes from the context, but no map object is built per render.
+ */
+const TONE_KEYS: Record<Tone, keyof ThemeColors> = {
+  ink: "ink",
+  body: "inkBody",
+  muted: "inkMuted",
+  primary: "primary",
+  accent: "accent",
+  danger: "danger",
+  inverse: "elevated",
 };
 
 interface AppTextProps extends TextProps {
@@ -31,6 +38,7 @@ interface AppTextProps extends TextProps {
 /**
  * Single source of typography. Fraunces for display/title/heading moments,
  * Inter for body and below — see typography scale in src/theme/tokens.ts.
+ * Tone colours resolve from the active theme at render time.
  */
 export function AppText({
   variant = "body",
@@ -38,9 +46,11 @@ export function AppText({
   style,
   ...rest
 }: AppTextProps) {
+  const { colors } = useTheme();
+
   return (
     <Text
-      style={[typography[variant], { color: TONE_COLORS[tone] }, style]}
+      style={[typography[variant], { color: colors[TONE_KEYS[tone]] }, style]}
       {...rest}
     />
   );

@@ -25,7 +25,10 @@ import { HashtagTextInput } from "@/components/HashtagTextInput";
 import { useWorkshopDetail } from "@/hooks/useWorkshopDetail";
 import { useUpdateWorkshop } from "@/hooks/useUpdateWorkshop";
 import { successFeedback } from "@/lib/haptics";
-import { colors, fonts } from "@/theme/tokens";
+import { fonts } from "@/theme/tokens";
+import { useTheme } from "@/theme/ThemeProvider";
+import { useThemedStyles } from "@/theme/useThemedStyles";
+import type { ThemeColors } from "@/theme/themes";
 import {
   getDeviceTimezone,
   localTimeToUTC,
@@ -46,6 +49,224 @@ const EDIT_WORKSHOP_TEST_IDS = {
   submitButton: "workshop.edit.submit.button",
 } as const;
 
+function buildStyles(c: ThemeColors) {
+  return StyleSheet.create({
+    centered: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: 40,
+      backgroundColor: c.canvas,
+    },
+    notFoundText: {
+      fontSize: 18,
+      fontFamily: fonts.display,
+      color: c.inkBody,
+      marginTop: 16,
+      textAlign: "center",
+    },
+    screen: { flex: 1, backgroundColor: c.canvas },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: 20,
+      paddingBottom: 12,
+      gap: 4,
+    },
+    backButton: {
+      width: 44,
+      height: 44,
+      alignItems: "center",
+      justifyContent: "center",
+      marginLeft: -4,
+    },
+    pageTitle: {
+      fontSize: 20,
+      fontFamily: fonts.display,
+      letterSpacing: 0.4,
+      color: c.ink,
+    },
+    scrollContent: {
+      paddingHorizontal: 24,
+      paddingBottom: 12,
+    },
+    row: {
+      flexDirection: "row",
+      gap: 12,
+    },
+    fieldContainer: {
+      marginBottom: 12,
+    },
+    fieldLabel: {
+      fontSize: 11,
+      fontFamily: fonts.bodyMedium,
+      letterSpacing: 0.8,
+      color: c.inkMuted,
+      marginBottom: 6,
+      textTransform: "uppercase",
+    },
+    scheduleCard: {
+      backgroundColor: c.surface,
+      borderRadius: 14,
+      borderWidth: 1.5,
+      borderColor: c.lineWhisper,
+      padding: 14,
+      gap: 10,
+    },
+    schedulePreviewRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+    },
+    schedulePreviewText: {
+      fontSize: 14,
+      color: c.inkBody,
+      letterSpacing: 0.2,
+    },
+    scheduleDot: {
+      color: c.line,
+      fontSize: 13,
+    },
+    scheduleButtonRow: {
+      flexDirection: "row",
+      gap: 10,
+    },
+    scheduleButton: {
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      backgroundColor: c.canvasDeep,
+      borderRadius: 999,
+      paddingVertical: 10,
+    },
+    scheduleButtonText: {
+      fontSize: 13,
+      color: c.primary,
+      fontFamily: fonts.bodySemiBold,
+      letterSpacing: 0.3,
+    },
+    scheduleHint: {
+      fontSize: 12,
+      color: c.inkMuted,
+      lineHeight: 16,
+    },
+    fieldInput: {
+      backgroundColor: c.surface,
+      borderRadius: 14,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      fontFamily: fonts.body,
+      fontSize: 15,
+      color: c.ink,
+      borderWidth: 1.5,
+      borderColor: "transparent",
+    },
+    fieldInputFocused: {
+      borderColor: c.primarySoft,
+    },
+    footer: {
+      paddingHorizontal: 24,
+      paddingTop: 12,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: c.lineWhisper,
+      backgroundColor: "transparent",
+    },
+    submitButton: {
+      height: 52,
+      borderRadius: 999,
+      backgroundColor: c.primary,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    submitInner: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
+    },
+    submitText: {
+      fontSize: 16,
+      fontFamily: fonts.bodyMedium,
+      letterSpacing: 0.5,
+      color: c.surface,
+    },
+    pickerSheetBackdrop: {
+      flex: 1,
+      justifyContent: "flex-end",
+      backgroundColor: "rgba(0,0,0,0.2)",
+    },
+    pickerSheet: {
+      backgroundColor: c.elevated,
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+      paddingBottom: 20,
+      overflow: "hidden",
+    },
+    pickerSheetHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: 16,
+      paddingTop: 14,
+    },
+    pickerSheetTitle: {
+      fontSize: 16,
+      fontFamily: fonts.bodySemiBold,
+      color: c.ink,
+    },
+    pickerDoneText: {
+      fontSize: 15,
+      fontFamily: fonts.bodySemiBold,
+      color: c.primary,
+    },
+  });
+}
+
+function FormField({
+  label,
+  value,
+  onChangeText,
+  placeholder,
+  multiline = false,
+  keyboardType = "default",
+  testID,
+}: {
+  label: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  placeholder?: string;
+  multiline?: boolean;
+  keyboardType?: "default" | "numeric" | "decimal-pad";
+  testID?: string;
+}) {
+  const { colors } = useTheme();
+  const s = useThemedStyles(buildStyles);
+  const [focused, setFocused] = useState(false);
+
+  return (
+    <View style={s.fieldContainer}>
+      <Text style={s.fieldLabel}>{label}</Text>
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        multiline={multiline}
+        keyboardType={keyboardType}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        testID={testID}
+        style={[
+          s.fieldInput,
+          focused && s.fieldInputFocused,
+          multiline && { minHeight: 100, textAlignVertical: "top" as const },
+        ]}
+        placeholderTextColor={colors.inkMuted}
+      />
+    </View>
+  );
+}
+
 export default function EditWorkshopScreen() {
   const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -53,6 +274,8 @@ export default function EditWorkshopScreen() {
   const { mutate, isPending } = useUpdateWorkshop(id!);
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const s = useThemedStyles(buildStyles);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -184,7 +407,7 @@ export default function EditWorkshopScreen() {
 
   if (isLoading) {
     return (
-      <View style={[s.centered, { backgroundColor: colors.canvas }]}>
+      <View style={s.centered}>
         <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
@@ -192,7 +415,7 @@ export default function EditWorkshopScreen() {
 
   if (!workshop) {
     return (
-      <View style={[s.centered, { backgroundColor: colors.canvas }]}>
+      <View style={s.centered}>
         <Ionicons name="alert-circle-outline" size={40} color={colors.line} />
         <Text style={s.notFoundText}>{t("workshop_not_found")}</Text>
       </View>
@@ -200,7 +423,7 @@ export default function EditWorkshopScreen() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.canvas }}>
+    <View style={s.screen}>
       <LinearGradient
         colors={[colors.canvas, colors.canvasDeep]}
         locations={[0, 1]}
@@ -424,216 +647,3 @@ export default function EditWorkshopScreen() {
     </View>
   );
 }
-
-function FormField({
-  label,
-  value,
-  onChangeText,
-  placeholder,
-  multiline = false,
-  keyboardType = "default",
-  testID,
-}: {
-  label: string;
-  value: string;
-  onChangeText: (text: string) => void;
-  placeholder?: string;
-  multiline?: boolean;
-  keyboardType?: "default" | "numeric" | "decimal-pad";
-  testID?: string;
-}) {
-  const [focused, setFocused] = useState(false);
-
-  return (
-    <View style={s.fieldContainer}>
-      <Text style={s.fieldLabel}>{label}</Text>
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        multiline={multiline}
-        keyboardType={keyboardType}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        testID={testID}
-        style={[
-          s.fieldInput,
-          focused && s.fieldInputFocused,
-          multiline && { minHeight: 100, textAlignVertical: "top" as const },
-        ]}
-        placeholderTextColor={colors.inkMuted}
-      />
-    </View>
-  );
-}
-
-const s = StyleSheet.create({
-  centered: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 40,
-  },
-  notFoundText: {
-    fontSize: 18,
-    fontFamily: fonts.display,
-    color: colors.inkBody,
-    marginTop: 16,
-    textAlign: "center",
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingBottom: 12,
-    gap: 4,
-  },
-  backButton: {
-    width: 44,
-    height: 44,
-    alignItems: "center",
-    justifyContent: "center",
-    marginLeft: -4,
-  },
-  pageTitle: {
-    fontSize: 20,
-    fontFamily: fonts.display,
-    letterSpacing: 0.4,
-    color: colors.ink,
-  },
-  scrollContent: {
-    paddingHorizontal: 24,
-    paddingBottom: 12,
-  },
-  row: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  fieldContainer: {
-    marginBottom: 12,
-  },
-  fieldLabel: {
-    fontSize: 11,
-    fontFamily: fonts.bodyMedium,
-    letterSpacing: 0.8,
-    color: colors.inkMuted,
-    marginBottom: 6,
-    textTransform: "uppercase",
-  },
-  scheduleCard: {
-    backgroundColor: colors.surface,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: colors.lineWhisper,
-    padding: 14,
-    gap: 10,
-  },
-  schedulePreviewRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  schedulePreviewText: {
-    fontSize: 14,
-    color: colors.ink,
-    fontFamily: fonts.bodyMedium,
-    letterSpacing: 0.2,
-  },
-  scheduleDot: {
-    color: colors.line,
-    fontSize: 13,
-  },
-  scheduleButtonRow: {
-    flexDirection: "row",
-    gap: 10,
-  },
-  scheduleButton: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    backgroundColor: colors.canvasDeep,
-    borderRadius: 999,
-    paddingVertical: 10,
-  },
-  scheduleButtonText: {
-    fontSize: 13,
-    color: colors.primary,
-    fontFamily: fonts.bodySemiBold,
-    letterSpacing: 0.3,
-  },
-  scheduleHint: {
-    fontSize: 12,
-    color: colors.inkMuted,
-    lineHeight: 16,
-  },
-  fieldInput: {
-    backgroundColor: colors.surface,
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontFamily: fonts.body,
-    fontSize: 15,
-    color: colors.ink,
-    borderWidth: 1.5,
-    borderColor: "transparent",
-  },
-  fieldInputFocused: {
-    borderColor: colors.primarySoft,
-  },
-  footer: {
-    paddingHorizontal: 24,
-    paddingTop: 12,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.lineWhisper,
-    backgroundColor: "transparent",
-  },
-  submitButton: {
-    height: 52,
-    borderRadius: 999,
-    backgroundColor: colors.primary,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  submitInner: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  submitText: {
-    fontSize: 16,
-    fontFamily: fonts.bodyMedium,
-    letterSpacing: 0.5,
-    color: colors.surface,
-  },
-  pickerSheetBackdrop: {
-    flex: 1,
-    justifyContent: "flex-end",
-    backgroundColor: "rgba(0,0,0,0.2)",
-  },
-  pickerSheet: {
-    backgroundColor: colors.elevated,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingBottom: 20,
-    overflow: "hidden",
-  },
-  pickerSheetHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingTop: 14,
-  },
-  pickerSheetTitle: {
-    fontSize: 16,
-    fontFamily: fonts.bodySemiBold,
-    color: colors.ink,
-  },
-  pickerDoneText: {
-    fontSize: 15,
-    fontFamily: fonts.bodySemiBold,
-    color: colors.primary,
-  },
-});

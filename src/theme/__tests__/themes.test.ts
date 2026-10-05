@@ -38,9 +38,14 @@ describe("theme registry", () => {
     expect(Object.keys(THEMES[name]).sort()).toEqual(referenceKeys);
   });
 
-  test.each(THEME_NAMES)("%s uses only 6-digit hex colours", (name) => {
+  test.each(THEME_NAMES)("%s uses well-formed colour values", (name) => {
     for (const [key, value] of Object.entries(THEMES[name])) {
-      expect(`${name}.${key}: ${value}`).toMatch(/: #[0-9A-F]{6}$/i);
+      // Hex (#RRGGBB) or a tightly-bounded rgba(): channels 0-255, alpha
+      // 0-1 with optional fraction. Out-of-range or half-formed values must
+      // fail loudly — they would ship an invalid style silently otherwise.
+      expect(`${name}.${key}: ${value}`).toMatch(
+        /: (#[0-9A-F]{6}|rgba\((1?\d?\d|2[0-4]\d|25[0-5]),\s*(1?\d?\d|2[0-4]\d|25[0-5]),\s*(1?\d?\d|2[0-4]\d|25[0-5]),\s*(0|1)(\.\d+)?\))$/i,
+      );
     }
   });
 

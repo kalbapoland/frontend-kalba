@@ -9,13 +9,41 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import { colors, radii, shadows, spacing } from "@/theme/tokens";
+import { radii, shadows, spacing } from "@/theme/tokens";
+import { useTheme } from "@/theme/ThemeProvider";
+import { useThemedStyles } from "@/theme/useThemedStyles";
+import type { ThemeColors } from "@/theme/themes";
 
 interface SkeletonProps {
   width?: DimensionValue;
   height?: number;
   borderRadius?: number;
   style?: object;
+}
+
+function buildStyles(c: ThemeColors) {
+  return StyleSheet.create({
+    card: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.elementGap,
+      backgroundColor: c.surface,
+      borderRadius: radii.card,
+      borderWidth: 1,
+      borderColor: c.lineWhisper,
+      padding: spacing.cardPadding,
+      marginBottom: spacing.elementGap,
+      ...shadows.card,
+    },
+    cardBody: {
+      flex: 1,
+      gap: 10,
+    },
+    list: {
+      paddingHorizontal: spacing.screenPadding,
+      paddingTop: spacing.sectionGap,
+    },
+  });
 }
 
 /** Soft opacity-pulse placeholder block in canvas tones. */
@@ -25,6 +53,7 @@ export function Skeleton({
   borderRadius = radii.tag,
   style,
 }: SkeletonProps) {
+  const { colors } = useTheme();
   const reducedMotion = useReducedMotion();
   const pulse = useSharedValue(1);
 
@@ -55,6 +84,8 @@ export function Skeleton({
 
 /** Placeholder mirroring the workshop card layout for list loading states. */
 export function SkeletonCard() {
+  const styles = useThemedStyles(buildStyles);
+
   return (
     <View style={styles.card}>
       <Skeleton width={56} height={64} borderRadius={radii.input} />
@@ -69,6 +100,8 @@ export function SkeletonCard() {
 
 /** Full-screen list of card skeletons, used while a list query loads. */
 export function SkeletonList({ count = 4 }: { count?: number }) {
+  const styles = useThemedStyles(buildStyles);
+
   return (
     <View style={styles.list}>
       {Array.from({ length: count }, (_, i) => (
@@ -77,26 +110,3 @@ export function SkeletonList({ count = 4 }: { count?: number }) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.elementGap,
-    backgroundColor: colors.surface,
-    borderRadius: radii.card,
-    borderWidth: 1,
-    borderColor: colors.lineWhisper,
-    padding: spacing.cardPadding,
-    marginBottom: spacing.elementGap,
-    ...shadows.card,
-  },
-  cardBody: {
-    flex: 1,
-    gap: 10,
-  },
-  list: {
-    paddingHorizontal: spacing.screenPadding,
-    paddingTop: spacing.sectionGap,
-  },
-});

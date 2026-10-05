@@ -22,7 +22,10 @@ import {
   endOfWeek,
   startOfWeek,
 } from "@/components/calendar/dateUtils";
-import { colors, fonts } from "@/theme/tokens";
+import { fonts } from "@/theme/tokens";
+import { useTheme } from "@/theme/ThemeProvider";
+import { useThemedStyles } from "@/theme/useThemedStyles";
+import type { ThemeColors } from "@/theme/themes";
 
 type ViewMode = "month" | "week" | "day";
 
@@ -60,6 +63,8 @@ function formatRangeTitle(mode: ViewMode, d: Date, locale: string): string {
 export default function CalendarScreen() {
   const insets = useSafeAreaInsets();
   const { t, i18n } = useTranslation();
+  const { colors } = useTheme();
+  const s = useThemedStyles(buildStyles);
   const locale = intlLocale(i18n.language);
   const [mode, setMode] = useState<ViewMode>("month");
   const [cursor, setCursor] = useState<Date>(new Date());
@@ -194,84 +199,86 @@ export default function CalendarScreen() {
   );
 }
 
-const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.canvas },
-  header: {
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.lineWhisper,
-    backgroundColor: "transparent",
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  title: {
-    flex: 1,
-    textAlign: "center",
-    fontFamily: fonts.displayMedium,
-    fontSize: 18,
-    color: colors.ink,
-    letterSpacing: 0.3,
-  },
-  iconButton: {
-    width: 36,
-    height: 36,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  todayPill: {
-    alignSelf: "center",
-    marginTop: 6,
-    borderWidth: 1,
-    borderColor: colors.primary,
-    borderRadius: 999,
-    paddingHorizontal: 14,
-    paddingVertical: 4,
-  },
-  todayPillText: {
-    fontFamily: fonts.bodyMedium,
-    fontSize: 11,
-    color: colors.primary,
-    letterSpacing: 0.4,
-    textTransform: "uppercase",
-  },
-  switcher: {
-    flexDirection: "row",
-    marginTop: 12,
-    backgroundColor: colors.lineWhisper,
-    borderRadius: 999,
-    padding: 3,
-  },
-  switchOption: {
-    flex: 1,
-    paddingVertical: 8,
-    alignItems: "center",
-    borderRadius: 999,
-  },
-  switchOptionActive: {
-    backgroundColor: colors.surface,
-  },
-  switchOptionText: {
-    fontFamily: fonts.bodyMedium,
-    fontSize: 13,
-    color: colors.inkMuted,
-  },
-  switchOptionTextActive: { fontFamily: fonts.bodySemiBold, color: colors.primary },
-  content: { flex: 1 },
-  centered: { flex: 1, alignItems: "center", justifyContent: "center" },
-  errorText: { fontFamily: fonts.body, fontSize: 14, color: colors.danger },
-  legend: {
-    position: "absolute",
-    left: 16,
-    right: 16,
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 16,
-  },
-  legendItem: { flexDirection: "row", alignItems: "center", gap: 6 },
-  legendDot: { width: 8, height: 8, borderRadius: 4 },
-  legendText: { fontFamily: fonts.body, fontSize: 11, color: colors.inkMuted, letterSpacing: 0.3 },
-});
+function buildStyles(c: ThemeColors) {
+  return StyleSheet.create({
+    screen: { flex: 1, backgroundColor: c.canvas },
+    header: {
+      paddingHorizontal: 16,
+      paddingBottom: 12,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: c.lineWhisper,
+      backgroundColor: "transparent",
+    },
+    headerRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
+    title: {
+      flex: 1,
+      textAlign: "center",
+      fontFamily: fonts.displayMedium,
+      fontSize: 18,
+      color: c.ink,
+      letterSpacing: 0.3,
+    },
+    iconButton: {
+      width: 36,
+      height: 36,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    todayPill: {
+      alignSelf: "center",
+      marginTop: 6,
+      borderWidth: 1,
+      borderColor: c.primary,
+      borderRadius: 999,
+      paddingHorizontal: 14,
+      paddingVertical: 4,
+    },
+    todayPillText: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 11,
+      color: c.primary,
+      letterSpacing: 0.4,
+      textTransform: "uppercase",
+    },
+    switcher: {
+      flexDirection: "row",
+      marginTop: 12,
+      backgroundColor: c.lineWhisper,
+      borderRadius: 999,
+      padding: 3,
+    },
+    switchOption: {
+      flex: 1,
+      paddingVertical: 8,
+      alignItems: "center",
+      borderRadius: 999,
+    },
+    switchOptionActive: {
+      backgroundColor: c.surface,
+    },
+    switchOptionText: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 13,
+      color: c.inkMuted,
+    },
+    switchOptionTextActive: { fontFamily: fonts.bodySemiBold, color: c.primary },
+    content: { flex: 1 },
+    centered: { flex: 1, alignItems: "center", justifyContent: "center" },
+    errorText: { fontFamily: fonts.body, fontSize: 14, color: c.danger },
+    legend: {
+      position: "absolute",
+      left: 16,
+      right: 16,
+      flexDirection: "row",
+      justifyContent: "center",
+      gap: 16,
+    },
+    legendItem: { flexDirection: "row", alignItems: "center", gap: 6 },
+    legendDot: { width: 8, height: 8, borderRadius: 4 },
+    legendText: { fontFamily: fonts.body, fontSize: 11, color: c.inkMuted, letterSpacing: 0.3 },
+  });
+}

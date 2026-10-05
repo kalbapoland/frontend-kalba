@@ -11,7 +11,10 @@ import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 
 import type { Workshop } from "@/types/api";
-import { colors, fonts } from "@/theme/tokens";
+import { fonts } from "@/theme/tokens";
+import { useTheme } from "@/theme/ThemeProvider";
+import { useThemedStyles } from "@/theme/useThemedStyles";
+import type { ThemeColors } from "@/theme/themes";
 import {
   DAY_END_HOUR,
   DAY_START_HOUR,
@@ -25,6 +28,73 @@ import {
 
 const HOUR_LABEL_WIDTH = 44;
 
+function buildStyles(c: ThemeColors) {
+  return StyleSheet.create({
+    container: { flex: 1 },
+    header: {
+      flexDirection: "row",
+      paddingVertical: 8,
+      paddingHorizontal: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: c.lineWhisper,
+    },
+    dayHeader: { alignItems: "center", gap: 4 },
+    dayWeekday: {
+      fontSize: 10,
+      color: c.inkMuted,
+      textTransform: "uppercase",
+      letterSpacing: 0.5,
+    },
+    dayNumberPill: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    dayNumber: { fontSize: 14, color: c.ink },
+    scroll: { flex: 1 },
+    grid: {
+      paddingTop: 8,
+      paddingHorizontal: 16,
+      position: "relative",
+    },
+    hourRow: {
+      height: HOUR_PX,
+      flexDirection: "row",
+      alignItems: "flex-start",
+    },
+    hourLabel: {
+      width: HOUR_LABEL_WIDTH,
+      fontSize: 10,
+      color: c.inkMuted,
+      marginTop: -4,
+    },
+    hourLine: {
+      flex: 1,
+      height: 1,
+      backgroundColor: c.lineWhisper,
+      marginTop: 6,
+    },
+    columnDivider: {
+      position: "absolute",
+      top: 0,
+      bottom: 0,
+      width: 1,
+      backgroundColor: c.lineWhisper,
+    },
+    event: {
+      position: "absolute",
+      borderRadius: 8,
+      borderLeftWidth: 2,
+      paddingHorizontal: 4,
+      paddingVertical: 3,
+      overflow: "hidden",
+    },
+    eventTitle: { fontSize: 11, fontFamily: fonts.bodyMedium, color: c.ink },
+  });
+}
+
 type Props = {
   workshops: Workshop[];
   date: Date;
@@ -34,6 +104,8 @@ type Props = {
 export function WeekView({ workshops, date, onSelectDay }: Props) {
   const router = useRouter();
   const { i18n } = useTranslation();
+  const { colors } = useTheme();
+  const s = useThemedStyles(buildStyles);
   const { width } = useWindowDimensions();
   const columnWidth = (width - 32 - HOUR_LABEL_WIDTH) / 7;
 
@@ -168,68 +240,3 @@ export function WeekView({ workshops, date, onSelectDay }: Props) {
     </View>
   );
 }
-
-const s = StyleSheet.create({
-  container: { flex: 1 },
-  header: {
-    flexDirection: "row",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.lineWhisper,
-  },
-  dayHeader: { alignItems: "center", gap: 4 },
-  dayWeekday: {
-    fontSize: 10,
-    color: colors.inkMuted,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
-  dayNumberPill: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  dayNumber: { fontSize: 14, color: colors.ink },
-  scroll: { flex: 1 },
-  grid: {
-    paddingTop: 8,
-    paddingHorizontal: 16,
-    position: "relative",
-  },
-  hourRow: {
-    height: HOUR_PX,
-    flexDirection: "row",
-    alignItems: "flex-start",
-  },
-  hourLabel: {
-    width: HOUR_LABEL_WIDTH,
-    fontSize: 10,
-    color: colors.inkMuted,
-    marginTop: -4,
-  },
-  hourLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: colors.lineWhisper,
-    marginTop: 6,
-  },
-  columnDivider: {
-    position: "absolute",
-    top: 0,
-    bottom: 0,
-    width: 1,
-    backgroundColor: colors.lineWhisper,
-  },
-  event: {
-    position: "absolute",
-    borderRadius: 8,
-    borderLeftWidth: 2,
-    paddingHorizontal: 4,
-    paddingVertical: 3,
-    overflow: "hidden",
-  },
-  eventTitle: { fontSize: 11, fontFamily: fonts.bodyMedium, color: colors.ink },
-});

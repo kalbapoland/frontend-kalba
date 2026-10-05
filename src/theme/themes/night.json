@@ -26,6 +26,8 @@
     "signal": "#E8A87C",
     "signalWash": "#3D2E22",
 
-    "deep": "#0F0E0D"
+    "deep": "#0F0E0D",
+
+    "floatingPillBorder": "rgba(58,56,53,0.85)"
   }
 }

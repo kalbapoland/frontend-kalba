@@ -3,9 +3,20 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 
 import { AppText } from "@/components/AppText";
 import { PressableScale } from "@/components/PressableScale";
-import { colors, layout, radii } from "@/theme/tokens";
+import { layout, radii } from "@/theme/tokens";
+import { useTheme } from "@/theme/ThemeProvider";
+import { useThemedStyles } from "@/theme/useThemedStyles";
+import type { ThemeColors } from "@/theme/themes";
 
 type Variant = "primary" | "secondary" | "ghost" | "danger";
+
+/** Zero-allocation variant lookup (palette key, not value) — see AppText. */
+const TEXT_COLOR_KEYS: Record<Variant, keyof ThemeColors> = {
+  primary: "elevated",
+  secondary: "primary",
+  ghost: "inkBody",
+  danger: "danger",
+};
 
 interface ButtonProps {
   label: string;
@@ -20,12 +31,47 @@ interface ButtonProps {
   accessibilityLabel?: string;
 }
 
-const TEXT_COLORS: Record<Variant, string> = {
-  primary: colors.elevated,
-  secondary: colors.primary,
-  ghost: colors.inkBody,
-  danger: colors.danger,
-};
+function buildStyles(c: ThemeColors) {
+  return StyleSheet.create({
+    base: {
+      minHeight: layout.touchMinimum + 6,
+      borderRadius: radii.button,
+      paddingHorizontal: 28,
+      paddingVertical: 13,
+      alignItems: "center",
+      justifyContent: "center",
+      alignSelf: "flex-start",
+    },
+    fullWidth: {
+      alignSelf: "stretch",
+    },
+    content: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+    },
+    label: {
+      letterSpacing: 0.4,
+    },
+    primary: {
+      backgroundColor: c.primary,
+    },
+    secondary: {
+      backgroundColor: "transparent",
+      borderWidth: 1,
+      borderColor: c.primary,
+    },
+    ghost: {
+      backgroundColor: "transparent",
+    },
+    danger: {
+      backgroundColor: c.dangerWash,
+    },
+    inactive: {
+      opacity: 0.5,
+    },
+  });
+}
 
 /**
  * Pill button with pressed-scale + light haptic. Variants:
@@ -43,8 +89,10 @@ export function Button({
   testID,
   accessibilityLabel,
 }: ButtonProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(buildStyles);
   const inactive = disabled || loading;
-  const textColor = TEXT_COLORS[variant];
+  const textColor = colors[TEXT_COLOR_KEYS[variant]];
 
   return (
     <PressableScale
@@ -78,43 +126,3 @@ export function Button({
     </PressableScale>
   );
 }
-
-const styles = StyleSheet.create({
-  base: {
-    minHeight: layout.touchMinimum + 6,
-    borderRadius: radii.button,
-    paddingHorizontal: 28,
-    paddingVertical: 13,
-    alignItems: "center",
-    justifyContent: "center",
-    alignSelf: "flex-start",
-  },
-  fullWidth: {
-    alignSelf: "stretch",
-  },
-  content: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  label: {
-    letterSpacing: 0.4,
-  },
-  primary: {
-    backgroundColor: colors.primary,
-  },
-  secondary: {
-    backgroundColor: "transparent",
-    borderWidth: 1,
-    borderColor: colors.primary,
-  },
-  ghost: {
-    backgroundColor: "transparent",
-  },
-  danger: {
-    backgroundColor: colors.dangerWash,
-  },
-  inactive: {
-    opacity: 0.5,
-  },
-});

@@ -23,7 +23,10 @@ import { displayName, initials as userInitials } from "@/lib/user";
 import { AppText } from "@/components/AppText";
 import { Button } from "@/components/Button";
 import { listItemEntering } from "@/lib/entrance";
-import { colors, fonts, radii, shadows, spacing } from "@/theme/tokens";
+import { fonts, radii, shadows, spacing } from "@/theme/tokens";
+import { useTheme } from "@/theme/ThemeProvider";
+import { useThemedStyles } from "@/theme/useThemedStyles";
+import type { ThemeColors } from "@/theme/themes";
 
 const PRIVACY_POLICY_URL = "https://backend-kalba.fly.dev/privacy";
 
@@ -33,6 +36,8 @@ export default function ProfileScreen() {
   const signOut = useAuthStore((s) => s.signOut);
   const queryClient = useQueryClient();
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const s = useThemedStyles(buildStyles);
   const [deleting, setDeleting] = useState(false);
   const [editNameVisible, setEditNameVisible] = useState(false);
   const [nameInput, setNameInput] = useState("");
@@ -297,111 +302,113 @@ export default function ProfileScreen() {
   );
 }
 
-const s = StyleSheet.create({
-  screen: {
-    flex: 1,
-    paddingHorizontal: spacing.screenPadding,
-  },
-  card: {
-    alignItems: "center",
-    borderRadius: radii.card + 4,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.lineWhisper,
-    paddingHorizontal: 32,
-    paddingVertical: 40,
-    ...shadows.card,
-  },
-  avatarWrapper: {
-    width: 88,
-    height: 88,
-    marginBottom: spacing.cardPadding,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  avatarRing: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 44,
-  },
-  avatarInner: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: colors.surface,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  avatarInitials: {
-    fontFamily: fonts.display,
-    fontSize: 26,
-    lineHeight: 34,
-    letterSpacing: 2,
-    color: colors.primary,
-  },
-  email: {
-    marginTop: 6,
-  },
-  rolePill: {
-    marginTop: spacing.elementGap,
-    paddingHorizontal: spacing.elementGap,
-    paddingVertical: 6,
-    borderRadius: radii.button,
-    backgroundColor: colors.primaryWash,
-  },
-  bottomGroup: {
-    gap: 14,
-    alignItems: "stretch",
-  },
-  deleteButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    paddingVertical: 6,
-  },
-  privacyText: {
-    textAlign: "center",
-    textDecorationLine: "underline",
-  },
-  nameRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  editNameButton: {
-    padding: 4,
-  },
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.45)",
-    justifyContent: "flex-end",
-  },
-  modalSheet: {
-    backgroundColor: colors.surface,
-    borderTopLeftRadius: radii.card,
-    borderTopRightRadius: radii.card,
-    padding: spacing.screenPadding,
-    paddingBottom: 40,
-    gap: 16,
-  },
-  modalTitle: {
-    textAlign: "center",
-  },
-  modalInput: {
-    borderWidth: 1,
-    borderColor: colors.lineWhisper,
-    borderRadius: radii.button,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    color: colors.ink,
-    fontSize: 16,
-    backgroundColor: colors.canvas,
-  },
-  modalActions: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  modalActionButton: {
-    flex: 1,
-  },
-});
+function buildStyles(c: ThemeColors) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      paddingHorizontal: spacing.screenPadding,
+    },
+    card: {
+      alignItems: "center",
+      borderRadius: radii.card + 4,
+      backgroundColor: c.surface,
+      borderWidth: 1,
+      borderColor: c.lineWhisper,
+      paddingHorizontal: 32,
+      paddingVertical: 40,
+      ...shadows.card,
+    },
+    avatarWrapper: {
+      width: 88,
+      height: 88,
+      marginBottom: spacing.cardPadding,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    avatarRing: {
+      ...StyleSheet.absoluteFillObject,
+      borderRadius: 44,
+    },
+    avatarInner: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      backgroundColor: c.surface,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    avatarInitials: {
+      fontFamily: fonts.display,
+      fontSize: 26,
+      lineHeight: 34,
+      letterSpacing: 2,
+      color: c.primary,
+    },
+    email: {
+      marginTop: 6,
+    },
+    rolePill: {
+      marginTop: spacing.elementGap,
+      paddingHorizontal: spacing.elementGap,
+      paddingVertical: 6,
+      borderRadius: radii.button,
+      backgroundColor: c.primaryWash,
+    },
+    bottomGroup: {
+      gap: 14,
+      alignItems: "stretch",
+    },
+    deleteButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      paddingVertical: 6,
+    },
+    privacyText: {
+      textAlign: "center",
+      textDecorationLine: "underline",
+    },
+    nameRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+    },
+    editNameButton: {
+      padding: 4,
+    },
+    modalBackdrop: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.45)",
+      justifyContent: "flex-end",
+    },
+    modalSheet: {
+      backgroundColor: c.surface,
+      borderTopLeftRadius: radii.card,
+      borderTopRightRadius: radii.card,
+      padding: spacing.screenPadding,
+      paddingBottom: 40,
+      gap: 16,
+    },
+    modalTitle: {
+      textAlign: "center",
+    },
+    modalInput: {
+      borderWidth: 1,
+      borderColor: c.lineWhisper,
+      borderRadius: radii.button,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      color: c.ink,
+      fontSize: 16,
+      backgroundColor: c.canvas,
+    },
+    modalActions: {
+      flexDirection: "row",
+      gap: 12,
+    },
+    modalActionButton: {
+      flex: 1,
+    },
+  });
+}

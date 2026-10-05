@@ -101,7 +101,16 @@ export const typography = {
   },
 } as const satisfies Record<string, TextStyle>;
 
-/** Soft elevation presets — low opacity, large radius. */
+/**
+ * Soft elevation presets — low opacity, large radius.
+ *
+ * `shadowColor` is captured from the BUILD-time palette (module scope): it is
+ * the one colour token still outside the runtime `useTheme` pipeline. For
+ * `default`/`warm-deep` (dark ink on light canvas) this is visually correct
+ * in every theme; a runtime switch TO/FROM `night` would keep the opposite
+ * ink as shadow tint — acceptable until PR 3, which moves shadows into the
+ * per-theme factories.
+ */
 export const shadows = {
   card: {
     shadowColor: colors.ink,

@@ -2,10 +2,12 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   type ReactNode,
 } from "react";
 import { useColorScheme } from "react-native";
+import { makeMutable, type SharedValue } from "react-native-reanimated";
 
 import { useSettingsStore } from "@/store/settings";
 import {
@@ -16,6 +18,7 @@ import {
 } from "@/theme/preference";
 import {
   THEMES,
+  DEFAULT_THEME,
   THEME_NAMES,
   type ThemeName,
   type ThemeColors,
@@ -66,6 +69,20 @@ export type ThemeContextValue = {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
+/**
+ * Shared value mirroring the active palette for Reanimated worklets —
+ * worklets cannot observe React context, so colour consumers (BreathingCircle,
+ * FloatingTabBar) read backgrounds from here.
+ *
+ * Created with `makeMutable` (Reanimated's public non-hook factory, review
+ * Major #1): a plain `{ value }` object would be cloned ONCE into the UI
+ * runtime and never updated — worklets would pin the default palette forever.
+ * A real shared value flows through the serializable cache as a live input,
+ * so `useDerivedValue(() => themeColorsSV.value)` re-fires on every change.
+ */
+export const themeColorsSV: SharedValue<ThemeColors> =
+  makeMutable<ThemeColors>(THEMES[DEFAULT_THEME]);
+
 function useThemeState(): ThemeContextValue {
   const locked = buildLock;
   const settings = useSettingsStore((s) => s.settings);
@@ -89,13 +106,15 @@ function useThemeState(): ThemeContextValue {
   );
 
   /**
-   * PR 1 scope cut (review Major #1): the provider RESOLVES and exposes the
-   * theme but performs NO native side effects — status bar, SystemUI root
-   * background and worklet colour-mirroring land in PR 3, together with the
-   * screen migration that makes screens actually consume this context.
-   * Until then, acting on the resolution would re-colour only system chrome
-   * and desynchronise it from the (still static) app surfaces.
+   * PR 2: worklet colour-mirror sync (consumed by BreathingCircle and
+   * FloatingTabBar). Only an in-memory shared value write — not a native
+   * side effect — so the provider stays visually inert (status bar and
+   * SystemUI root background still land in PR 3).
    */
+  useEffect(() => {
+    themeColorsSV.value = colors;
+  }, [colors]);
+
   const value = useMemo(
     () => ({
       colors,

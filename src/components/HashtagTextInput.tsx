@@ -19,7 +19,10 @@ import {
   isActiveHashtagBeyondCap,
   segmentDescription,
 } from "@/lib/hashtags";
-import { colors, fonts } from "@/theme/tokens";
+import { fonts } from "@/theme/tokens";
+import { useTheme } from "@/theme/ThemeProvider";
+import { useThemedStyles } from "@/theme/useThemedStyles";
+import type { ThemeColors } from "@/theme/themes";
 
 type Props = Pick<TextInputProps, "placeholder" | "testID"> & {
   value: string;
@@ -39,6 +42,8 @@ type Props = Pick<TextInputProps, "placeholder" | "testID"> & {
  */
 export function HashtagTextInput({ value, onChangeText, placeholder, testID }: Props) {
   const inputRef = useRef<TextInput>(null);
+  const { colors } = useTheme();
+  const s = useThemedStyles(buildStyles);
   const [focused, setFocused] = useState(false);
   const [selection, setSelection] = useState<{ start: number; end: number }>({
     start: 0,
@@ -166,84 +171,86 @@ export function HashtagTextInput({ value, onChangeText, placeholder, testID }: P
   );
 }
 
-const TEXT_STYLE = {
-  fontSize: 15,
-  lineHeight: 22,
-  color: colors.ink,
-} as const;
+function buildStyles(c: ThemeColors) {
+  const TEXT_STYLE = {
+    fontSize: 15,
+    lineHeight: 22,
+    color: c.ink,
+  } as const;
 
-const s = StyleSheet.create({
-  container: {
-    backgroundColor: colors.surface,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: "transparent",
-    minHeight: 100,
-    position: "relative",
-  },
-  containerFocused: {
-    borderColor: colors.primarySoft,
-  },
-  input: {
-    ...TEXT_STYLE,
-    color: "transparent",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    textAlignVertical: "top",
-    minHeight: 100,
-  },
-  overlay: {
-    ...TEXT_STYLE,
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  plain: TEXT_STYLE,
-  hashtag: {
-    ...TEXT_STYLE,
-    color: colors.accent,
-    textDecorationLine: "underline",
-  },
-  placeholder: {
-    ...TEXT_STYLE,
-    color: colors.inkMuted,
-  },
-  dropdown: {
-    marginTop: 6,
-    backgroundColor: colors.elevated,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.line,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  dropdownLoading: {
-    paddingVertical: 12,
-    alignItems: "center",
-  },
-  dropdownItem: {
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.lineWhisper,
-  },
-  dropdownItemPressed: {
-    backgroundColor: colors.primaryWash,
-  },
-  dropdownItemText: {
-    fontSize: 14,
-    color: colors.ink,
-  },
-  dropdownItemHash: {
-    color: colors.accent,
-    fontFamily: fonts.bodySemiBold,
-  },
-});
+  return StyleSheet.create({
+    container: {
+      backgroundColor: c.surface,
+      borderRadius: 14,
+      borderWidth: 1.5,
+      borderColor: "transparent",
+      minHeight: 100,
+      position: "relative",
+    },
+    containerFocused: {
+      borderColor: c.primarySoft,
+    },
+    input: {
+      ...TEXT_STYLE,
+      color: "transparent",
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      textAlignVertical: "top",
+      minHeight: 100,
+    },
+    overlay: {
+      ...TEXT_STYLE,
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+    },
+    plain: TEXT_STYLE,
+    hashtag: {
+      ...TEXT_STYLE,
+      color: c.accent,
+      textDecorationLine: "underline",
+    },
+    placeholder: {
+      ...TEXT_STYLE,
+      color: c.inkMuted,
+    },
+    dropdown: {
+      marginTop: 6,
+      backgroundColor: c.elevated,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: c.line,
+      overflow: "hidden",
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.08,
+      shadowRadius: 8,
+      elevation: 4,
+    },
+    dropdownLoading: {
+      paddingVertical: 12,
+      alignItems: "center",
+    },
+    dropdownItem: {
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: c.lineWhisper,
+    },
+    dropdownItemPressed: {
+      backgroundColor: c.primaryWash,
+    },
+    dropdownItemText: {
+      fontSize: 14,
+      color: c.ink,
+    },
+    dropdownItemHash: {
+      color: c.accent,
+      fontFamily: fonts.bodySemiBold,
+    },
+  });
+}

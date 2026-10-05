@@ -14,7 +14,10 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 
 import { requestPasswordReset } from "@/api/endpoints";
-import { colors, fonts, radii, spacing } from "@/theme/tokens";
+import { fonts, radii, spacing } from "@/theme/tokens";
+import { useTheme } from "@/theme/ThemeProvider";
+import { useThemedStyles } from "@/theme/useThemedStyles";
+import type { ThemeColors } from "@/theme/themes";
 
 const FORGOT_TEST_IDS = {
   emailInput: "forgot.email.input",
@@ -22,9 +25,96 @@ const FORGOT_TEST_IDS = {
   backButton: "forgot.back.button",
 } as const;
 
+function buildStyles(c: ThemeColors) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: c.canvas,
+    },
+    keyboardAvoidingView: {
+      flex: 1,
+      justifyContent: "center",
+      paddingHorizontal: spacing.screenPadding,
+    },
+    card: {
+      backgroundColor: c.surface,
+      borderColor: c.lineWhisper,
+      borderRadius: 28,
+      borderWidth: 1,
+      padding: 24,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 14 },
+      shadowOpacity: 0.08,
+      shadowRadius: 24,
+      elevation: 4,
+    },
+    heading: {
+      color: c.ink,
+      fontSize: 26,
+      lineHeight: 34,
+      fontFamily: fonts.displayMedium,
+      textAlign: "center",
+    },
+    subheading: {
+      color: c.inkBody,
+      fontSize: 14,
+      lineHeight: 21,
+      marginTop: 10,
+      textAlign: "center",
+    },
+    form: {
+      gap: spacing.elementGap,
+      marginTop: 24,
+    },
+    inputGroup: {
+      gap: 8,
+    },
+    label: {
+      color: c.ink,
+      fontSize: 14,
+      fontFamily: fonts.bodySemiBold,
+    },
+    input: {
+      backgroundColor: c.elevated,
+      borderColor: c.line,
+      borderRadius: radii.input,
+      borderWidth: 1,
+      color: c.ink,
+      fontSize: 16,
+      minHeight: 54,
+      paddingHorizontal: 16,
+    },
+    primaryButton: {
+      alignItems: "center",
+      backgroundColor: c.primary,
+      borderRadius: radii.button,
+      justifyContent: "center",
+      minHeight: 54,
+      marginTop: 24,
+    },
+    primaryButtonText: {
+      color: c.surface,
+      fontSize: 16,
+      fontFamily: fonts.bodySemiBold,
+      letterSpacing: 0.4,
+    },
+    footerRow: {
+      alignItems: "center",
+      marginTop: 18,
+    },
+    footerLink: {
+      color: c.accent,
+      fontSize: 14,
+      fontFamily: fonts.bodySemiBold,
+    },
+  });
+}
+
 export default function ForgotPasswordScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { colors } = useTheme();
+  const s = useThemedStyles(buildStyles);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -145,86 +235,3 @@ export default function ForgotPasswordScreen() {
     </View>
   );
 }
-
-const s = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.canvas,
-  },
-  keyboardAvoidingView: {
-    flex: 1,
-    justifyContent: "center",
-    paddingHorizontal: spacing.screenPadding,
-  },
-  card: {
-    backgroundColor: colors.surface,
-    borderColor: colors.lineWhisper,
-    borderRadius: 28,
-    borderWidth: 1,
-    padding: 24,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 14 },
-    shadowOpacity: 0.08,
-    shadowRadius: 24,
-    elevation: 4,
-  },
-  heading: {
-    color: colors.ink,
-    fontSize: 26,
-    lineHeight: 34,
-    fontFamily: fonts.displayMedium,
-    textAlign: "center",
-  },
-  subheading: {
-    color: colors.inkBody,
-    fontSize: 14,
-    lineHeight: 21,
-    marginTop: 10,
-    textAlign: "center",
-  },
-  form: {
-    gap: spacing.elementGap,
-    marginTop: 24,
-  },
-  inputGroup: {
-    gap: 8,
-  },
-  label: {
-    color: colors.ink,
-    fontSize: 14,
-    fontFamily: fonts.bodySemiBold,
-  },
-  input: {
-    backgroundColor: colors.elevated,
-    borderColor: colors.line,
-    borderRadius: radii.input,
-    borderWidth: 1,
-    color: colors.ink,
-    fontSize: 16,
-    minHeight: 54,
-    paddingHorizontal: 16,
-  },
-  primaryButton: {
-    alignItems: "center",
-    backgroundColor: colors.primary,
-    borderRadius: radii.button,
-    justifyContent: "center",
-    minHeight: 54,
-    marginTop: 24,
-  },
-  primaryButtonText: {
-    color: colors.surface,
-    fontSize: 16,
-    fontFamily: fonts.bodySemiBold,
-    letterSpacing: 0.4,
-  },
-  footerRow: {
-    alignItems: "center",
-    marginTop: 18,
-  },
-  footerLink: {
-    color: colors.accent,
-    fontSize: 14,
-    fontFamily: fonts.bodySemiBold,
-  },
-});

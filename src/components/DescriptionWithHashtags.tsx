@@ -1,15 +1,31 @@
 import { StyleSheet, Text, type TextStyle } from "react-native";
 
 import { segmentDescription } from "@/lib/hashtags";
-import { colors } from "@/theme/tokens";
+import { useThemedStyles } from "@/theme/useThemedStyles";
+import type { ThemeColors } from "@/theme/themes";
 
 type Props = {
   text: string;
   style?: TextStyle;
 };
 
+function buildStyles(c: ThemeColors) {
+  return StyleSheet.create({
+    base: {
+      color: c.inkBody,
+      fontSize: 15,
+      lineHeight: 22,
+    },
+    hashtag: {
+      color: c.accent,
+      textDecorationLine: "underline",
+    },
+  });
+}
+
 /** Renders description text with the first 5 hashtags highlighted. */
 export function DescriptionWithHashtags({ text, style }: Props) {
+  const s = useThemedStyles(buildStyles);
   const segments = segmentDescription(text);
   if (segments.length === 0) {
     return null;
@@ -29,15 +45,3 @@ export function DescriptionWithHashtags({ text, style }: Props) {
     </Text>
   );
 }
-
-const s = StyleSheet.create({
-  base: {
-    color: colors.inkBody,
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  hashtag: {
-    color: colors.accent,
-    textDecorationLine: "underline",
-  },
-});
