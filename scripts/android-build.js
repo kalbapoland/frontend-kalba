@@ -4,7 +4,9 @@
  * Usage: node scripts/android-build.js <variant> <backend> [theme]
  *   variant: debug | release
  *   backend: local | remote
- *   theme:   registered in src/theme/themes/registry.json (defaults to "default")
+ *   theme:   registered in src/theme/themes/registry.json, "system", or omitted
+ *            (defaults to "default"). "system" pins nothing: the app follows
+ *            the OS light/dark switch at runtime.
  */
 const fs = require('fs');
 const path = require('path');
@@ -21,16 +23,16 @@ const themeRegistry = JSON.parse(
   fs.readFileSync(path.join(THEMES_DIR, 'registry.json'), 'utf8'),
 );
 const theme = themeArg || 'default';
-const availableThemes = Object.keys(themeRegistry).sort();
+const availableThemes = Object.keys(themeRegistry).sort().concat('system');
 
 // Fail before Gradle starts rather than after a multi-minute build.
-if (!Object.prototype.hasOwnProperty.call(themeRegistry, theme)) {
+if (theme !== 'system' && !Object.prototype.hasOwnProperty.call(themeRegistry, theme)) {
   console.error(`[android-build] Unknown theme "${theme}". Available: ${availableThemes.join(', ')}`);
   process.exit(1);
 }
 
-const themeFile = themeRegistry[theme];
-if (typeof themeFile !== 'string' || !fs.existsSync(path.join(THEMES_DIR, themeFile))) {
+const themeFile = theme === 'system' ? null : themeRegistry[theme];
+if (themeFile !== null && (typeof themeFile !== 'string' || !fs.existsSync(path.join(THEMES_DIR, themeFile)))) {
   console.error(`[android-build] Theme "${theme}" has no palette file in the theme registry.`);
   process.exit(1);
 }
@@ -58,9 +60,17 @@ if (backend === 'remote') {
   });
 }
 
-// Set the selected theme after loading backend env so .env.dev cannot override it.
-env.EXPO_PUBLIC_THEME = theme;
-console.log(`[android-build] Theme: ${theme}`);
+// Set the selected theme after loading backend env so .env.dev cannot
+// override it. "system" pins nothing: an EMPTY string wins over any EXPO_PUBLIC_THEME
+// hidden in .env/.env.local (process env takes precedence), and the runtime
+// resolver treats blank exactly like unset (unlocked, default palette).
+if (theme === 'system') {
+  env.EXPO_PUBLIC_THEME = '';
+  console.log('[android-build] Theme: system (runtime switching unlocked)');
+} else {
+  env.EXPO_PUBLIC_THEME = theme;
+  console.log(`[android-build] Theme: ${theme} (locked in-app)`);
+}
 
 // Run expo
 const expoArgs = ['expo', 'run:android'];

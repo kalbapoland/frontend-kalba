@@ -9,6 +9,8 @@ import { Slot, SplashScreen, useRouter } from "expo-router";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useFonts } from "expo-font";
 import { fontMap } from "@/theme/fonts";
+import { ThemeProvider } from "@/theme/ThemeProvider";
+import { useSettingsStore } from "@/store/settings";
 import { queryClient } from "@/lib/query-client";
 import { useAuthStore } from "@/store/auth";
 
@@ -61,12 +63,22 @@ export default function RootLayout() {
   const router = useRouter();
   const isRestoringToken = useAuthStore((s) => s.isRestoringToken);
   const restoreToken = useAuthStore((s) => s.restoreToken);
+  const hydrateSettings = useSettingsStore((s) => s.hydrate);
+  const settingsHydrated = useSettingsStore((s) => s.hydrated);
   const [fontsLoaded, fontError] = useFonts(fontMap);
   const fontsReady = fontsLoaded || fontError != null;
 
   useEffect(() => {
     restoreToken();
   }, [restoreToken]);
+
+  // Hydrate device settings before the splash hides, so the provider never
+  // paints a theme that is about to change (no flash of wrong appearance).
+  useEffect(() => {
+    void hydrateSettings().catch((error) => {
+      console.warn("[settings] hydrate failed:", error);
+    });
+  }, [hydrateSettings]);
 
   // Keep the app portrait by default. The native config (`orientation:
   // "default"`) permits all orientations so the call screen can rotate; this
@@ -82,10 +94,10 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    if (!isRestoringToken && fontsReady) {
+    if (!isRestoringToken && fontsReady && settingsHydrated) {
       SplashScreen.hideAsync();
     }
-  }, [isRestoringToken, fontsReady]);
+  }, [isRestoringToken, fontsReady, settingsHydrated]);
 
   useEffect(() => {
     if (Platform.OS === "web") {
@@ -120,13 +132,15 @@ export default function RootLayout() {
     };
   }, [router]);
 
-  if (isRestoringToken || !fontsReady) {
+  if (isRestoringToken || !fontsReady || !settingsHydrated) {
     return null;
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <Slot />
-    </QueryClientProvider>
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <Slot />
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }
