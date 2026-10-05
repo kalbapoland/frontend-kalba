@@ -251,7 +251,18 @@
         "delete_failed": "We couldn't delete your account right now. Please try again.",
         "deleting": "Deleting…",
         "delete": "Delete",
-        "privacy_policy": "Privacy Policy"
+        "privacy_policy": "Privacy Policy",
+        "appearance_title": "Appearance",
+        "appearance_option_system": "Follow system",
+        "appearance_hint_light_fixed": "Always light, regardless of the system setting",
+        "system_scheme_light": "following the system (now: light)",
+        "system_scheme_dark": "following the system (now: dark)",
+        "dev_options_title": "Developer options",
+        "dev_options_hint": "Visible in test builds only. Overrides “Follow system”.",
+        "dev_option_palette_none": "Default (no override)",
+        "dev_option_theme_default": "Default",
+        "dev_option_theme_warm_deep": "Warm deep",
+        "dev_option_theme_night": "Night"
     },
     "errors": {
         "title": "Error",

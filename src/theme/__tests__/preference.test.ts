@@ -4,43 +4,59 @@ import {
   THEME_NAMES,
   type ThemeName,
 } from "@/theme/themes";
-import { resolveTheme, type SystemScheme, type ThemePreference } from "@/theme/preference";
+import {
+  resolveTheme,
+  isDarkTheme,
+  type SystemScheme,
+  type ThemeSelection,
+} from "@/theme/preference";
 
 const SCHEMES: SystemScheme[] = ["light", "dark", null];
 
 describe("resolveTheme", () => {
-  test.each(SCHEMES)('preference "system" with scheme %s maps light→default, dark→night', (scheme) => {
-    const result = resolveTheme("system", scheme);
-
-    if (scheme === "dark") {
-      expect(result).toBe("night");
-    } else {
-      // light AND null (scheme not yet known) stay on the light palette.
-      expect(result).toBe(DEFAULT_THEME);
-      expect(result).not.toBe("night");
-    }
-  });
-
-  test.each(THEME_NAMES)('explicit preference "%s" wins over any system scheme', (theme) => {
-    for (const scheme of SCHEMES) {
-      expect(resolveTheme(theme, scheme)).toBe(theme);
-    }
-  });
-
-  test("system maps to registered themes only", () => {
+  test('"system" maps dark→night, light/null→default', () => {
     for (const scheme of SCHEMES) {
       const result = resolveTheme("system", scheme);
-      expect(THEME_NAMES).toContain(result);
+      if (scheme === "dark") {
+        expect(result).toBe("night");
+      } else {
+        // light AND null (scheme not yet known) stay on the light palette.
+        expect(result).toBe(DEFAULT_THEME);
+      }
     }
   });
 
-  test("every registered theme is reachable via preference", () => {
-    for (const name of THEME_NAMES) {
-      expect(resolveTheme(name as ThemePreference, "light")).toBe(name);
+  test('"light" pins the light palette regardless of the OS switch', () => {
+    for (const scheme of SCHEMES) {
+      expect(resolveTheme("light", scheme)).toBe(DEFAULT_THEME);
     }
   });
 
-  test("default palette is light (dark resolution requires explicit night)", () => {
+  test.each(THEME_NAMES)("a pinned name (%s) wins over any system scheme", (theme) => {
+    for (const scheme of SCHEMES) {
+      expect(resolveTheme(theme as ThemeSelection, scheme)).toBe(theme);
+    }
+  });
+
+  test("every selection result is a registered theme", () => {
+    const selections: ThemeSelection[] = ["system", "light", ...THEME_NAMES];
+    for (const selection of selections) {
+      for (const scheme of SCHEMES) {
+        expect(THEME_NAMES).toContain(resolveTheme(selection, scheme));
+      }
+    }
+  });
+
+  test("isDarkTheme agrees with the dark mapping (chrome flips with palette)", () => {
+    expect(isDarkTheme(resolveTheme("system", "dark"))).toBe(true);
+    expect(isDarkTheme(resolveTheme("system", "light"))).toBe(false);
+    expect(isDarkTheme(resolveTheme("light", "dark"))).toBe(false);
+    expect(isDarkTheme("night")).toBe(true);
+    expect(isDarkTheme("default")).toBe(false);
+    expect(isDarkTheme("warm-deep")).toBe(false);
+  });
+
+  test("default palette is light (dark resolution requires system+dark or night pin)", () => {
     expect(DEFAULT_THEME).not.toBe("night");
     expect(THEMES[DEFAULT_THEME as ThemeName].canvas).toMatch(/^#[EF]/);
   });

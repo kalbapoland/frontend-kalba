@@ -26,7 +26,10 @@
     "android:release:local:warm-deep": "adb reverse tcp:8000 tcp:8000 && node scripts/android-build.js release local warm-deep",
     "android:release:local:night": "adb reverse tcp:8000 tcp:8000 && node scripts/android-build.js release local night",
     "android:debug:local:warm-deep": "node scripts/android-build.js debug local warm-deep",
-    "android:debug:local:night": "node scripts/android-build.js debug local night"
+    "android:debug:local:night": "node scripts/android-build.js debug local night",
+    "android:release:local:test": "adb reverse tcp:8000 tcp:8000 && node scripts/android-build.js release local system test",
+    "android:release:remote:test": "node scripts/android-build.js release remote system test",
+    "android:debug:local:test": "node scripts/android-build.js debug local system test"
   },
   "jest": {
     "preset": "jest-expo",

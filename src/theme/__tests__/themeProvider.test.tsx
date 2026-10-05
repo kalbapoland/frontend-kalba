@@ -5,6 +5,9 @@ import { THEMES } from "@/theme/themes";
 import { useSettingsStore } from "@/store/settings";
 import { defaultSettings } from "@/lib/persistence/schema";
 
+// Developer-options visibility is a build flag; force it true for the suite.
+jest.mock("@/lib/buildVariant", () => ({ isTestBuild: true }));
+
 jest.mock("@react-native-async-storage/async-storage", () => ({
   getItem: jest.fn().mockResolvedValue(null),
   setItem: jest.fn().mockResolvedValue(undefined),
@@ -44,7 +47,7 @@ describe("themeColorsSV worklet mirror (review Major #1/#2 contract)", () => {
     expect(flag).toBe(true);
   });
 
-  test("follows a runtime preference change (provider → mirror sync)", async () => {
+  test("follows a runtime override change (provider → mirror sync)", async () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <ThemeProvider>{children}</ThemeProvider>
     );
@@ -53,7 +56,7 @@ describe("themeColorsSV worklet mirror (review Major #1/#2 contract)", () => {
     const initial = result.current.colors;
 
     await act(async () => {
-      result.current.setPreference("night");
+      result.current.setDevOverride("night");
     });
 
     expect(themeColorsSV.value).toBe(THEMES.night);
@@ -90,9 +93,75 @@ describe("useTheme", () => {
 
     expect(result.current.themeName).toBe("default");
     expect(result.current.colors).toEqual(THEMES.default);
+    expect(result.current.appearancePolicy).toBe("system");
     expect(result.current.preference).toBe("system");
+    expect(result.current.systemFollowing).toBe(true);
     expect(result.current.canChangeTheme).toBe(true);
     expect(typeof result.current.setPreference).toBe("function");
+    expect(typeof result.current.setDevOverride).toBe("function");
+  });
+
+  test("appearance switch OFF pins light even when the OS is dark", async () => {
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <ThemeProvider>{children}</ThemeProvider>
+    );
+
+    const { result } = renderHook(() => useTheme(), { wrapper });
+
+    await act(async () => {
+      result.current.setPreference("light");
+    });
+
+    await act(async () => {
+      // flush the zustand update
+    });
+
+    expect(useSettingsStore.getState().settings.themePreference).toBe("light");
+    expect(result.current.appearancePolicy).toBe("light");
+    expect(result.current.themeName).toBe("default"); // pinned light
+    expect(result.current.systemFollowing).toBe(false);
+  });
+
+  test("dev override wins over system-following (test-build contract)", async () => {
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <ThemeProvider>{children}</ThemeProvider>
+    );
+
+    const { result } = renderHook(() => useTheme(), { wrapper });
+
+    await act(async () => {
+      result.current.setDevOverride("warm-deep");
+    });
+
+    // Re-render happens through zustand; assert the resolved state.
+    await act(async () => {
+      // give the store flush one tick
+    });
+
+    expect(useSettingsStore.getState().settings.devThemeOverride).toBe("warm-deep");
+    expect(result.current.preference).toBe("warm-deep");
+    expect(result.current.systemFollowing).toBe(false);
+    expect(result.current.themeName).toBe("warm-deep");
+    expect(result.current.colors).toEqual(THEMES["warm-deep"]);
+    expect(themeColorsSV.value).toBe(THEMES["warm-deep"]);
+  });
+
+  test("clearing the dev override returns to system-following", async () => {
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <ThemeProvider>{children}</ThemeProvider>
+    );
+
+    const { result } = renderHook(() => useTheme(), { wrapper });
+
+    await act(async () => {
+      result.current.setDevOverride("night");
+    });
+    await act(async () => {
+      result.current.setDevOverride(null);
+    });
+
+    expect(useSettingsStore.getState().settings.devThemeOverride).toBeNull();
+    expect(result.current.systemFollowing).toBe(true);
   });
 
   test("consumer components re-render with the theme context", () => {

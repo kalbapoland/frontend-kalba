@@ -6,56 +6,76 @@ import {
 import { parseAndMigrate } from "@/lib/persistence/migrate";
 import { validateSettings } from "@/lib/persistence/validate";
 
+/**
+ * These tests exercise the validation contract itself, not the build flag:
+ * `testMode: true` reflects the TEST build the dev override belongs to. The
+ * production-behaviour case (override dropped) is asserted explicitly in the
+ * settings store suite via the same parameter.
+ */
+const TEST_BUILD = true;
+
 function blob(settings: Record<string, unknown>, version: number = SETTINGS_VERSION): string {
   return JSON.stringify({ version, settings });
+}
+
+/** Migration with an explicit test-build mode. */
+function migrateTest(raw: string | null, version?: number) {
+  return parseAndMigrate(raw, version, TEST_BUILD);
 }
 
 describe("parseAndMigrate", () => {
   test("null/corrupt/non-object blobs degrade to defaults (never throw)", () => {
     for (const raw of [null, "", "{not-json", "[]", "42", '"string"', blob({ version: "x" })]) {
-      expect(() => parseAndMigrate(raw)).not.toThrow();
-      expect(parseAndMigrate(raw)).toEqual(defaultSettings());
+      expect(() => migrateTest(raw)).not.toThrow();
+      expect(migrateTest(raw)).toEqual(defaultSettings());
     }
   });
 
   test("missing blob wrapper fields degrade to defaults", () => {
-    expect(parseAndMigrate(JSON.stringify({ settings: {} }))).toEqual(defaultSettings());
-    expect(parseAndMigrate(JSON.stringify({ version: SETTINGS_VERSION }))).toEqual(defaultSettings());
+    expect(migrateTest(JSON.stringify({ settings: {} }))).toEqual(defaultSettings());
+    expect(migrateTest(JSON.stringify({ version: SETTINGS_VERSION }))).toEqual(defaultSettings());
   });
 
-  test("a valid v1 blob round-trips", () => {
-    const settings = { themePreference: "night", consentsAccepted: ["tos_v1"] };
-    const result = parseAndMigrate(blob(settings));
+  test("a valid v2 blob round-trips (dev override + consents)", () => {
+    const settings = { themePreference: "system", devThemeOverride: "night", consentsAccepted: ["tos_v1"] };
+    const result = migrateTest(blob(settings));
 
-    expect(result.themePreference).toBe("night");
+    expect(result.themePreference).toBe("system");
+    expect(result.devThemeOverride).toBe("night");
     expect(result.consentsAccepted).toEqual(["tos_v1"]);
   });
 
-  test("unknown themePreference falls back to default, valid one is kept", () => {
-    expect(parseAndMigrate(blob({ themePreference: "neon-cyberpunk" })).themePreference).toBe(
-      defaultSettings().themePreference,
-    );
-    expect(parseAndMigrate(blob({ themePreference: "system" })).themePreference).toBe("system");
-    expect(parseAndMigrate(blob({ themePreference: "warm-deep" })).themePreference).toBe("warm-deep");
+  test("unknown devThemeOverride falls back to null, valid one is kept", () => {
+    expect(migrateTest(blob({ devThemeOverride: "neon-cyberpunk" })).devThemeOverride).toBeNull();
+    expect(migrateTest(blob({ devThemeOverride: "system" })).devThemeOverride).toBeNull();
+    expect(migrateTest(blob({ devThemeOverride: "warm-deep" })).devThemeOverride).toBe("warm-deep");
+    expect(migrateTest(blob({ devThemeOverride: null })).devThemeOverride).toBeNull();
   });
 
   test("non-string consent entries are filtered, not dropped", () => {
-    const result = parseAndMigrate(blob({ consentsAccepted: ["tos_v1", 42, null, "privacy_v2"] }));
+    const result = migrateTest(blob({ consentsAccepted: ["tos_v1", 42, null, "privacy_v2"] }));
 
     expect(result.consentsAccepted).toEqual(["tos_v1", "privacy_v2"]);
   });
 
   test("blob from a NEWER app version is still parsed (fields validated)", () => {
-    const settings = { themePreference: "night", futureField: { a: 1 } };
-    const result = parseAndMigrate(blob(settings, SETTINGS_VERSION + 1));
+    const settings = { themePreference: "system", devThemeOverride: "night", futureField: { a: 1 } };
+    const result = migrateTest(blob(settings, SETTINGS_VERSION + 1));
 
-    expect(result.themePreference).toBe("night");
+    expect(result.devThemeOverride).toBe("night");
   });
 
   test("blob from an OLDER app version parses without migration errors", () => {
-    const result = parseAndMigrate(blob({ themePreference: "warm-deep" }, 0));
+    const result = migrateTest(blob({ themePreference: "light" }, 0));
 
-    expect(result.themePreference).toBe("warm-deep");
+    expect(result.themePreference).toBe("light");
+    expect(result.devThemeOverride).toBeNull();
+  });
+
+  test("invalid devThemeOverride type degrades to null", () => {
+    for (const bad of [5, true, ["night"], { themePreference: "night" }]) {
+      expect(migrateTest(blob({ devThemeOverride: bad })).devThemeOverride).toBeNull();
+    }
   });
 
   test("validateSettings on garbage returns clean defaults", () => {

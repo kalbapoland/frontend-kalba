@@ -26,7 +26,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { PressableScale } from "@/components/PressableScale";
 import { SectionHeader } from "@/components/SectionHeader";
 import { SkeletonList } from "@/components/Skeleton";
-import { radii, shadows, spacing } from "@/theme/tokens";
+import { radii, cardShadow, spacing } from "@/theme/tokens";
 import { useTheme } from "@/theme/ThemeProvider";
 import { useThemedStyles } from "@/theme/useThemedStyles";
 import type { ThemeColors } from "@/theme/themes";
@@ -164,7 +164,7 @@ function buildStyles(c: ThemeColors) {
       borderColor: c.lineWhisper,
       padding: spacing.cardPadding,
       marginBottom: spacing.elementGap,
-      ...shadows.card,
+      ...cardShadow(c),
     },
     cardBody: {
       flex: 1,

@@ -9,7 +9,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import { radii, shadows, spacing } from "@/theme/tokens";
+import { radii, cardShadow, spacing } from "@/theme/tokens";
 import { useTheme } from "@/theme/ThemeProvider";
 import { useThemedStyles } from "@/theme/useThemedStyles";
 import type { ThemeColors } from "@/theme/themes";
@@ -33,7 +33,7 @@ function buildStyles(c: ThemeColors) {
       borderColor: c.lineWhisper,
       padding: spacing.cardPadding,
       marginBottom: spacing.elementGap,
-      ...shadows.card,
+      ...cardShadow(c),
     },
     cardBody: {
       flex: 1,

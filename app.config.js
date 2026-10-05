@@ -67,7 +67,7 @@ module.exports = {
     // runtime (root layout + call-screen cleanup) — see BL-004.
     orientation: "default",
     icon: "./assets/icon.png",
-    userInterfaceStyle: "light",
+    userInterfaceStyle: "automatic",
     newArchEnabled: true,
     splash: {
       image: "./assets/splash-icon.png",

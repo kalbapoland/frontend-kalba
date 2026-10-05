@@ -257,7 +257,18 @@
         "delete_failed": "Nie udało się teraz usunąć konta. Spróbuj ponownie.",
         "deleting": "Usuwanie…",
         "delete": "Usuń",
-        "privacy_policy": "Polityka prywatności"
+        "privacy_policy": "Polityka prywatności",
+        "appearance_title": "Wygląd",
+        "appearance_option_system": "Podążaj za systemem",
+        "appearance_hint_light_fixed": "Zawsze jasny motyw, niezależnie od systemu",
+        "system_scheme_light": "podąża za systemem (teraz: jasny)",
+        "system_scheme_dark": "podąża za systemem (teraz: ciemny)",
+        "dev_options_title": "Opcje deweloperskie",
+        "dev_options_hint": "Widoczne tylko w buildach testowych. Nadpisuje „Według systemu”.",
+        "dev_option_palette_none": "Domyślna (bez nadpisania)",
+        "dev_option_theme_default": "Domyślna",
+        "dev_option_theme_warm_deep": "Ciepła (warm-deep)",
+        "dev_option_theme_night": "Nocna (night)"
     },
     "errors": {
         "title": "Błąd",

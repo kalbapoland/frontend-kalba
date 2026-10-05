@@ -4,11 +4,15 @@
  * Contract: a broken settings blob must never crash startup. Unknown/corrupt
  * input degrades to schema defaults, and the caller repairs storage on the
  * next persist.
+ *
+ * `testMode` propagates to `validateSettings` (default: the real build
+ * flag) so tests can exercise both build flavours explicitly.
  */
 
 import { SETTINGS_VERSION } from "./schema";
 import { validateSettings } from "./validate";
 import type { SettingsSchema } from "./schema";
+import { isTestBuild } from "@/lib/buildVariant";
 
 type PersistedBlob = {
   version: number;
@@ -18,20 +22,23 @@ type PersistedBlob = {
 export function parseAndMigrate(
   raw: string | null,
   currentVersion: number = SETTINGS_VERSION,
+  testMode: boolean = isTestBuild,
 ): SettingsSchema {
+  const validate = (input: unknown): SettingsSchema => validateSettings(input, testMode);
+
   if (raw === null) {
-    return validateSettings(null);
+    return validate(null);
   }
 
   let blob: unknown;
   try {
     blob = JSON.parse(raw);
   } catch {
-    return validateSettings(null);
+    return validate(null);
   }
 
   if (typeof blob !== "object" || blob === null || Array.isArray(blob)) {
-    return validateSettings(null);
+    return validate(null);
   }
 
   const candidate = blob as Partial<PersistedBlob> & Record<string, unknown>;
@@ -44,16 +51,16 @@ export function parseAndMigrate(
       : null;
 
   if (version === null || settings === null) {
-    return validateSettings(null);
+    return validate(null);
   }
 
   // v1 is the first schema; future versions add per-version migrations here
-  // before falling through to `validateSettings`.
+  // before falling through to validation.
   if (version > currentVersion) {
     // Persisted by a NEWER app build (e.g. downgraded install). Fields the
-    // current schema does not know are dropped by `validateSettings`.
-    return validateSettings(settings);
+    // current schema does not know are dropped by validation.
+    return validate(settings);
   }
 
-  return validateSettings(settings);
+  return validate(settings);
 }

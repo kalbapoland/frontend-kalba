@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import type { Group } from "@/types/api";
 import { AppText } from "@/components/AppText";
 import { PressableScale } from "@/components/PressableScale";
-import { fonts, radii, shadows, spacing } from "@/theme/tokens";
+import { fonts, radii, cardShadow, spacing } from "@/theme/tokens";
 import { useTheme } from "@/theme/ThemeProvider";
 import { useThemedStyles } from "@/theme/useThemedStyles";
 import type { ThemeColors } from "@/theme/themes";
@@ -30,7 +30,7 @@ function buildStyles(c: ThemeColors) {
       borderColor: c.lineWhisper,
       marginBottom: spacing.itemGap,
       paddingLeft: spacing.elementGap,
-      ...shadows.card,
+      ...cardShadow(c),
     },
     avatar: {
       width: 48,

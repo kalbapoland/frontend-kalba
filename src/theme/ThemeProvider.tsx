@@ -7,6 +7,8 @@ import {
   type ReactNode,
 } from "react";
 import { useColorScheme } from "react-native";
+import { StatusBar } from "expo-status-bar";
+import * as SystemUI from "expo-system-ui";
 import { makeMutable, type SharedValue } from "react-native-reanimated";
 
 import { useSettingsStore } from "@/store/settings";
@@ -14,15 +16,17 @@ import {
   resolveTheme,
   isDarkTheme,
   type ThemePreference,
+  type ThemeSelection,
   type SystemScheme,
 } from "@/theme/preference";
+import type { ThemeName } from "@/theme/themes";
 import {
   THEMES,
   DEFAULT_THEME,
   THEME_NAMES,
-  type ThemeName,
   type ThemeColors,
 } from "@/theme/themes";
+import { isTestBuild as buildIsTest } from "@/lib/buildVariant";
 
 /**
  * Build-time lock policy, extracted for testability: Metro inlines
@@ -60,11 +64,20 @@ const buildLock: ThemeName | null = resolveBuildLock(process.env.EXPO_PUBLIC_THE
 export type ThemeContextValue = {
   colors: ThemeColors;
   themeName: ThemeName;
-  preference: ThemePreference;
+  /** Appearance switch value (Profile): "system" | "light". */
+  appearancePolicy: ThemePreference;
+  /** Effective selection for display: lock > override > switch value. */
+  preference: ThemeSelection;
   systemScheme: SystemScheme;
+  /** True when the resolved appearance follows the OS (no lock/override). */
+  systemFollowing: boolean;
+  /** TEST builds only: developer options section visibility. */
+  isTestBuild: boolean;
   /** False when a build-time lock overrides the preference. */
   canChangeTheme: boolean;
   setPreference: (preference: ThemePreference) => void;
+  /** Developer options: concrete palette override (ignored on locked builds). */
+  setDevOverride: (theme: ThemeName | null) => void;
 };
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
@@ -86,13 +99,18 @@ export const themeColorsSV: SharedValue<ThemeColors> =
 function useThemeState(): ThemeContextValue {
   const locked = buildLock;
   const settings = useSettingsStore((s) => s.settings);
-  const setThemePreference = useSettingsStore((s) => s.setThemePreference);
+  const setFollowSystem = useSettingsStore((s) => s.setFollowSystem);
+  const setDevThemeOverride = useSettingsStore((s) => s.setDevThemeOverride);
   const systemScheme = useColorScheme() as SystemScheme;
 
-  const preference: ThemePreference = locked ?? settings.themePreference;
+  // Lock (build-time) > dev override (test builds) > appearance switch.
+  const appearancePolicy: ThemePreference = settings.themePreference;
+  const activeOverride: ThemeName | null = locked ?? settings.devThemeOverride;
+  const preference: ThemeSelection = activeOverride ?? appearancePolicy;
   const themeName = resolveTheme(preference, systemScheme);
   const colors = THEMES[themeName];
 
+  /** Appearance switch from Profile: ON = follow system, OFF = light. */
   const setPreference = useCallback(
     (next: ThemePreference) => {
       if (locked) {
@@ -100,31 +118,64 @@ function useThemeState(): ThemeContextValue {
         return;
       }
 
-      void setThemePreference(next);
+      void setFollowSystem(next === "system");
     },
-    [locked, setThemePreference],
+    [locked, setFollowSystem],
+  );
+
+  /** Developer options: set/clear the palette override (test builds). */
+  const setDevOverride = useCallback(
+    (theme: ThemeName | null) => {
+      if (locked) {
+        console.warn("[theme] preference locked by build, ignoring dev override:", theme);
+        return;
+      }
+
+      void setDevThemeOverride(theme);
+    },
+    [locked, setDevThemeOverride],
   );
 
   /**
-   * PR 2: worklet colour-mirror sync (consumed by BreathingCircle and
-   * FloatingTabBar). Only an in-memory shared value write — not a native
-   * side effect — so the provider stays visually inert (status bar and
-   * SystemUI root background still land in PR 3).
+   * Worklet colour-mirror sync (consumed by BreathingCircle and
+   * FloatingTabBar) + native chrome effects (PR 3):
+   * status-bar text flip and the SystemUI root window background follow the
+   * resolved palette. One effect keeps light/dark transitions atomic.
    */
+  const dark = isDarkTheme(themeName);
   useEffect(() => {
     themeColorsSV.value = colors;
-  }, [colors]);
+    void SystemUI.setBackgroundColorAsync(colors.canvas).catch((error) => {
+      console.warn("[theme] native background update failed:", error);
+    });
+  }, [colors, dark]);
+
+  const systemFollowing = locked === null && settings.devThemeOverride === null && settings.themePreference === "system";
 
   const value = useMemo(
     () => ({
       colors,
       themeName,
+      appearancePolicy,
       preference,
       systemScheme,
+      systemFollowing,
+      isTestBuild: buildIsTest,
       canChangeTheme: locked === null,
       setPreference,
+      setDevOverride,
     }),
-    [colors, themeName, preference, systemScheme, locked, setPreference],
+    [
+      colors,
+      themeName,
+      appearancePolicy,
+      preference,
+      systemScheme,
+      systemFollowing,
+      locked,
+      setPreference,
+      setDevOverride,
+    ],
   );
 
   return value;
@@ -135,6 +186,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   return (
     <ThemeContext.Provider value={state}>
+      {/* Status-bar text follows the palette; the effect above covers the
+          root-window background so the pair stays atomic. */}
+      <StatusBar style={isDarkTheme(state.themeName) ? "light" : "dark"} />
       {children}
     </ThemeContext.Provider>
   );
@@ -151,4 +205,5 @@ export function useTheme(): ThemeContextValue {
   return ctx;
 }
 
-export { isDarkTheme };
+export { isDarkTheme, resolveTheme };
+export type { ThemePreference } from "@/theme/preference";

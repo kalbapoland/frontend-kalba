@@ -1,0 +1,51 @@
+appId: com.kalba.app
+---
+# Appearance on a PRODUCTION-flavour build (smoke runner builds
+# android:release:local — no EXPO_PUBLIC_APP_VARIANT=test): the switch works,
+# and the Developer options section must NEVER be visible.
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: signin.email.input
+    timeout: 15000
+- runFlow: ../common/login_user.yaml
+- extendedWaitUntil:
+    visible:
+      id: home.workshops.list
+    timeout: 20000
+
+- tapOn:
+    id: tab.profile.button
+- extendedWaitUntil:
+    visible:
+      id: profile.appearance.section
+    timeout: 10000
+
+# Production guard: dev options must not exist in this bundle.
+- assertNotVisible:
+    id: profile.devoptions.section
+
+# Switch OFF: pin light regardless of the OS setting.
+- tapOn:
+    id: profile.appearance.switch
+- extendedWaitUntil:
+    visible:
+      id: profile.appearance.section
+    timeout: 5000
+
+# Switch ON: follow the OS again.
+- tapOn:
+    id: profile.appearance.switch
+- extendedWaitUntil:
+    visible:
+      id: profile.appearance.section
+    timeout: 5000
+
+# Prove the session survived toggling (screen still functional).
+- tapOn:
+    id: tab.index.button
+- extendedWaitUntil:
+    visible:
+      id: home.workshops.list
+    timeout: 10000

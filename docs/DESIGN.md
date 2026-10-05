@@ -621,38 +621,66 @@ compared side by side against the baseline.
 
 ---
 
-## Theme Switching (build-time → runtime, in progress)
+## Theme Switching (runtime, system-following + test-build dev options)
 
-**Status:** in progress (2026-10-05) — build-time themes shipped (2026-10-04);
-runtime switching infrastructure landed, screen migration and the in-app
-toggle are the next phases. Plan reference: runtime-switching PR series
-(PR 1 infra → PR 2 screen migration → PR 3 toggle + native effects).
+**Status:** shipped (2026-10-05) — PR series complete: build-time themes
+(2026-10-04), runtime infrastructure (#116), screen migration (#117), and
+the appearance toggle + native chrome (this entry). Plan reference:
+runtime-switching PR series.
 
 ### Overview
 
-The app ships more than one palette so a visual direction can be evaluated on
-a real device render before it is committed to. `default` is the frozen
-baseline; `warm-deep` and `night` are evaluation candidates with Android
-screen-flow captures in `docs/screen-flow/`. Switching is a build-time
-concern — no runtime toggle yet.
+The app follows the OS light/dark switch in runtime (no rebuild): OS dark →
+`night` palette, OS light → `default`. **Test builds** additionally expose a
+Profile "Developer options" section that pins a concrete palette
+(`default` / `warm-deep` / `night`) overriding system-following until
+cleared. Production builds never render that section.
 
 ### Decisions
 
-#### Build-time switch, and (new) runtime layer
+#### Appearance policy — v2 settings model
 
-`EXPO_PUBLIC_THEME` is inlined by Metro at bundle time. When set, the palette
-is pinned and the in-app switch is **locked** — that keeps screen-flow
-galleries and smoke builds deterministic. When unset, the ThemeProvider
-resolves the theme at runtime: `"system"` follows the OS light/dark switch
-(dark → `night`), a concrete name pins a palette per user preference.
+`SettingsSchema` v2: `themePreference` is always `"system"` (the only
+user-facing policy — Profile → Appearance) and `devThemeOverride`
+(`ThemeName | null`) is the test-build override managed under Profile →
+Developer options. Resolution order in `ThemeProvider`: build lock →
+dev override → system-following. A v1 blob (concrete palette in
+`themePreference`) migrates to system-following with the override cleared.
 
-The runtime layer ships in phases: PR 1 adds `ThemeProvider`, the settings
-store, persistence (`AsyncStorage` blob under `kalba.settings.v1`, corrupted
-blobs degrade to defaults) and `useThemedStyles` caching — with the provider
-**inert** (no native side effects) until screens consume it. PR 2 migrates
-screens off module-level `StyleSheet.create` colour freezing (~29 files).
-PR 3 adds the profile toggle, native effects (status bar, root background)
-and worklet colour mirroring.
+#### Test vs production builds — Metro-inlined flag
+
+`EXPO_PUBLIC_APP_VARIANT` is inlined at bundle time; only `test` builds
+show the dev section (`src/lib/buildVariant.ts`; missing flag = production).
+The Android build helper takes a flavour argument (`test`), adds `-test` to
+the APK filename, and its npm scripts all contain `:test`
+(`android:release:local:test`, `android:release:remote:test`,
+`android:debug:local:test`) so the artifact type is always named.
+
+#### Skills
+
+`android-make-test-build` (Claude/CoPilot wrappers + Shared source of
+truth) builds test APKs with dev options; `android-make-release-build` is
+explicitly the **production-flavour** build and points test builds to the
+test skill.
+
+#### Build-time switch still supported for deterministic captures
+
+`EXPO_PUBLIC_THEME` remains the gallery/smoke pin: when the build helper is
+given a concrete theme (`:warm-deep`, `:night`), the in-app switch is locked
+and `system`/blank unlocks runtime switching. Screen-flow galleries capture
+that way.
+
+#### Native chrome follows the palette
+
+The status bar follows the resolved palette as a provider JSX prop
+(`expo-status-bar` `style`, driven by `isDarkTheme(themeName)`); the SystemUI
+root window background (Android nav bar area) and the worklet colour mirror
+share **one provider effect** so light/dark transitions stay atomic. All
+three derive from `isDarkTheme(themeName)` — a new dark palette must update
+that predicate, and every consumer flips together. `userInterfaceStyle` is
+`"automatic"` so the OS can drive scheme changes. Shadow presets became
+palette functions (`cardShadow(c)` / `raisedShadow(c)`) in `tokens.ts` — the
+last colour token joined the runtime pipeline.
 
 #### One JSON file per theme, identical key sets
 
@@ -684,29 +712,28 @@ sources of truth for colour is exactly the drift this change exists to prevent.
 
 ### Current limitations
 
-- PR 1 phase: screens still read the static `tokens.colors`; the provider is
-  resolved but inert — switching (and OS-following) will change app surfaces
-  only after PR 2's migration.
-- The 3 files using NativeWind `className` follow the theme only because
-  Tailwind recompiles per build — they cannot switch at runtime (PR 2).
-- `night` exists as a palette; full system-integrated dark mode
-  (`userInterfaceStyle: "automatic"`) lands with PR 3's native effects.
+- Developer options (palette override) exist only on test builds by design;
+  production users cannot pin a palette — appearance is system-following only.
+- `workshop/call.tsx` keeps its purpose-built dark chrome, outside themes.
+- Splash screen colour is static (`#ffffff` in app.config.js) — visible
+  briefly in dark mode before the first themed frame.
 - Contrast is verified by computation, not by a test in CI.
 
 ### Future improvements
 
-- PR 2: migrate module-level `StyleSheet.create` to `useThemedStyles`.
-- PR 3: in-app toggle in Profile, `userInterfaceStyle: "automatic"`, native
-  chrome effects, worklet colours via shared value.
 - Add a contrast-ratio test so a future palette edit cannot regress below AA.
+- Capture `night` screen-flow set via the runtime dev options (no rebuild).
+- Optional cleanup: remove `nativewind` + preset (0 `className` remain).
 
 ### How to build a theme
 
 ```powershell
-npm run android:release:local              # default
-npm run android:release:local:warm-deep    # warm-deep
-npm run android:release:local:night        # night
+npm run android:release:local              # production flavour, system-follow
+npm run android:release:local:warm-deep    # pinned warm-deep (gallery capture)
+npm run android:release:local:night        # pinned night
+npm run android:release:local:test         # TEST build: dev options in Profile
+npm run android:release:remote:test        # TEST build against dev backend
 ```
 
-The APK is named `kalba-<variant>-<backend>[-<theme>]-<date>.apk`, so builds
-for different themes do not overwrite each other.
+The APK is named `kalba-<variant>-<backend>[-<theme>][-test]-<date>.apk`, so
+builds for different themes/flavours do not overwrite each other.
