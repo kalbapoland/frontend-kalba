@@ -24,14 +24,57 @@ import { SectionHeader } from "@/components/SectionHeader";
 import { SkeletonList } from "@/components/Skeleton";
 import { listItemEntering } from "@/lib/entrance";
 import type { Group } from "@/types/api";
-import { colors, layout, shadows, spacing } from "@/theme/tokens";
+import { layout, shadows, spacing } from "@/theme/tokens";
+import { useTheme } from "@/theme/ThemeProvider";
+import { useThemedStyles } from "@/theme/useThemedStyles";
+import type { ThemeColors } from "@/theme/themes";
 
 function EmptyHint({ text }: { text: string }) {
+  const s = useThemedStyles(buildStyles);
+
   return (
     <AppText variant="caption" tone="muted" style={s.emptyHint}>
       {text}
     </AppText>
   );
+}
+
+function buildStyles(c: ThemeColors) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: c.canvas,
+    },
+    list: {
+      flex: 1,
+    },
+    center: {
+      justifyContent: "center",
+    },
+    pageTitle: {
+      marginBottom: 8,
+      paddingHorizontal: 4,
+    },
+    sectionLabelRow: {
+      marginTop: spacing.cardPadding,
+      marginBottom: spacing.elementGap,
+      paddingHorizontal: 4,
+    },
+    emptyHint: {
+      paddingHorizontal: 4,
+    },
+    fab: {
+      position: "absolute",
+      right: spacing.screenPadding,
+      width: layout.fabSize,
+      height: layout.fabSize,
+      borderRadius: layout.fabSize / 2,
+      backgroundColor: c.primary,
+      alignItems: "center",
+      justifyContent: "center",
+      ...shadows.raised,
+    },
+  });
 }
 
 export default function GroupsScreen() {
@@ -40,6 +83,8 @@ export default function GroupsScreen() {
   const insets = useSafeAreaInsets();
   const user = useAuthStore((state) => state.user);
   const isTrainer = user?.role === "trainer";
+  const { colors } = useTheme();
+  const s = useThemedStyles(buildStyles);
 
   const mine = useMyGroups();
   const all = useGroups();
@@ -169,39 +214,3 @@ export default function GroupsScreen() {
     </View>
   );
 }
-
-const s = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: colors.canvas,
-  },
-  list: {
-    flex: 1,
-  },
-  center: {
-    justifyContent: "center",
-  },
-  pageTitle: {
-    marginBottom: 8,
-    paddingHorizontal: 4,
-  },
-  sectionLabelRow: {
-    marginTop: spacing.cardPadding,
-    marginBottom: spacing.elementGap,
-    paddingHorizontal: 4,
-  },
-  emptyHint: {
-    paddingHorizontal: 4,
-  },
-  fab: {
-    position: "absolute",
-    right: spacing.screenPadding,
-    width: layout.fabSize,
-    height: layout.fabSize,
-    borderRadius: layout.fabSize / 2,
-    backgroundColor: colors.primary,
-    alignItems: "center",
-    justifyContent: "center",
-    ...shadows.raised,
-  },
-});

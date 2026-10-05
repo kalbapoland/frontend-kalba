@@ -27,12 +27,159 @@ import { EmptyState } from "@/components/EmptyState";
 import { SkeletonList } from "@/components/Skeleton";
 import { successFeedback } from "@/lib/haptics";
 import { translateApiError } from "@/lib/apiErrors";
-import { colors, fonts } from "@/theme/tokens";
+import { fonts } from "@/theme/tokens";
+import { useTheme } from "@/theme/ThemeProvider";
+import { useThemedStyles } from "@/theme/useThemedStyles";
+import type { ThemeColors } from "@/theme/themes";
 
 function formatPrice(price: string | number, freeLabel: string): string {
   const n = Number(price);
   if (n === 0) return freeLabel;
   return `$${n % 1 === 0 ? n : n.toFixed(2)}`;
+}
+
+function DetailRow({
+  icon,
+  label,
+  value,
+  last,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  value: string;
+  last?: boolean;
+}) {
+  const { colors } = useTheme();
+  const s = useThemedStyles(buildStyles);
+
+  return (
+    <View style={[s.detailRow, !last && s.detailRowBorder]}>
+      <Ionicons name={icon} size={17} color={colors.inkMuted} />
+      <Text style={s.detailLabel}>{label}</Text>
+      <Text style={s.detailValue}>{value}</Text>
+    </View>
+  );
+}
+
+function buildStyles(c: ThemeColors) {
+  return StyleSheet.create({
+    screen: { flex: 1, backgroundColor: c.canvas },
+    scroll: { flex: 1 },
+    centered: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: c.canvas,
+    },
+    navBar: { paddingHorizontal: 20, paddingBottom: 8 },
+    backButton: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
+    header: { paddingHorizontal: 24, paddingBottom: 28 },
+    title: {
+      fontFamily: fonts.displayLight,
+      fontSize: 28,
+      letterSpacing: 0.4,
+      lineHeight: 38,
+      color: c.ink,
+      marginBottom: 12,
+    },
+    dateRow: { flexDirection: "row", alignItems: "center", gap: 6 },
+    dateText: { fontFamily: fonts.body, fontSize: 14, color: c.inkBody, letterSpacing: 0.2 },
+    dateDot: { fontSize: 14, color: c.line, marginHorizontal: 2 },
+    section: { paddingHorizontal: 24, paddingBottom: 28 },
+    description: {
+      fontFamily: fonts.body,
+      fontSize: 16,
+      lineHeight: 26,
+      color: c.inkBody,
+      letterSpacing: 0.1,
+    },
+    sectionLabel: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 11,
+      letterSpacing: 2,
+      color: c.inkMuted,
+      textTransform: "uppercase",
+      marginBottom: 12,
+    },
+    detailCard: {
+      borderRadius: 20,
+      backgroundColor: c.surface,
+      borderWidth: 1,
+      borderColor: c.lineWhisper,
+      paddingHorizontal: 20,
+      overflow: "hidden",
+    },
+    detailRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: 16,
+      gap: 12,
+    },
+    detailRowBorder: { borderBottomWidth: 1, borderBottomColor: c.lineWhisper },
+    detailLabel: { flex: 1, fontFamily: fonts.body, fontSize: 14, color: c.inkBody },
+    detailValue: { fontFamily: fonts.bodySemiBold, fontSize: 14, color: c.ink },
+    manageRow: { flexDirection: "row", gap: 12 },
+    ghostButton: {
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      borderRadius: 999,
+      paddingVertical: 14,
+    },
+    editButton: {
+      borderWidth: 1.5,
+      borderColor: c.primarySoft,
+      backgroundColor: c.surface,
+    },
+    deleteButton: {
+      borderWidth: 1.5,
+      borderColor: c.danger,
+      backgroundColor: c.surface,
+    },
+    ghostButtonText: { fontFamily: fonts.bodyMedium, fontSize: 14, letterSpacing: 0.3 },
+    stickyBar: {
+      paddingHorizontal: 24,
+      paddingTop: 16,
+      backgroundColor: c.canvas,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: c.lineWhisper,
+    },
+    joinButton: {
+      height: 56,
+      borderRadius: 999,
+      backgroundColor: c.primary,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 10,
+    },
+    joinButtonText: { fontFamily: fonts.bodyMedium, fontSize: 16, letterSpacing: 0.5, color: c.surface },
+    enrollButton: {
+      height: 50,
+      borderRadius: 999,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 10,
+      marginBottom: 10,
+      borderWidth: 1.5,
+    },
+    enrollButtonEnroll: {
+      borderColor: c.primary,
+      backgroundColor: c.surface,
+    },
+    enrollButtonUnenroll: {
+      borderColor: c.danger,
+      backgroundColor: c.surface,
+    },
+    enrollButtonDisabled: {
+      borderColor: c.inkMuted,
+      backgroundColor: c.canvasDeep,
+    },
+    enrollButtonText: { fontFamily: fonts.bodyMedium, fontSize: 15, letterSpacing: 0.3 },
+  });
 }
 
 export default function WorkshopDetailScreen() {
@@ -41,6 +188,8 @@ export default function WorkshopDetailScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { colors } = useTheme();
+  const s = useThemedStyles(buildStyles);
   const joinMutation = useJoinWorkshop();
   const deleteMutation = useDeleteWorkshop();
   const enrollMutation = useEnrollWorkshop();
@@ -109,7 +258,7 @@ export default function WorkshopDetailScreen() {
 
   if (isLoading) {
     return (
-      <View style={[s.screen, { backgroundColor: colors.canvas, paddingTop: insets.top + 32 }]}>
+      <View style={[s.screen, { paddingTop: insets.top + 32 }]}>
         <SkeletonList count={3} />
       </View>
     );
@@ -117,7 +266,7 @@ export default function WorkshopDetailScreen() {
 
   if (!workshop) {
     return (
-      <View style={[s.centered, { backgroundColor: colors.canvas }]}>
+      <View style={s.centered}>
         <EmptyState icon="alert-circle-outline" title={t("workshop_not_found")} />
       </View>
     );
@@ -152,7 +301,7 @@ export default function WorkshopDetailScreen() {
   const originalTZTime = formatTimeWithTZ(workshop.start_time, eventTZ);
 
   return (
-    <View style={[s.screen, { backgroundColor: colors.canvas }]}>
+    <View style={s.screen}>
       <ScrollView
         style={s.scroll}
         contentContainerStyle={{ paddingBottom: 120 }}
@@ -323,132 +472,3 @@ export default function WorkshopDetailScreen() {
     </View>
   );
 }
-
-function DetailRow({ icon, label, value, last = false }: {
-  icon: keyof typeof Ionicons.glyphMap;
-  label: string;
-  value: string;
-  last?: boolean;
-}) {
-  return (
-    <View style={[s.detailRow, !last && s.detailRowBorder]}>
-      <Ionicons name={icon} size={17} color={colors.inkMuted} />
-      <Text style={s.detailLabel}>{label}</Text>
-      <Text style={s.detailValue}>{value}</Text>
-    </View>
-  );
-}
-
-const s = StyleSheet.create({
-  screen: { flex: 1 },
-  scroll: { flex: 1 },
-  centered: { flex: 1, alignItems: "center", justifyContent: "center" },
-  navBar: { paddingHorizontal: 20, paddingBottom: 8 },
-  backButton: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
-  header: { paddingHorizontal: 24, paddingBottom: 28 },
-  title: {
-    fontFamily: fonts.displayLight,
-    fontSize: 28,
-    letterSpacing: 0.4,
-    lineHeight: 38,
-    color: colors.ink,
-    marginBottom: 12,
-  },
-  dateRow: { flexDirection: "row", alignItems: "center", gap: 6 },
-  dateText: { fontFamily: fonts.body, fontSize: 14, color: colors.inkBody, letterSpacing: 0.2 },
-  dateDot: { fontSize: 14, color: colors.line, marginHorizontal: 2 },
-  section: { paddingHorizontal: 24, paddingBottom: 28 },
-  description: {
-    fontFamily: fonts.body,
-    fontSize: 16,
-    lineHeight: 26,
-    color: colors.inkBody,
-    letterSpacing: 0.1,
-  },
-  sectionLabel: {
-    fontFamily: fonts.bodyMedium,
-    fontSize: 11,
-    letterSpacing: 2,
-    color: colors.inkMuted,
-    textTransform: "uppercase",
-    marginBottom: 12,
-  },
-  detailCard: {
-    borderRadius: 20,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.lineWhisper,
-    paddingHorizontal: 20,
-    overflow: "hidden",
-  },
-  detailRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 16,
-    gap: 12,
-  },
-  detailRowBorder: { borderBottomWidth: 1, borderBottomColor: colors.lineWhisper },
-  detailLabel: { flex: 1, fontFamily: fonts.body, fontSize: 14, color: colors.inkBody },
-  detailValue: { fontFamily: fonts.bodySemiBold, fontSize: 14, color: colors.ink },
-  manageRow: { flexDirection: "row", gap: 12 },
-  ghostButton: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    borderRadius: 999,
-    paddingVertical: 14,
-  },
-  editButton: {
-    borderWidth: 1.5,
-    borderColor: "rgba(86,107,82,0.3)",
-    backgroundColor: colors.surface,
-  },
-  deleteButton: {
-    borderWidth: 1.5,
-    borderColor: "rgba(196,131,110,0.3)",
-    backgroundColor: colors.surface,
-  },
-  ghostButtonText: { fontFamily: fonts.bodyMedium, fontSize: 14, letterSpacing: 0.3 },
-  stickyBar: {
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    backgroundColor: colors.canvas,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.lineWhisper,
-  },
-  joinButton: {
-    height: 56,
-    borderRadius: 999,
-    backgroundColor: colors.primary,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
-  },
-  joinButtonText: { fontFamily: fonts.bodyMedium, fontSize: 16, letterSpacing: 0.5, color: colors.surface },
-  enrollButton: {
-    height: 50,
-    borderRadius: 999,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
-    marginBottom: 10,
-    borderWidth: 1.5,
-  },
-  enrollButtonEnroll: {
-    borderColor: "rgba(86,107,82,0.45)",
-    backgroundColor: colors.surface,
-  },
-  enrollButtonUnenroll: {
-    borderColor: "rgba(196,131,110,0.45)",
-    backgroundColor: colors.surface,
-  },
-  enrollButtonDisabled: {
-    borderColor: "rgba(140,138,130,0.3)",
-    backgroundColor: colors.canvasDeep,
-  },
-  enrollButtonText: { fontFamily: fonts.bodyMedium, fontSize: 15, letterSpacing: 0.3 },
-});

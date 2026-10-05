@@ -19,7 +19,10 @@ import { useTranslation } from "react-i18next";
 
 import { useGroup, useUpdateGroup } from "@/hooks/useGroups";
 import { successFeedback } from "@/lib/haptics";
-import { colors, fonts } from "@/theme/tokens";
+import { fonts } from "@/theme/tokens";
+import { useTheme } from "@/theme/ThemeProvider";
+import { useThemedStyles } from "@/theme/useThemedStyles";
+import type { ThemeColors } from "@/theme/themes";
 
 const EDIT_GROUP_TEST_IDS = {
   titleInput: "group.edit.title.input",
@@ -27,11 +30,99 @@ const EDIT_GROUP_TEST_IDS = {
   submitButton: "group.edit.submit.button",
 } as const;
 
+function buildStyles(c: ThemeColors) {
+  return StyleSheet.create({
+    loadingScreen: {
+      flex: 1,
+      backgroundColor: c.canvas,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    screen: { flex: 1, backgroundColor: c.canvas },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: 20,
+      paddingBottom: 12,
+      gap: 4,
+    },
+    backButton: {
+      width: 44,
+      height: 44,
+      alignItems: "center",
+      justifyContent: "center",
+      marginLeft: -4,
+    },
+    pageTitle: {
+      fontSize: 20,
+      fontFamily: fonts.display,
+      letterSpacing: 0.4,
+      color: c.ink,
+    },
+    scrollContent: {
+      paddingHorizontal: 24,
+      paddingBottom: 12,
+    },
+    fieldContainer: {
+      marginBottom: 12,
+    },
+    fieldLabel: {
+      fontSize: 11,
+      fontFamily: fonts.bodyMedium,
+      letterSpacing: 0.8,
+      color: c.inkMuted,
+      marginBottom: 6,
+      textTransform: "uppercase",
+    },
+    fieldInput: {
+      backgroundColor: c.surface,
+      borderRadius: 14,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      fontFamily: fonts.body,
+      fontSize: 15,
+      color: c.ink,
+      borderWidth: 1.5,
+      borderColor: "transparent",
+    },
+    fieldInputFocused: {
+      borderColor: c.primarySoft,
+    },
+    footer: {
+      paddingHorizontal: 24,
+      paddingTop: 12,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: c.lineWhisper,
+      backgroundColor: "transparent",
+    },
+    submitButton: {
+      height: 52,
+      borderRadius: 999,
+      backgroundColor: c.primary,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    submitInner: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
+    },
+    submitText: {
+      fontSize: 16,
+      fontFamily: fonts.bodyMedium,
+      letterSpacing: 0.5,
+      color: c.surface,
+    },
+  });
+}
+
 export default function EditGroupScreen() {
   const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const s = useThemedStyles(buildStyles);
 
   const group = useGroup(id!);
   const { mutate, isPending } = useUpdateGroup(id!);
@@ -75,14 +166,14 @@ export default function EditGroupScreen() {
 
   if (group.isLoading || !initialized) {
     return (
-      <View className="flex-1 items-center justify-center bg-canvas">
+      <View style={s.loadingScreen}>
         <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.canvas }}>
+    <View style={s.screen}>
       <LinearGradient
         colors={[colors.canvas, colors.canvasDeep]}
         locations={[0, 1]}
@@ -175,80 +266,3 @@ export default function EditGroupScreen() {
     </View>
   );
 }
-
-const s = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingBottom: 12,
-    gap: 4,
-  },
-  backButton: {
-    width: 44,
-    height: 44,
-    alignItems: "center",
-    justifyContent: "center",
-    marginLeft: -4,
-  },
-  pageTitle: {
-    fontSize: 20,
-    fontFamily: fonts.display,
-    letterSpacing: 0.4,
-    color: colors.ink,
-  },
-  scrollContent: {
-    paddingHorizontal: 24,
-    paddingBottom: 12,
-  },
-  fieldContainer: {
-    marginBottom: 12,
-  },
-  fieldLabel: {
-    fontSize: 11,
-    fontFamily: fonts.bodyMedium,
-    letterSpacing: 0.8,
-    color: colors.inkMuted,
-    marginBottom: 6,
-    textTransform: "uppercase",
-  },
-  fieldInput: {
-    backgroundColor: colors.surface,
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontFamily: fonts.body,
-    fontSize: 15,
-    color: colors.ink,
-    borderWidth: 1.5,
-    borderColor: "transparent",
-  },
-  fieldInputFocused: {
-    borderColor: colors.primarySoft,
-  },
-  footer: {
-    paddingHorizontal: 24,
-    paddingTop: 12,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.lineWhisper,
-    backgroundColor: "transparent",
-  },
-  submitButton: {
-    height: 52,
-    borderRadius: 999,
-    backgroundColor: colors.primary,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  submitInner: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  submitText: {
-    fontSize: 16,
-    fontFamily: fonts.bodyMedium,
-    letterSpacing: 0.5,
-    color: colors.surface,
-  },
-});

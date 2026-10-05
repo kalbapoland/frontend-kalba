@@ -4,7 +4,10 @@ import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 
 import type { Workshop } from "@/types/api";
-import { colors, fonts } from "@/theme/tokens";
+import { fonts } from "@/theme/tokens";
+import { useTheme } from "@/theme/ThemeProvider";
+import { useThemedStyles } from "@/theme/useThemedStyles";
+import type { ThemeColors } from "@/theme/themes";
 import { formatTime } from "@/lib/date";
 import {
   DAY_END_HOUR,
@@ -15,6 +18,65 @@ import {
   sameDay,
 } from "./dateUtils";
 
+const HOUR_LABEL_WIDTH = 56;
+
+function buildStyles(c: ThemeColors) {
+  return StyleSheet.create({
+    scroll: { flex: 1 },
+    grid: {
+      paddingTop: 8,
+      paddingHorizontal: 16,
+      position: "relative",
+    },
+    hourRow: {
+      height: HOUR_PX,
+      flexDirection: "row",
+      alignItems: "flex-start",
+    },
+    hourLabel: {
+      width: HOUR_LABEL_WIDTH,
+      fontSize: 11,
+      color: c.inkMuted,
+      marginTop: -6,
+    },
+    hourLine: {
+      flex: 1,
+      height: 1,
+      backgroundColor: c.lineWhisper,
+      marginTop: 6,
+    },
+    event: {
+      position: "absolute",
+      left: HOUR_LABEL_WIDTH + 16,
+      right: 16,
+      borderRadius: 12,
+      borderLeftWidth: 3,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      overflow: "hidden",
+    },
+    eventTitle: {
+      fontSize: 13,
+      fontFamily: fonts.bodyMedium,
+      color: c.ink,
+    },
+    eventTime: {
+      fontSize: 11,
+      color: c.inkBody,
+      marginTop: 2,
+    },
+    emptyText: {
+      position: "absolute",
+      top: 60,
+      left: 0,
+      right: 0,
+      textAlign: "center",
+      fontSize: 13,
+      color: c.inkMuted,
+    },
+  });
+}
+
 type Props = {
   workshops: Workshop[];
   date: Date;
@@ -24,6 +86,8 @@ type Props = {
 export function DayView({ workshops, date, emptyLabel }: Props) {
   const router = useRouter();
   const { t } = useTranslation();
+  const { colors } = useTheme();
+  const s = useThemedStyles(buildStyles);
 
   const dayEvents = useMemo(
     () =>
@@ -93,60 +157,3 @@ export function DayView({ workshops, date, emptyLabel }: Props) {
     </ScrollView>
   );
 }
-
-const HOUR_LABEL_WIDTH = 56;
-
-const s = StyleSheet.create({
-  scroll: { flex: 1 },
-  grid: {
-    paddingTop: 8,
-    paddingHorizontal: 16,
-    position: "relative",
-  },
-  hourRow: {
-    height: HOUR_PX,
-    flexDirection: "row",
-    alignItems: "flex-start",
-  },
-  hourLabel: {
-    width: HOUR_LABEL_WIDTH,
-    fontSize: 11,
-    color: colors.inkMuted,
-    marginTop: -6,
-  },
-  hourLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: colors.lineWhisper,
-    marginTop: 6,
-  },
-  event: {
-    position: "absolute",
-    left: HOUR_LABEL_WIDTH + 16,
-    right: 16,
-    borderRadius: 12,
-    borderLeftWidth: 3,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    overflow: "hidden",
-  },
-  eventTitle: {
-    fontSize: 13,
-    fontFamily: fonts.bodyMedium,
-    color: colors.ink,
-  },
-  eventTime: {
-    fontSize: 11,
-    color: colors.inkBody,
-    marginTop: 2,
-  },
-  emptyText: {
-    position: "absolute",
-    top: 60,
-    left: 0,
-    right: 0,
-    textAlign: "center",
-    fontSize: 13,
-    color: colors.inkMuted,
-  },
-});

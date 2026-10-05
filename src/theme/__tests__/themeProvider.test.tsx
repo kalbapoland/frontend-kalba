@@ -1,7 +1,9 @@
-import { resolveBuildLock, useTheme, ThemeProvider, type ThemeContextValue } from "@/theme/ThemeProvider";
-import { renderHook, render } from "@testing-library/react-native";
+import { resolveBuildLock, useTheme, ThemeProvider, themeColorsSV, type ThemeContextValue } from "@/theme/ThemeProvider";
+import { renderHook, render, act } from "@testing-library/react-native";
 import { Text } from "react-native";
 import { THEMES } from "@/theme/themes";
+import { useSettingsStore } from "@/store/settings";
+import { defaultSettings } from "@/lib/persistence/schema";
 
 jest.mock("@react-native-async-storage/async-storage", () => ({
   getItem: jest.fn().mockResolvedValue(null),
@@ -28,7 +30,53 @@ describe("resolveBuildLock", () => {
   });
 });
 
+describe("themeColorsSV worklet mirror (review Major #1/#2 contract)", () => {
+  test("is a REAL Reanimated shared value, not a plain { value } placeholder", () => {
+    // The whole point of the mirror: a plain object gets cloned once by the
+    // worklet transport and never updated — worklets would pin the default
+    // palette forever. `_isReanimatedSharedValue` is Reanimated's own
+    // discriminator used by extractInputs.
+    expect(themeColorsSV).toBeDefined();
+
+    const flag = (themeColorsSV as unknown as { _isReanimatedSharedValue?: boolean })
+      ._isReanimatedSharedValue;
+
+    expect(flag).toBe(true);
+  });
+
+  test("follows a runtime preference change (provider → mirror sync)", async () => {
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <ThemeProvider>{children}</ThemeProvider>
+    );
+
+    const { result } = renderHook(() => useTheme(), { wrapper });
+    const initial = result.current.colors;
+
+    await act(async () => {
+      result.current.setPreference("night");
+    });
+
+    expect(themeColorsSV.value).toBe(THEMES.night);
+    expect(themeColorsSV.value).not.toBe(initial);
+  });
+});
+
 describe("useTheme", () => {
+  const originalEnv = process.env.EXPO_PUBLIC_THEME;
+
+  beforeEach(() => {
+    delete process.env.EXPO_PUBLIC_THEME;
+    useSettingsStore.setState({ hydrated: true, settings: defaultSettings() });
+  });
+
+  afterAll(() => {
+    if (originalEnv === undefined) {
+      delete process.env.EXPO_PUBLIC_THEME;
+    } else {
+      process.env.EXPO_PUBLIC_THEME = originalEnv;
+    }
+  });
+
   test("throws outside ThemeProvider (fail loud, not blank)", () => {
     expect(() => renderHook(() => useTheme())).toThrow(/useTheme must be used within ThemeProvider/);
   });

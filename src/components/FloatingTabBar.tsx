@@ -7,12 +7,17 @@ import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import Animated, {
   ReduceMotion,
   useAnimatedStyle,
+  useDerivedValue,
   withSpring,
   withTiming,
 } from "react-native-reanimated";
 
 import { lightImpact } from "@/lib/haptics";
-import { colors, layout, motion } from "@/theme/tokens";
+import { layout, motion } from "@/theme/tokens";
+import { themeColorsSV, useTheme } from "@/theme/ThemeProvider";
+import { isDarkTheme } from "@/theme/preference";
+import { useThemedStyles } from "@/theme/useThemedStyles";
+import type { ThemeColors } from "@/theme/themes";
 
 const TAB_ICONS: Record<string, { active: keyof typeof Ionicons.glyphMap; inactive: keyof typeof Ionicons.glyphMap }> = {
   index: { active: "grid", inactive: "grid-outline" },
@@ -31,6 +36,7 @@ function TabIcon({
   name: keyof typeof Ionicons.glyphMap;
   focused: boolean;
 }) {
+  const { colors } = useTheme();
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [
       {
@@ -56,17 +62,23 @@ function TabIcon({
 
 export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
+  const { themeName } = useTheme();
+  const dark = isDarkTheme(themeName);
   const [pillWidth, setPillWidth] = useState(0);
+  const styles = useThemedStyles(buildStyles);
 
   const tabCount = state.routes.length;
   const innerWidth = pillWidth - 2 * PILL_PADDING;
   const tabWidth = tabCount > 0 ? innerWidth / tabCount : 0;
 
+  // Worklet mirror: indicator background follows the palette on the UI thread.
+  const svColors = useDerivedValue(() => themeColorsSV.value);
   const indicatorStyle = useAnimatedStyle(() => {
     const targetX =
       PILL_PADDING + state.index * tabWidth + (tabWidth - INDICATOR_SIZE) / 2;
     return {
       opacity: tabWidth > 0 ? withTiming(1, { duration: motion.base }) : 0,
+      backgroundColor: svColors.value.primaryWash,
       transform: [
         {
           translateX: withSpring(targetX, {
@@ -77,7 +89,7 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
         },
       ],
     };
-  }, [state.index, tabWidth]);
+  }, [state.index, tabWidth, svColors]);
 
   return (
     <View
@@ -89,7 +101,7 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
         onLayout={(e) => setPillWidth(e.nativeEvent.layout.width)}
       >
         <BlurView
-          tint="systemChromeMaterialLight"
+          tint={dark ? "systemChromeMaterialDark" : "systemChromeMaterialLight"}
           intensity={80}
           style={StyleSheet.absoluteFill}
         />
@@ -146,46 +158,49 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
 
 const PILL_PADDING = 8;
 
-const styles = StyleSheet.create({
-  outerContainer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    alignItems: "center",
-    pointerEvents: "box-none",
-  },
-  pill: {
-    flexDirection: "row",
-    height: layout.tabBarHeight,
-    borderRadius: 999,
-    overflow: "hidden",
-    minWidth: 160,
-    paddingHorizontal: PILL_PADDING,
-  },
-  pillBorder: {
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: "rgba(221,217,209,0.6)",
-  },
-  androidFallback: {
-    backgroundColor: "rgba(250,248,244,0.94)",
-    borderRadius: 999,
-  },
-  indicator: {
-    position: "absolute",
-    left: 0,
-    top: (layout.tabBarHeight - INDICATOR_SIZE) / 2,
-    width: INDICATOR_SIZE,
-    height: INDICATOR_SIZE,
-    borderRadius: INDICATOR_SIZE / 2,
-    backgroundColor: colors.primaryWash,
-  },
-  tab: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 24,
-    gap: 4,
-  },
-});
+function buildStyles(c: ThemeColors) {
+  return StyleSheet.create({
+    outerContainer: {
+      position: "absolute",
+      bottom: 0,
+      left: 0,
+      right: 0,
+      alignItems: "center",
+      pointerEvents: "box-none",
+    },
+    pill: {
+      flexDirection: "row",
+      height: layout.tabBarHeight,
+      borderRadius: 999,
+      overflow: "hidden",
+      minWidth: 160,
+      paddingHorizontal: PILL_PADDING,
+    },
+    pillBorder: {
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: c.floatingPillBorder,
+    },
+    androidFallback: {
+      backgroundColor: c.surface,
+      borderRadius: 999,
+      opacity: 0.94,
+    },
+    indicator: {
+      position: "absolute",
+      left: 0,
+      top: (layout.tabBarHeight - INDICATOR_SIZE) / 2,
+      width: INDICATOR_SIZE,
+      height: INDICATOR_SIZE,
+      borderRadius: INDICATOR_SIZE / 2,
+      backgroundColor: c.primaryWash,
+    },
+    tab: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: 24,
+      gap: 4,
+    },
+  });
+}

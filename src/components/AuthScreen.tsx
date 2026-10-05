@@ -28,7 +28,10 @@ import {
 } from "@/api/endpoints";
 import { useAuthStore } from "@/store/auth";
 import { translateApiError } from "@/lib/apiErrors";
-import { colors, fonts, radii, spacing } from "@/theme/tokens";
+import { fonts, radii, spacing } from "@/theme/tokens";
+import { useTheme } from "@/theme/ThemeProvider";
+import { useThemedStyles } from "@/theme/useThemedStyles";
+import type { ThemeColors } from "@/theme/themes";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -145,6 +148,8 @@ function resolveAuthError(
 export default function AuthScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { colors } = useTheme();
+  const s = useThemedStyles(buildStyles);
   const token = useAuthStore((s) => s.token);
   const signIn = useAuthStore((s) => s.signIn);
   const { mode: modeParam } = useLocalSearchParams<{ mode?: string | string[] }>();
@@ -446,189 +451,191 @@ export default function AuthScreen() {
   );
 }
 
-const s = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.canvas,
-  },
-  keyboardAvoidingView: {
-    flex: 1,
-    justifyContent: "center",
-    paddingHorizontal: spacing.screenPadding,
-    paddingVertical: spacing.sectionGap,
-  },
-  hero: {
-    alignItems: "center",
-    marginBottom: 32,
-  },
-  brand: {
-    color: colors.ink,
-    fontSize: 44,
-    fontFamily: fonts.displayLight,
-    letterSpacing: 8,
-    marginLeft: 8,
-  },
-  tagline: {
-    color: colors.inkMuted,
-    fontSize: 14,
-    fontFamily: fonts.body,
-    letterSpacing: 0.4,
-    marginTop: 14,
-    textAlign: "center",
-  },
-  card: {
-    backgroundColor: colors.surface,
-    borderColor: colors.lineWhisper,
-    borderRadius: 28,
-    borderWidth: 1,
-    padding: 24,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 14 },
-    shadowOpacity: 0.08,
-    shadowRadius: 24,
-    elevation: 4,
-  },
-  modeSwitch: {
-    alignSelf: "center",
-    backgroundColor: colors.primaryWash,
-    borderRadius: radii.button,
-    flexDirection: "row",
-    gap: 8,
-    marginBottom: 24,
-    padding: 6,
-  },
-  modeButton: {
-    borderRadius: radii.button,
-    minWidth: 112,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-  },
-  modeButtonActive: {
-    backgroundColor: colors.elevated,
-  },
-  modeButtonText: {
-    color: colors.inkMuted,
-    fontSize: 15,
-    fontFamily: fonts.bodySemiBold,
-    textAlign: "center",
-  },
-  modeButtonTextActive: {
-    color: colors.primary,
-  },
-  heading: {
-    color: colors.ink,
-    fontSize: 28,
-    lineHeight: 36,
-    fontFamily: fonts.displayMedium,
-    textAlign: "center",
-  },
-  subheading: {
-    color: colors.inkBody,
-    fontSize: 14,
-    lineHeight: 21,
-    marginTop: 10,
-    textAlign: "center",
-  },
-  form: {
-    gap: spacing.elementGap,
-    marginTop: 24,
-  },
-  inputGroup: {
-    gap: 8,
-  },
-  label: {
-    color: colors.ink,
-    fontSize: 14,
-    fontFamily: fonts.bodySemiBold,
-  },
-  input: {
-    backgroundColor: colors.elevated,
-    borderColor: colors.line,
-    borderRadius: radii.input,
-    borderWidth: 1,
-    color: colors.ink,
-    fontSize: 16,
-    minHeight: 54,
-    paddingHorizontal: 16,
-  },
-  primaryButton: {
-    alignItems: "center",
-    backgroundColor: colors.primary,
-    borderRadius: radii.button,
-    justifyContent: "center",
-    minHeight: 54,
-    marginTop: 8,
-  },
-  primaryButtonText: {
-    color: colors.surface,
-    fontSize: 16,
-    fontFamily: fonts.bodySemiBold,
-    letterSpacing: 0.4,
-  },
-  forgotPasswordRow: {
-    alignSelf: "flex-end",
-    marginTop: -4,
-  },
-  forgotPasswordText: {
-    color: colors.accent,
-    fontSize: 13,
-    fontFamily: fonts.bodySemiBold,
-  },
-  footerRow: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 6,
-    justifyContent: "center",
-    marginTop: 18,
-  },
-  footerText: {
-    color: colors.inkBody,
-    fontSize: 14,
-  },
-  footerLink: {
-    color: colors.accent,
-    fontSize: 14,
-    fontFamily: fonts.bodySemiBold,
-  },
-  separatorRow: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 14,
-    marginVertical: 22,
-  },
-  separatorLine: {
-    backgroundColor: colors.line,
-    flex: 1,
-    height: StyleSheet.hairlineWidth,
-  },
-  separatorText: {
-    color: colors.inkMuted,
-    fontSize: 12,
-    fontFamily: fonts.bodySemiBold,
-    letterSpacing: 1,
-    textTransform: "uppercase",
-  },
-  secondaryButton: {
-    alignItems: "center",
-    backgroundColor: colors.elevated,
-    borderColor: colors.line,
-    borderRadius: radii.button,
-    borderWidth: 1,
-    justifyContent: "center",
-    minHeight: 54,
-  },
-  secondaryButtonInner: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 10,
-  },
-  googleIcon: {
-    height: 18,
-    width: 18,
-  },
-  secondaryButtonText: {
-    color: colors.primary,
-    fontSize: 15,
-    fontFamily: fonts.bodySemiBold,
-  },
-});
+function buildStyles(c: ThemeColors) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: c.canvas,
+    },
+    keyboardAvoidingView: {
+      flex: 1,
+      justifyContent: "center",
+      paddingHorizontal: spacing.screenPadding,
+      paddingVertical: spacing.sectionGap,
+    },
+    hero: {
+      alignItems: "center",
+      marginBottom: 32,
+    },
+    brand: {
+      color: c.ink,
+      fontSize: 44,
+      fontFamily: fonts.displayLight,
+      letterSpacing: 8,
+      marginLeft: 8,
+    },
+    tagline: {
+      color: c.inkMuted,
+      fontSize: 14,
+      fontFamily: fonts.body,
+      letterSpacing: 0.4,
+      marginTop: 14,
+      textAlign: "center",
+    },
+    card: {
+      backgroundColor: c.surface,
+      borderColor: c.lineWhisper,
+      borderRadius: 28,
+      borderWidth: 1,
+      padding: 24,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 14 },
+      shadowOpacity: 0.08,
+      shadowRadius: 24,
+      elevation: 4,
+    },
+    modeSwitch: {
+      alignSelf: "center",
+      backgroundColor: c.primaryWash,
+      borderRadius: radii.button,
+      flexDirection: "row",
+      gap: 8,
+      marginBottom: 24,
+      padding: 6,
+    },
+    modeButton: {
+      borderRadius: radii.button,
+      minWidth: 112,
+      paddingHorizontal: 20,
+      paddingVertical: 12,
+    },
+    modeButtonActive: {
+      backgroundColor: c.elevated,
+    },
+    modeButtonText: {
+      color: c.inkMuted,
+      fontSize: 15,
+      fontFamily: fonts.bodySemiBold,
+      textAlign: "center",
+    },
+    modeButtonTextActive: {
+      color: c.primary,
+    },
+    heading: {
+      color: c.ink,
+      fontSize: 28,
+      lineHeight: 36,
+      fontFamily: fonts.displayMedium,
+      textAlign: "center",
+    },
+    subheading: {
+      color: c.inkBody,
+      fontSize: 14,
+      lineHeight: 21,
+      marginTop: 10,
+      textAlign: "center",
+    },
+    form: {
+      gap: spacing.elementGap,
+      marginTop: 24,
+    },
+    inputGroup: {
+      gap: 8,
+    },
+    label: {
+      color: c.ink,
+      fontSize: 14,
+      fontFamily: fonts.bodySemiBold,
+    },
+    input: {
+      backgroundColor: c.elevated,
+      borderColor: c.line,
+      borderRadius: radii.input,
+      borderWidth: 1,
+      color: c.ink,
+      fontSize: 16,
+      minHeight: 54,
+      paddingHorizontal: 16,
+    },
+    primaryButton: {
+      alignItems: "center",
+      backgroundColor: c.primary,
+      borderRadius: radii.button,
+      justifyContent: "center",
+      minHeight: 54,
+      marginTop: 8,
+    },
+    primaryButtonText: {
+      color: c.surface,
+      fontSize: 16,
+      fontFamily: fonts.bodySemiBold,
+      letterSpacing: 0.4,
+    },
+    forgotPasswordRow: {
+      alignSelf: "flex-end",
+      marginTop: -4,
+    },
+    forgotPasswordText: {
+      color: c.accent,
+      fontSize: 13,
+      fontFamily: fonts.bodySemiBold,
+    },
+    footerRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 6,
+      justifyContent: "center",
+      marginTop: 18,
+    },
+    footerText: {
+      color: c.inkBody,
+      fontSize: 14,
+    },
+    footerLink: {
+      color: c.accent,
+      fontSize: 14,
+      fontFamily: fonts.bodySemiBold,
+    },
+    separatorRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 14,
+      marginVertical: 22,
+    },
+    separatorLine: {
+      backgroundColor: c.line,
+      flex: 1,
+      height: StyleSheet.hairlineWidth,
+    },
+    separatorText: {
+      color: c.inkMuted,
+      fontSize: 12,
+      fontFamily: fonts.bodySemiBold,
+      letterSpacing: 1,
+      textTransform: "uppercase",
+    },
+    secondaryButton: {
+      alignItems: "center",
+      backgroundColor: c.elevated,
+      borderColor: c.line,
+      borderRadius: radii.button,
+      borderWidth: 1,
+      justifyContent: "center",
+      minHeight: 54,
+    },
+    secondaryButtonInner: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 10,
+    },
+    googleIcon: {
+      height: 18,
+      width: 18,
+    },
+    secondaryButtonText: {
+      color: c.primary,
+      fontSize: 15,
+      fontFamily: fonts.bodySemiBold,
+    },
+  });
+}

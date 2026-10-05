@@ -37,7 +37,10 @@ import {
   formatMonthLong,
   formatTime,
 } from "@/lib/date";
-import { colors, fonts } from "@/theme/tokens";
+import { fonts } from "@/theme/tokens";
+import { useTheme } from "@/theme/ThemeProvider";
+import { useThemedStyles } from "@/theme/useThemedStyles";
+import type { ThemeColors } from "@/theme/themes";
 
 function toAutomationSlug(value: string): string {
   return value
@@ -48,6 +51,8 @@ function toAutomationSlug(value: string): string {
 }
 
 function SectionLabel({ children }: { children: string }) {
+  const s = useThemedStyles(buildStyles);
+
   return (
     <View style={s.sectionLabelRow}>
       <SectionHeader label={children} />
@@ -57,6 +62,9 @@ function SectionLabel({ children }: { children: string }) {
 
 function WorkshopRow({ workshop }: { workshop: Workshop }) {
   const router = useRouter();
+  const { colors } = useTheme();
+  const s = useThemedStyles(buildStyles);
+
   return (
     <Pressable
       onPress={() => router.push(`/(app)/workshop/${workshop.id}`)}
@@ -89,6 +97,8 @@ export default function GroupDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const s = useThemedStyles(buildStyles);
 
   const group = useGroup(id!);
   const members = useGroupMembers(id!);
@@ -112,7 +122,7 @@ export default function GroupDetailScreen() {
 
   if (group.isLoading) {
     return (
-      <View className="flex-1 bg-canvas" style={{ paddingTop: insets.top + 32 }}>
+      <View style={[s.screen, { paddingTop: insets.top + 32 }]}>
         <SkeletonList count={3} />
       </View>
     );
@@ -120,7 +130,7 @@ export default function GroupDetailScreen() {
 
   if (group.error || !group.data) {
     return (
-      <View className="flex-1 justify-center bg-canvas">
+      <View style={[s.screen, s.center]}>
         <EmptyState
           icon="cloud-offline-outline"
           title={t("group.group_not_found")}
@@ -170,7 +180,7 @@ export default function GroupDetailScreen() {
   };
 
   return (
-    <View className="flex-1 bg-canvas">
+    <View style={s.screen}>
       <LinearGradient
         colors={[colors.canvas, colors.canvasDeep]}
         locations={[0, 1]}
@@ -372,216 +382,220 @@ export default function GroupDetailScreen() {
   );
 }
 
-const s = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingBottom: 8,
-  },
-  backButton: {
-    width: 44,
-    height: 44,
-    alignItems: "center",
-    justifyContent: "center",
-    marginLeft: -4,
-  },
-  editButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: colors.primary,
-  },
-  editButtonText: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 13,
-    color: colors.primary,
-  },
-  titleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 10,
-    marginTop: 8,
-  },
-  title: {
-    flex: 1,
-    fontFamily: fonts.displayLight,
-    fontSize: 26,
-    lineHeight: 34,
-    letterSpacing: 0.4,
-    color: colors.ink,
-  },
-  adminBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 3,
-    backgroundColor: colors.primaryWash,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-  },
-  adminBadgeText: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 10,
-    letterSpacing: 0.4,
-    color: colors.primary,
-    textTransform: "uppercase",
-  },
-  metaRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    marginTop: 8,
-  },
-  metaText: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.inkBody,
-  },
-  description: {
-    fontFamily: fonts.body,
-    fontSize: 15,
-    lineHeight: 23,
-    color: colors.inkBody,
-    marginTop: 16,
-  },
-  descriptionMuted: {
-    fontFamily: fonts.body,
-    fontSize: 14,
-    fontStyle: "italic",
-    color: colors.inkMuted,
-    marginTop: 16,
-  },
-  primaryButton: {
-    height: 50,
-    borderRadius: 999,
-    backgroundColor: colors.primary,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 20,
-  },
-  primaryButtonText: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 15,
-    letterSpacing: 0.3,
-    color: colors.surface,
-  },
-  secondaryButton: {
-    height: 50,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: colors.primary,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 20,
-  },
-  secondaryButtonText: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 15,
-    letterSpacing: 0.3,
-    color: colors.primary,
-  },
-  sectionLabelRow: {
-    marginTop: 32,
-    marginBottom: 14,
-  },
-  emptyHint: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.inkMuted,
-    lineHeight: 20,
-  },
-  createWorkshopBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    borderWidth: 1,
-    borderColor: colors.primary,
-    borderRadius: 999,
-    paddingVertical: 12,
-    marginBottom: 14,
-  },
-  createWorkshopText: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 14,
-    letterSpacing: 0.2,
-    color: colors.primary,
-  },
-  workshopRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.lineWhisper,
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    marginBottom: 10,
-  },
-  workshopTitle: {
-    fontFamily: fonts.bodyMedium,
-    fontSize: 15,
-    color: colors.ink,
-  },
-  workshopMetaRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    marginTop: 4,
-  },
-  workshopMeta: {
-    fontFamily: fonts.body,
-    fontSize: 12,
-    color: colors.inkMuted,
-  },
-  workshopDot: {
-    fontSize: 12,
-    color: colors.inkMuted,
-    marginHorizontal: 2,
-  },
-  memberRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingVertical: 10,
-  },
-  memberAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.primaryWash,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  memberName: {
-    flex: 1,
-    fontFamily: fonts.body,
-    fontSize: 15,
-    color: colors.ink,
-  },
-  deleteGroupButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    marginTop: 32,
-    marginBottom: 8,
-    paddingVertical: 14,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: colors.danger,
-  },
-  deleteGroupButtonText: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 15,
-    color: colors.danger,
-  },
-});
+function buildStyles(c: ThemeColors) {
+  return StyleSheet.create({
+    screen: { flex: 1, backgroundColor: c.canvas },
+    center: { flex: 1, justifyContent: "center", backgroundColor: c.canvas },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: 20,
+      paddingBottom: 8,
+    },
+    backButton: {
+      width: 44,
+      height: 44,
+      alignItems: "center",
+      justifyContent: "center",
+      marginLeft: -4,
+    },
+    editButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 5,
+      paddingHorizontal: 14,
+      paddingVertical: 8,
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: c.primary,
+    },
+    editButtonText: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 13,
+      color: c.primary,
+    },
+    titleRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 10,
+      marginTop: 8,
+    },
+    title: {
+      flex: 1,
+      fontFamily: fonts.displayLight,
+      fontSize: 26,
+      lineHeight: 34,
+      letterSpacing: 0.4,
+      color: c.ink,
+    },
+    adminBadge: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 3,
+      backgroundColor: c.primaryWash,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      borderRadius: 8,
+    },
+    adminBadgeText: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 10,
+      letterSpacing: 0.4,
+      color: c.primary,
+      textTransform: "uppercase",
+    },
+    metaRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 5,
+      marginTop: 8,
+    },
+    metaText: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: c.inkBody,
+    },
+    description: {
+      fontFamily: fonts.body,
+      fontSize: 15,
+      lineHeight: 23,
+      color: c.inkBody,
+      marginTop: 16,
+    },
+    descriptionMuted: {
+      fontFamily: fonts.body,
+      fontSize: 14,
+      fontStyle: "italic",
+      color: c.inkMuted,
+      marginTop: 16,
+    },
+    primaryButton: {
+      height: 50,
+      borderRadius: 999,
+      backgroundColor: c.primary,
+      alignItems: "center",
+      justifyContent: "center",
+      marginTop: 20,
+    },
+    primaryButtonText: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 15,
+      letterSpacing: 0.3,
+      color: c.surface,
+    },
+    secondaryButton: {
+      height: 50,
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: c.primary,
+      alignItems: "center",
+      justifyContent: "center",
+      marginTop: 20,
+    },
+    secondaryButtonText: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 15,
+      letterSpacing: 0.3,
+      color: c.primary,
+    },
+    sectionLabelRow: {
+      marginTop: 32,
+      marginBottom: 14,
+    },
+    emptyHint: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: c.inkMuted,
+      lineHeight: 20,
+    },
+    createWorkshopBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      borderWidth: 1,
+      borderColor: c.primary,
+      borderRadius: 999,
+      paddingVertical: 12,
+      marginBottom: 14,
+    },
+    createWorkshopText: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 14,
+      letterSpacing: 0.2,
+      color: c.primary,
+    },
+    workshopRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
+      backgroundColor: c.surface,
+      borderWidth: 1,
+      borderColor: c.lineWhisper,
+      borderRadius: 14,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      marginBottom: 10,
+    },
+    workshopTitle: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 15,
+      color: c.ink,
+    },
+    workshopMetaRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 5,
+      marginTop: 4,
+    },
+    workshopMeta: {
+      fontFamily: fonts.body,
+      fontSize: 12,
+      color: c.inkMuted,
+    },
+    workshopDot: {
+      fontSize: 12,
+      color: c.inkMuted,
+      marginHorizontal: 2,
+    },
+    memberRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      paddingVertical: 10,
+    },
+    memberAvatar: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: c.primaryWash,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    memberName: {
+      flex: 1,
+      fontFamily: fonts.body,
+      fontSize: 15,
+      color: c.ink,
+    },
+    deleteGroupButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      marginTop: 32,
+      marginBottom: 8,
+      paddingVertical: 14,
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: c.danger,
+    },
+    deleteGroupButtonText: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 15,
+      color: c.danger,
+    },
+  });
+}

@@ -26,7 +26,10 @@ import { EmptyState } from "@/components/EmptyState";
 import { PressableScale } from "@/components/PressableScale";
 import { SectionHeader } from "@/components/SectionHeader";
 import { SkeletonList } from "@/components/Skeleton";
-import { colors, radii, shadows, spacing } from "@/theme/tokens";
+import { radii, shadows, spacing } from "@/theme/tokens";
+import { useTheme } from "@/theme/ThemeProvider";
+import { useThemedStyles } from "@/theme/useThemedStyles";
+import type { ThemeColors } from "@/theme/themes";
 import { toAutomationSlug } from "@/lib/automationId";
 
 function getGreetingKey(): string {
@@ -54,6 +57,8 @@ function WorkshopCard({
 }) {
   const router = useRouter();
   const { t } = useTranslation();
+  const { colors } = useTheme();
+  const s = useThemedStyles(buildStyles);
   const formatPrice = useFormatPrice();
   const weekday = formatWeekdayShort(workshop.start_time);
   const day = formatDay(workshop.start_time);
@@ -117,6 +122,7 @@ function WorkshopCard({
 
 function ListHeader({ name }: { name?: string }) {
   const { t } = useTranslation();
+  const s = useThemedStyles(buildStyles);
   const firstName = name?.split(" ")[0];
 
   return (
@@ -136,12 +142,74 @@ function ListHeader({ name }: { name?: string }) {
   );
 }
 
+function buildStyles(c: ThemeColors) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: c.canvas,
+    },
+    list: {
+      flex: 1,
+    },
+    center: {
+      justifyContent: "center",
+    },
+    card: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.elementGap,
+      backgroundColor: c.surface,
+      borderRadius: radii.card,
+      borderWidth: 1,
+      borderColor: c.lineWhisper,
+      padding: spacing.cardPadding,
+      marginBottom: spacing.elementGap,
+      ...shadows.card,
+    },
+    cardBody: {
+      flex: 1,
+      gap: 6,
+    },
+    metaRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 5,
+    },
+    metaDot: {
+      marginHorizontal: 2,
+    },
+    cardSide: {
+      alignItems: "flex-end",
+      justifyContent: "space-between",
+      alignSelf: "stretch",
+      paddingVertical: 2,
+    },
+    listHeader: {
+      marginBottom: spacing.sectionGap,
+      paddingHorizontal: 4,
+    },
+    headerDecor: {
+      position: "absolute",
+      top: -40,
+      right: -60,
+    },
+    greeting: {
+      marginBottom: 2,
+    },
+    sectionLabelRow: {
+      marginTop: 40,
+    },
+  });
+}
+
 export default function WorkshopListScreen() {
   const { data, isLoading, error, refetch, isRefetching } = useWorkshops();
   const user = useAuthStore((s) => s.user);
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  const { colors } = useTheme();
+  const s = useThemedStyles(buildStyles);
 
   if (isLoading) {
     return (
@@ -210,61 +278,3 @@ export default function WorkshopListScreen() {
     </View>
   );
 }
-
-const s = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: colors.canvas,
-  },
-  list: {
-    flex: 1,
-  },
-  center: {
-    justifyContent: "center",
-  },
-  card: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.elementGap,
-    backgroundColor: colors.surface,
-    borderRadius: radii.card,
-    borderWidth: 1,
-    borderColor: colors.lineWhisper,
-    padding: spacing.cardPadding,
-    marginBottom: spacing.elementGap,
-    ...shadows.card,
-  },
-  cardBody: {
-    flex: 1,
-    gap: 6,
-  },
-  metaRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-  },
-  metaDot: {
-    marginHorizontal: 2,
-  },
-  cardSide: {
-    alignItems: "flex-end",
-    justifyContent: "space-between",
-    alignSelf: "stretch",
-    paddingVertical: 2,
-  },
-  listHeader: {
-    marginBottom: spacing.sectionGap,
-    paddingHorizontal: 4,
-  },
-  headerDecor: {
-    position: "absolute",
-    top: -40,
-    right: -60,
-  },
-  greeting: {
-    marginBottom: 2,
-  },
-  sectionLabelRow: {
-    marginTop: 40,
-  },
-});

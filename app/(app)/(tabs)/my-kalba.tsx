@@ -24,7 +24,10 @@ import {
 } from "@/hooks/useMyKalba";
 import { SkeletonList } from "@/components/Skeleton";
 import { listItemEntering } from "@/lib/entrance";
-import { colors, fonts, shadows } from "@/theme/tokens";
+import { fonts, shadows } from "@/theme/tokens";
+import { useTheme } from "@/theme/ThemeProvider";
+import { useThemedStyles } from "@/theme/useThemedStyles";
+import type { ThemeColors } from "@/theme/themes";
 import { formatMonthDayYear, formatTime, formatWeekdayShort } from "@/lib/date";
 import { toAutomationSlug } from "@/lib/automationId";
 
@@ -34,24 +37,12 @@ function clampTarget(value: number): number {
 
 type PillVariant = "active" | "inactive";
 
-function getPillStyle(variant: PillVariant) {
-    if (variant === "active") {
-        return {
-            container: [styles.filterPill, styles.filterPillActive],
-            text: [styles.filterPillText, styles.filterPillTextActive],
-        };
-    }
-
-    return {
-        container: [styles.filterPill, styles.filterPillInactive],
-        text: [styles.filterPillText, styles.filterPillTextInactive],
-    };
-}
-
 export default function MyKalbaScreen() {
     const { t } = useTranslation();
     const insets = useSafeAreaInsets();
     const router = useRouter();
+    const { colors } = useTheme();
+    const styles = useThemedStyles(buildStyles);
 
     const [unreadOnly, setUnreadOnly] = useState(true);
 
@@ -98,8 +89,8 @@ export default function MyKalbaScreen() {
         );
     }
 
-    const unreadStyles = getPillStyle(unreadOnly ? "active" : "inactive");
-    const allStyles = getPillStyle(!unreadOnly ? "active" : "inactive");
+    const unreadStyles = getPillStyle(unreadOnly ? "active" : "inactive", styles);
+    const allStyles = getPillStyle(!unreadOnly ? "active" : "inactive", styles);
 
     return (
         <View style={styles.screen}>
@@ -314,239 +305,258 @@ export default function MyKalbaScreen() {
     );
 }
 
-const styles = StyleSheet.create({
-    screen: {
-        flex: 1,
-        backgroundColor: colors.canvas,
-    },
-    centeredState: {
-        flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: colors.canvas,
-    },
-    errorText: {
-        fontFamily: fonts.body,
-        fontSize: 14,
-        color: colors.danger,
-    },
-    title: {
-        fontFamily: fonts.displayLight,
-        fontSize: 30,
-        lineHeight: 40,
-        letterSpacing: 0.3,
-        color: colors.ink,
-        marginBottom: 4,
-    },
-    card: {
-        borderRadius: 24,
-        borderWidth: 1,
-        borderColor: colors.lineWhisper,
-        backgroundColor: colors.surface,
-        paddingHorizontal: 16,
-        paddingVertical: 16,
-        ...shadows.card,
-    },
-    sectionTitle: {
-        fontFamily: fonts.displayMedium,
-        fontSize: 17,
-        lineHeight: 24,
-        letterSpacing: 0.2,
-        color: colors.ink,
-    },
-    goalValue: {
-        marginTop: 8,
-        fontFamily: fonts.display,
-        fontSize: 48,
-        lineHeight: 56,
-        color: colors.primary,
-    },
-    subtleLabel: {
-        marginTop: 4,
-        fontFamily: fonts.body,
-        fontSize: 14,
-        lineHeight: 20,
-        color: colors.inkMuted,
-    },
-    goalActionsRow: {
-        marginTop: 12,
-        flexDirection: "row",
-        alignItems: "center",
-        columnGap: 10,
-    },
-    roundActionButton: {
-        width: 34,
-        height: 34,
-        borderRadius: 999,
-        borderWidth: 1,
-        borderColor: colors.primary,
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    presetButton: {
-        minWidth: 34,
-        height: 34,
-        paddingHorizontal: 12,
-        borderRadius: 999,
-        borderWidth: 1,
-        borderColor: colors.line,
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    presetText: {
-        fontFamily: fonts.bodyMedium,
-        fontSize: 16,
-        lineHeight: 20,
-        color: colors.ink,
-    },
-    statsRow: {
-        marginTop: 10,
-        flexDirection: "row",
-        columnGap: 8,
-    },
-    statTile: {
-        flex: 1,
-        borderRadius: 16,
-        backgroundColor: colors.canvas,
-        paddingHorizontal: 10,
-        paddingVertical: 12,
-    },
-    statValue: {
-        fontFamily: fonts.display,
-        fontSize: 38,
-        lineHeight: 46,
-        color: colors.ink,
-    },
-    statLabel: {
-        marginTop: 6,
-        fontFamily: fonts.body,
-        fontSize: 12,
-        lineHeight: 16,
-        color: colors.inkMuted,
-    },
-    progressTrack: {
-        marginTop: 10,
-        height: 10,
-        borderRadius: 999,
-        overflow: "hidden",
-        backgroundColor: colors.lineWhisper,
-    },
-    progressFill: {
-        height: "100%",
-        backgroundColor: colors.primary,
-    },
-    rowBetween: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-    },
-    emptyText: {
-        marginTop: 10,
-        fontFamily: fonts.body,
-        fontSize: 13,
-        lineHeight: 18,
-        color: colors.inkMuted,
-    },
-    scheduleItem: {
-        marginTop: 10,
-        paddingTop: 10,
-        borderTopWidth: 1,
-        borderTopColor: colors.lineWhisper,
-        flexDirection: "row",
-        alignItems: "center",
-        columnGap: 8,
-    },
-    flex1: {
-        flex: 1,
-    },
-    scheduleTitle: {
-        fontFamily: fonts.bodyMedium,
-        fontSize: 16,
-        lineHeight: 22,
-        color: colors.ink,
-    },
-    scheduleMeta: {
-        marginTop: 4,
-        fontFamily: fonts.body,
-        fontSize: 13,
-        lineHeight: 18,
-        color: colors.inkMuted,
-    },
-    markAllText: {
-        fontFamily: fonts.bodySemiBold,
-        fontSize: 12,
-        lineHeight: 16,
-        color: colors.primary,
-    },
-    filterRow: {
-        marginTop: 10,
-        flexDirection: "row",
-        alignItems: "center",
-        columnGap: 10,
-    },
-    filterPill: {
-        minHeight: 34,
-        borderRadius: 999,
-        borderWidth: 1,
-        paddingHorizontal: 12,
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    filterPillActive: {
-        borderColor: colors.primary,
-        backgroundColor: colors.primaryWash,
-    },
-    filterPillInactive: {
-        borderColor: colors.line,
-        backgroundColor: "transparent",
-    },
-    filterPillText: {
-        fontSize: 12,
-        lineHeight: 16,
-    },
-    filterPillTextActive: {
-        fontFamily: fonts.bodySemiBold,
-        color: colors.primary,
-    },
-    filterPillTextInactive: {
-        fontFamily: fonts.bodyMedium,
-        color: colors.inkMuted,
-    },
-    notificationItem: {
-        marginTop: 10,
-        paddingTop: 10,
-        borderTopWidth: 1,
-        borderTopColor: colors.lineWhisper,
-        flexDirection: "row",
-        columnGap: 8,
-    },
-    notificationTitle: {
-        fontFamily: fonts.bodyMedium,
-        fontSize: 16,
-        lineHeight: 22,
-        color: colors.ink,
-    },
-    notificationTitleUnread: {
-        fontFamily: fonts.bodySemiBold,
-    },
-    notificationBody: {
-        marginTop: 4,
-        fontFamily: fonts.body,
-        fontSize: 12,
-        lineHeight: 16,
-        color: colors.inkMuted,
-    },
-    notificationActions: {
-        flexDirection: "row",
-        alignItems: "center",
-        columnGap: 8,
-    },
-    notificationActionButton: {
-        width: 32,
-        height: 32,
-        borderRadius: 999,
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: colors.canvas,
-    },
-});
+function getPillStyle(
+    variant: PillVariant,
+    styles: ReturnType<typeof buildStyles>,
+) {
+    if (variant === "active") {
+        return {
+            container: [styles.filterPill, styles.filterPillActive],
+            text: [styles.filterPillText, styles.filterPillTextActive],
+        };
+    }
+
+    return {
+        container: [styles.filterPill, styles.filterPillInactive],
+        text: [styles.filterPillText, styles.filterPillTextInactive],
+    };
+}
+
+function buildStyles(c: ThemeColors) {
+    return StyleSheet.create({
+        screen: {
+            flex: 1,
+            backgroundColor: c.canvas,
+        },
+        centeredState: {
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: c.canvas,
+        },
+        errorText: {
+            fontFamily: fonts.body,
+            fontSize: 14,
+            color: c.danger,
+        },
+        title: {
+            fontFamily: fonts.displayLight,
+            fontSize: 30,
+            lineHeight: 40,
+            letterSpacing: 0.3,
+            color: c.ink,
+            marginBottom: 4,
+        },
+        card: {
+            borderRadius: 24,
+            borderWidth: 1,
+            borderColor: c.lineWhisper,
+            backgroundColor: c.surface,
+            paddingHorizontal: 16,
+            paddingVertical: 16,
+            ...shadows.card,
+        },
+        sectionTitle: {
+            fontFamily: fonts.displayMedium,
+            fontSize: 17,
+            lineHeight: 24,
+            letterSpacing: 0.2,
+            color: c.ink,
+        },
+        goalValue: {
+            marginTop: 8,
+            fontFamily: fonts.display,
+            fontSize: 48,
+            lineHeight: 56,
+            color: c.primary,
+        },
+        subtleLabel: {
+            marginTop: 4,
+            fontFamily: fonts.body,
+            fontSize: 14,
+            lineHeight: 20,
+            color: c.inkMuted,
+        },
+        goalActionsRow: {
+            marginTop: 12,
+            flexDirection: "row",
+            alignItems: "center",
+            columnGap: 10,
+        },
+        roundActionButton: {
+            width: 34,
+            height: 34,
+            borderRadius: 999,
+            borderWidth: 1,
+            borderColor: c.primary,
+            alignItems: "center",
+            justifyContent: "center",
+        },
+        presetButton: {
+            minWidth: 34,
+            height: 34,
+            paddingHorizontal: 12,
+            borderRadius: 999,
+            borderWidth: 1,
+            borderColor: c.line,
+            alignItems: "center",
+            justifyContent: "center",
+        },
+        presetText: {
+            fontFamily: fonts.bodyMedium,
+            fontSize: 16,
+            lineHeight: 20,
+            color: c.ink,
+        },
+        statsRow: {
+            marginTop: 10,
+            flexDirection: "row",
+            columnGap: 8,
+        },
+        statTile: {
+            flex: 1,
+            borderRadius: 16,
+            backgroundColor: c.canvas,
+            paddingHorizontal: 10,
+            paddingVertical: 12,
+        },
+        statValue: {
+            fontFamily: fonts.display,
+            fontSize: 38,
+            lineHeight: 46,
+            color: c.ink,
+        },
+        statLabel: {
+            marginTop: 6,
+            fontFamily: fonts.body,
+            fontSize: 12,
+            lineHeight: 16,
+            color: c.inkMuted,
+        },
+        progressTrack: {
+            marginTop: 10,
+            height: 10,
+            borderRadius: 999,
+            overflow: "hidden",
+            backgroundColor: c.lineWhisper,
+        },
+        progressFill: {
+            height: "100%",
+            backgroundColor: c.primary,
+        },
+        rowBetween: {
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+        },
+        emptyText: {
+            marginTop: 10,
+            fontFamily: fonts.body,
+            fontSize: 13,
+            lineHeight: 18,
+            color: c.inkMuted,
+        },
+        scheduleItem: {
+            marginTop: 10,
+            paddingTop: 10,
+            borderTopWidth: 1,
+            borderTopColor: c.lineWhisper,
+            flexDirection: "row",
+            alignItems: "center",
+            columnGap: 8,
+        },
+        flex1: {
+            flex: 1,
+        },
+        scheduleTitle: {
+            fontFamily: fonts.bodyMedium,
+            fontSize: 16,
+            lineHeight: 22,
+            color: c.ink,
+        },
+        scheduleMeta: {
+            marginTop: 4,
+            fontFamily: fonts.body,
+            fontSize: 13,
+            lineHeight: 18,
+            color: c.inkMuted,
+        },
+        markAllText: {
+            fontFamily: fonts.bodySemiBold,
+            fontSize: 12,
+            lineHeight: 16,
+            color: c.primary,
+        },
+        filterRow: {
+            marginTop: 10,
+            flexDirection: "row",
+            alignItems: "center",
+            columnGap: 10,
+        },
+        filterPill: {
+            minHeight: 34,
+            borderRadius: 999,
+            borderWidth: 1,
+            paddingHorizontal: 12,
+            alignItems: "center",
+            justifyContent: "center",
+        },
+        filterPillActive: {
+            borderColor: c.primary,
+            backgroundColor: c.primaryWash,
+        },
+        filterPillInactive: {
+            borderColor: c.line,
+            backgroundColor: "transparent",
+        },
+        filterPillText: {
+            fontSize: 12,
+            lineHeight: 16,
+        },
+        filterPillTextActive: {
+            fontFamily: fonts.bodySemiBold,
+            color: c.primary,
+        },
+        filterPillTextInactive: {
+            fontFamily: fonts.bodyMedium,
+            color: c.inkMuted,
+        },
+        notificationItem: {
+            marginTop: 10,
+            paddingTop: 10,
+            borderTopWidth: 1,
+            borderTopColor: c.lineWhisper,
+            flexDirection: "row",
+            columnGap: 8,
+        },
+        notificationTitle: {
+            fontFamily: fonts.bodyMedium,
+            fontSize: 16,
+            lineHeight: 22,
+            color: c.ink,
+        },
+        notificationTitleUnread: {
+            fontFamily: fonts.bodySemiBold,
+        },
+        notificationBody: {
+            marginTop: 4,
+            fontFamily: fonts.body,
+            fontSize: 12,
+            lineHeight: 16,
+            color: c.inkMuted,
+        },
+        notificationActions: {
+            flexDirection: "row",
+            alignItems: "center",
+            columnGap: 8,
+        },
+        notificationActionButton: {
+            width: 32,
+            height: 32,
+            borderRadius: 999,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: c.canvas,
+        },
+    });
+}

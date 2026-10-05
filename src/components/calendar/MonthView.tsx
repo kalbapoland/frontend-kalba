@@ -6,7 +6,10 @@ import { useTranslation } from "react-i18next";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
 import type { Workshop } from "@/types/api";
-import { colors, fonts } from "@/theme/tokens";
+import { fonts } from "@/theme/tokens";
+import { useTheme } from "@/theme/ThemeProvider";
+import { useThemedStyles } from "@/theme/useThemedStyles";
+import type { ThemeColors } from "@/theme/themes";
 import { formatTime } from "@/lib/date";
 import { sameDay, toISODate } from "./dateUtils";
 
@@ -66,6 +69,8 @@ type Props = {
 export function MonthView({ workshops, selectedDate, onSelectDate, emptyLabel }: Props) {
   const router = useRouter();
   const { t, i18n } = useTranslation();
+  const { colors } = useTheme();
+  const s = useThemedStyles(buildStyles);
 
   // Flip the calendar grid labels (weekday + month) to match the active i18n
   // language. The english locale ships as a default with the library, so we
@@ -94,7 +99,7 @@ export function MonthView({ workshops, selectedDate, onSelectDate, emptyLabel }:
         selectedColor: colors.primary,
       },
     } as Record<string, unknown>;
-  }, [workshops, selectedDate]);
+  }, [workshops, selectedDate, colors]);
 
   const dayWorkshops = useMemo(
     () =>
@@ -193,49 +198,51 @@ export function MonthView({ workshops, selectedDate, onSelectDate, emptyLabel }:
   );
 }
 
-const s = StyleSheet.create({
-  container: { flex: 1 },
-  dayList: { flex: 1, paddingHorizontal: 16, paddingTop: 12 },
-  emptyText: {
-    fontSize: 13,
-    color: colors.inkMuted,
-    textAlign: "center",
-    paddingVertical: 40,
-  },
-  card: {
-    marginBottom: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 14,
-    borderLeftWidth: 3,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.lineWhisper,
-  },
-  cardHead: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: 12,
-  },
-  cardTitle: {
-    flex: 1,
-    fontSize: 15,
-    fontFamily: fonts.bodyMedium,
-    color: colors.ink,
-    letterSpacing: 0.2,
-  },
-  cardTime: {
-    fontSize: 13,
-    fontFamily: fonts.bodySemiBold,
-    color: colors.primary,
-  },
-  cardMeta: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    marginTop: 6,
-  },
-  cardMetaText: { fontSize: 12, color: colors.inkMuted },
-  cardMetaDot: { fontSize: 12, color: colors.line, marginHorizontal: 2 },
-});
+function buildStyles(c: ThemeColors) {
+  return StyleSheet.create({
+    container: { flex: 1 },
+    dayList: { flex: 1, paddingHorizontal: 16, paddingTop: 12 },
+    emptyText: {
+      fontSize: 13,
+      color: c.inkMuted,
+      textAlign: "center",
+      paddingVertical: 40,
+    },
+    card: {
+      marginBottom: 10,
+      paddingVertical: 12,
+      paddingHorizontal: 14,
+      borderRadius: 14,
+      borderLeftWidth: 3,
+      backgroundColor: c.surface,
+      borderWidth: 1,
+      borderColor: c.lineWhisper,
+    },
+    cardHead: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      gap: 12,
+    },
+    cardTitle: {
+      flex: 1,
+      fontSize: 15,
+      fontFamily: fonts.bodyMedium,
+      color: c.ink,
+      letterSpacing: 0.2,
+    },
+    cardTime: {
+      fontSize: 13,
+      fontFamily: fonts.bodySemiBold,
+      color: c.primary,
+    },
+    cardMeta: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 5,
+      marginTop: 6,
+    },
+    cardMetaText: { fontSize: 12, color: c.inkMuted },
+    cardMetaDot: { fontSize: 12, color: c.line, marginHorizontal: 2 },
+  });
+}

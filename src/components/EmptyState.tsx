@@ -3,7 +3,10 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 
 import { AppText } from "@/components/AppText";
 import { Button } from "@/components/Button";
-import { colors, spacing } from "@/theme/tokens";
+import { spacing } from "@/theme/tokens";
+import { useTheme } from "@/theme/ThemeProvider";
+import { useThemedStyles } from "@/theme/useThemedStyles";
+import type { ThemeColors } from "@/theme/themes";
 
 interface EmptyStateProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -13,6 +16,50 @@ interface EmptyStateProps {
   onAction?: () => void;
   actionTestID?: string;
   actionAccessibilityLabel?: string;
+}
+
+function buildStyles(c: ThemeColors) {
+  return StyleSheet.create({
+    container: {
+      alignItems: "center",
+      paddingTop: 48,
+      paddingHorizontal: 40,
+    },
+    iconStage: {
+      width: 128,
+      height: 128,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    blob: {
+      position: "absolute",
+      borderRadius: 999,
+    },
+    blobOuter: {
+      width: 128,
+      height: 128,
+      backgroundColor: c.accentSoft,
+      opacity: 0.55,
+      transform: [{ translateX: 8 }, { translateY: -6 }],
+    },
+    blobInner: {
+      width: 96,
+      height: 96,
+      backgroundColor: c.primaryWash,
+    },
+    title: {
+      marginTop: spacing.cardPadding,
+      textAlign: "center",
+    },
+    subtitle: {
+      marginTop: 8,
+      textAlign: "center",
+      maxWidth: 250,
+    },
+    action: {
+      marginTop: 28,
+    },
+  });
 }
 
 /**
@@ -28,6 +75,9 @@ export function EmptyState({
   actionTestID,
   actionAccessibilityLabel,
 }: EmptyStateProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(buildStyles);
+
   return (
     <View style={styles.container}>
       <View style={styles.iconStage}>
@@ -59,45 +109,3 @@ export function EmptyState({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    alignItems: "center",
-    paddingTop: 48,
-    paddingHorizontal: 40,
-  },
-  iconStage: {
-    width: 128,
-    height: 128,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  blob: {
-    position: "absolute",
-    borderRadius: 999,
-  },
-  blobOuter: {
-    width: 128,
-    height: 128,
-    backgroundColor: colors.accentSoft,
-    opacity: 0.55,
-    transform: [{ translateX: 8 }, { translateY: -6 }],
-  },
-  blobInner: {
-    width: 96,
-    height: 96,
-    backgroundColor: colors.primaryWash,
-  },
-  title: {
-    marginTop: spacing.cardPadding,
-    textAlign: "center",
-  },
-  subtitle: {
-    marginTop: 8,
-    textAlign: "center",
-    maxWidth: 250,
-  },
-  action: {
-    marginTop: 28,
-  },
-});

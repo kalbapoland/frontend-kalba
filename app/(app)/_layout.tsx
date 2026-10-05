@@ -1,17 +1,52 @@
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { Redirect, Stack } from "expo-router";
 import { useTranslation } from "react-i18next";
 
 import { useAuthStore } from "@/store/auth";
 import { useUser } from "@/hooks/useUser";
 import { usePushRegistration } from "@/hooks/usePushRegistration";
-import { colors } from "@/theme/tokens";
+import { fonts } from "@/theme/tokens";
+import { useTheme } from "@/theme/ThemeProvider";
+import { useThemedStyles } from "@/theme/useThemedStyles";
+import type { ThemeColors } from "@/theme/themes";
+
+function buildStyles(c: ThemeColors) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: c.canvas,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    errorScreen: {
+      flex: 1,
+      backgroundColor: c.canvas,
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 16,
+      paddingHorizontal: 40,
+    },
+    errorPrimary: { textAlign: "center", fontFamily: fonts.display, fontSize: 16, color: c.inkBody },
+    errorSecondary: { textAlign: "center", fontFamily: fonts.body, fontSize: 12, color: c.inkMuted },
+    retryPill: {
+      marginTop: 8,
+      borderRadius: 999,
+      backgroundColor: c.primary,
+      paddingHorizontal: 32,
+      paddingVertical: 16,
+    },
+    retryText: { fontFamily: fonts.bodyMedium, letterSpacing: 2, color: c.surface },
+    signOut: { marginTop: 4, paddingVertical: 8 },
+  });
+}
 
 export default function AppLayout() {
   const { t } = useTranslation();
   const token = useAuthStore((s) => s.token);
   const signOut = useAuthStore((s) => s.signOut);
   const { isLoading, isError, error, refetch } = useUser();
+  const { colors } = useTheme();
+  const s = useThemedStyles(buildStyles);
 
   // Register / refresh the Expo push token with the backend on every launch.
   // The hook skips itself on web and when permission is denied.
@@ -23,7 +58,7 @@ export default function AppLayout() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-canvas">
+      <View style={s.screen}>
         <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
@@ -32,21 +67,18 @@ export default function AppLayout() {
   if (isError) {
     console.error("[AppLayout] useUser failed:", error);
     return (
-      <View className="flex-1 items-center justify-center gap-4 bg-canvas px-10">
-        <Text className="text-center text-base font-light text-ink-body">
+      <View style={s.errorScreen}>
+        <Text style={s.errorPrimary}>
           {t("common.server_unreachable")}
         </Text>
-        <Text className="text-center text-xs text-ink-muted">
+        <Text style={s.errorSecondary}>
           {(error as Error)?.message ?? t("common.unknown_error")}
         </Text>
-        <Pressable
-          onPress={() => refetch()}
-          className="mt-2 rounded-full bg-primary px-8 py-4"
-        >
-          <Text className="font-medium tracking-wide text-surface">{t("common.retry")}</Text>
+        <Pressable onPress={() => refetch()} style={s.retryPill}>
+          <Text style={s.retryText}>{t("common.retry")}</Text>
         </Pressable>
-        <Pressable onPress={() => signOut()} className="mt-1 py-2">
-          <Text className="text-sm text-ink-muted">{t("signout")}</Text>
+        <Pressable onPress={() => signOut()} style={s.signOut}>
+          <Text style={s.errorSecondary}>{t("signout")}</Text>
         </Pressable>
       </View>
     );

@@ -17,7 +17,10 @@ import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 import { resetPassword } from "@/api/endpoints";
 import { useAuthStore } from "@/store/auth";
 import { translateApiError } from "@/lib/apiErrors";
-import { colors, fonts, radii, spacing } from "@/theme/tokens";
+import { fonts, radii, spacing } from "@/theme/tokens";
+import { useTheme } from "@/theme/ThemeProvider";
+import { useThemedStyles } from "@/theme/useThemedStyles";
+import type { ThemeColors } from "@/theme/themes";
 
 const RESET_TEST_IDS = {
   passwordInput: "reset.password.input",
@@ -25,6 +28,96 @@ const RESET_TEST_IDS = {
   submitButton: "reset.submit.button",
   backButton: "reset.back.button",
 } as const;
+
+function buildStyles(c: ThemeColors) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: c.canvas,
+    },
+    keyboardAvoidingView: {
+      flex: 1,
+      justifyContent: "center",
+      paddingHorizontal: spacing.screenPadding,
+    },
+    card: {
+      backgroundColor: c.surface,
+      borderColor: c.lineWhisper,
+      borderRadius: 28,
+      borderWidth: 1,
+      padding: 24,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 14 },
+      shadowOpacity: 0.08,
+      shadowRadius: 24,
+      elevation: 4,
+    },
+    heading: {
+      color: c.ink,
+      fontSize: 26,
+      lineHeight: 34,
+      fontFamily: fonts.displayMedium,
+      textAlign: "center",
+    },
+    subheading: {
+      color: c.inkBody,
+      fontSize: 14,
+      lineHeight: 21,
+      marginTop: 10,
+      textAlign: "center",
+    },
+    form: {
+      gap: spacing.elementGap,
+      marginTop: 24,
+    },
+    inputGroup: {
+      gap: 8,
+    },
+    label: {
+      color: c.ink,
+      fontSize: 14,
+      fontFamily: fonts.bodySemiBold,
+    },
+    input: {
+      backgroundColor: c.elevated,
+      borderColor: c.line,
+      borderRadius: radii.input,
+      borderWidth: 1,
+      color: c.ink,
+      fontSize: 16,
+      minHeight: 54,
+      paddingHorizontal: 16,
+    },
+    errorText: {
+      color: c.danger,
+      fontSize: 13,
+      fontFamily: fonts.bodySemiBold,
+    },
+    primaryButton: {
+      alignItems: "center",
+      backgroundColor: c.primary,
+      borderRadius: radii.button,
+      justifyContent: "center",
+      minHeight: 54,
+      marginTop: 8,
+    },
+    primaryButtonText: {
+      color: c.surface,
+      fontSize: 16,
+      fontFamily: fonts.bodySemiBold,
+      letterSpacing: 0.4,
+    },
+    footerRow: {
+      alignItems: "center",
+      marginTop: 18,
+    },
+    footerLink: {
+      color: c.accent,
+      fontSize: 14,
+      fontFamily: fonts.bodySemiBold,
+    },
+  });
+}
 
 function firstParam(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
@@ -50,6 +143,8 @@ export default function ResetPasswordScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const signIn = useAuthStore((s) => s.signIn);
+  const { colors } = useTheme();
+  const s = useThemedStyles(buildStyles);
   const { token: tokenParam } = useLocalSearchParams<{ token?: string | string[] }>();
   const token = firstParam(tokenParam);
 
@@ -184,91 +279,3 @@ export default function ResetPasswordScreen() {
     </View>
   );
 }
-
-const s = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.canvas,
-  },
-  keyboardAvoidingView: {
-    flex: 1,
-    justifyContent: "center",
-    paddingHorizontal: spacing.screenPadding,
-  },
-  card: {
-    backgroundColor: colors.surface,
-    borderColor: colors.lineWhisper,
-    borderRadius: 28,
-    borderWidth: 1,
-    padding: 24,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 14 },
-    shadowOpacity: 0.08,
-    shadowRadius: 24,
-    elevation: 4,
-  },
-  heading: {
-    color: colors.ink,
-    fontSize: 26,
-    lineHeight: 34,
-    fontFamily: fonts.displayMedium,
-    textAlign: "center",
-  },
-  subheading: {
-    color: colors.inkBody,
-    fontSize: 14,
-    lineHeight: 21,
-    marginTop: 10,
-    textAlign: "center",
-  },
-  form: {
-    gap: spacing.elementGap,
-    marginTop: 24,
-  },
-  inputGroup: {
-    gap: 8,
-  },
-  label: {
-    color: colors.ink,
-    fontSize: 14,
-    fontFamily: fonts.bodySemiBold,
-  },
-  input: {
-    backgroundColor: colors.elevated,
-    borderColor: colors.line,
-    borderRadius: radii.input,
-    borderWidth: 1,
-    color: colors.ink,
-    fontSize: 16,
-    minHeight: 54,
-    paddingHorizontal: 16,
-  },
-  errorText: {
-    color: colors.danger,
-    fontSize: 13,
-    fontFamily: fonts.bodySemiBold,
-  },
-  primaryButton: {
-    alignItems: "center",
-    backgroundColor: colors.primary,
-    borderRadius: radii.button,
-    justifyContent: "center",
-    minHeight: 54,
-    marginTop: 8,
-  },
-  primaryButtonText: {
-    color: colors.surface,
-    fontSize: 16,
-    fontFamily: fonts.bodySemiBold,
-    letterSpacing: 0.4,
-  },
-  footerRow: {
-    alignItems: "center",
-    marginTop: 18,
-  },
-  footerLink: {
-    color: colors.accent,
-    fontSize: 14,
-    fontFamily: fonts.bodySemiBold,
-  },
-});

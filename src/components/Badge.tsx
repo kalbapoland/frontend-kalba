@@ -1,15 +1,18 @@
 import { StyleSheet, View } from "react-native";
 
 import { AppText } from "@/components/AppText";
-import { colors, radii } from "@/theme/tokens";
+import { radii } from "@/theme/tokens";
+import { useTheme } from "@/theme/ThemeProvider";
+import type { ThemeColors } from "@/theme/themes";
 
 type Tone = "primary" | "accent" | "neutral" | "danger";
 
-const TONES: Record<Tone, { background: string; text: string }> = {
-  primary: { background: colors.primaryWash, text: colors.primary },
-  accent: { background: colors.accentSoft, text: colors.accent },
-  neutral: { background: colors.canvasDeep, text: colors.inkBody },
-  danger: { background: colors.dangerWash, text: colors.danger },
+/** Zero-allocation tone lookup (palette key, not value) — see AppText. */
+const TONE_KEYS: Record<Tone, { background: keyof ThemeColors; text: keyof ThemeColors }> = {
+  primary: { background: "primaryWash", text: "primary" },
+  accent: { background: "accentSoft", text: "accent" },
+  neutral: { background: "canvasDeep", text: "inkBody" },
+  danger: { background: "dangerWash", text: "danger" },
 };
 
 interface BadgeProps {
@@ -20,14 +23,15 @@ interface BadgeProps {
 
 /** Soft wash pill for prices, statuses, and tags. */
 export function Badge({ label, tone = "primary", testID }: BadgeProps) {
-  const palette = TONES[tone];
+  const { colors } = useTheme();
+  const keys = TONE_KEYS[tone];
 
   return (
     <View
-      style={[styles.badge, { backgroundColor: palette.background }]}
+      style={[styles.badge, { backgroundColor: colors[keys.background] }]}
       testID={testID}
     >
-      <AppText variant="captionMedium" style={{ color: palette.text }}>
+      <AppText variant="captionMedium" style={{ color: colors[keys.text] }}>
         {label}
       </AppText>
     </View>
