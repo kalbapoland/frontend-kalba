@@ -1,5 +1,11 @@
 import themeRegistry from "@/theme/themes/registry.json";
-import { DEFAULT_THEME, THEMES, THEME_NAMES, resolveThemeName } from "@/theme/themes";
+import { isDarkTheme, resolveTheme } from "@/theme/preference";
+import {
+  DEFAULT_THEME,
+  THEMES,
+  THEME_NAMES,
+  resolveThemeName,
+} from "@/theme/themes";
 
 /** Every theme must define exactly the same colour keys. */
 describe("theme registry", () => {
@@ -16,6 +22,13 @@ describe("theme registry", () => {
     for (const [name, paletteFile] of Object.entries(themeRegistry)) {
       expect(paletteFile).toBe(`${name}.json`);
     }
+  });
+
+  test('"system" is reserved and can never be a registered palette', () => {
+    // `system` is the preference sentinel for OS-following; a palette under
+    // that name would be permanently shadowed by resolveTheme and rejected
+    // by the build script — catch it at the registry level instead.
+    expect(THEME_NAMES).not.toContain("system");
   });
 
   test.each(THEME_NAMES)("%s defines the same colour keys as default", (name) => {
@@ -46,6 +59,17 @@ describe("theme registry", () => {
   test("throws on an unknown theme instead of silently falling back", () => {
     // A typo in a build script must fail the build, not ship the wrong palette.
     expect(() => resolveThemeName("unregistered")).toThrow(/unregistered/);
+  });
+
+  test("isDarkTheme agrees with the system-dark mapping", () => {
+    // resolveTheme maps OS dark to "night" — the same predicate must classify
+    // night as dark, or the status bar would flip against the palette.
+    expect(isDarkTheme(resolveTheme("system", "dark"))).toBe(true);
+    expect(isDarkTheme(resolveTheme("system", "light"))).toBe(false);
+    expect(isDarkTheme(resolveTheme("system", null))).toBe(false);
+    expect(isDarkTheme("night")).toBe(true);
+    expect(isDarkTheme("default")).toBe(false);
+    expect(isDarkTheme("warm-deep")).toBe(false);
   });
 
   test.each(THEME_NAMES)("the active palette matches EXPO_PUBLIC_THEME=%s", (name) => {

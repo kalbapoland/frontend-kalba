@@ -621,10 +621,12 @@ compared side by side against the baseline.
 
 ---
 
-## Theme Switching (build-time)
+## Theme Switching (build-time → runtime, in progress)
 
-**Status:** shipped (2026-10-04) — three themes coexist in the repo and are
-selected at bundle time via `EXPO_PUBLIC_THEME`.
+**Status:** in progress (2026-10-05) — build-time themes shipped (2026-10-04);
+runtime switching infrastructure landed, screen migration and the in-app
+toggle are the next phases. Plan reference: runtime-switching PR series
+(PR 1 infra → PR 2 screen migration → PR 3 toggle + native effects).
 
 ### Overview
 
@@ -636,17 +638,21 @@ concern — no runtime toggle yet.
 
 ### Decisions
 
-#### Build-time switch, not runtime
+#### Build-time switch, and (new) runtime layer
 
-`EXPO_PUBLIC_THEME` is inlined by Metro at bundle time, so the active palette
-is resolved before any module is imported. This is what makes the switch work
-without a refactor: 19 files call `StyleSheet.create({...colors.x})` at module
-scope, which captures colour values once at import. A runtime switch would
-require converting all of them to a hook first.
+`EXPO_PUBLIC_THEME` is inlined by Metro at bundle time. When set, the palette
+is pinned and the in-app switch is **locked** — that keeps screen-flow
+galleries and smoke builds deterministic. When unset, the ThemeProvider
+resolves the theme at runtime: `"system"` follows the OS light/dark switch
+(dark → `night`), a concrete name pins a palette per user preference.
 
-Why not runtime now: the evaluation phase only needs to *see* the palettes.
-Runtime switching is a prerequisite of dark mode (which must follow the OS
-setting), so it is deferred to that work rather than done twice.
+The runtime layer ships in phases: PR 1 adds `ThemeProvider`, the settings
+store, persistence (`AsyncStorage` blob under `kalba.settings.v1`, corrupted
+blobs degrade to defaults) and `useThemedStyles` caching — with the provider
+**inert** (no native side effects) until screens consume it. PR 2 migrates
+screens off module-level `StyleSheet.create` colour freezing (~29 files).
+PR 3 adds the profile toggle, native effects (status bar, root background)
+and worklet colour mirroring.
 
 #### One JSON file per theme, identical key sets
 
@@ -678,19 +684,20 @@ sources of truth for colour is exactly the drift this change exists to prevent.
 
 ### Current limitations
 
-- Switching requires a rebuild (~5–10 min); there is no in-app toggle.
+- PR 1 phase: screens still read the static `tokens.colors`; the provider is
+  resolved but inert — switching (and OS-following) will change app surfaces
+  only after PR 2's migration.
 - The 3 files using NativeWind `className` follow the theme only because
-  Tailwind recompiles per build — they cannot switch at runtime.
-- `night` is build-selectable and has Android captures, but it is not a full
-  system-integrated dark mode. `app.config.js` still pins
-  `userInterfaceStyle: "light"`; there is no automatic OS-following or
-  in-app theme toggle.
+  Tailwind recompiles per build — they cannot switch at runtime (PR 2).
+- `night` exists as a palette; full system-integrated dark mode
+  (`userInterfaceStyle: "automatic"`) lands with PR 3's native effects.
 - Contrast is verified by computation, not by a test in CI.
 
 ### Future improvements
 
-- Runtime `ThemeProvider` + a toggle in Profile, as part of dark mode.
-- Wire `night` to the OS setting (`userInterfaceStyle: "automatic"`).
+- PR 2: migrate module-level `StyleSheet.create` to `useThemedStyles`.
+- PR 3: in-app toggle in Profile, `userInterfaceStyle: "automatic"`, native
+  chrome effects, worklet colours via shared value.
 - Add a contrast-ratio test so a future palette edit cannot regress below AA.
 
 ### How to build a theme
