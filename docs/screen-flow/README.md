@@ -51,11 +51,11 @@ zapisuj jako osobne zestawy, nie nadpisując `DEFAULT`.
 
 ## Zbiorcze podglądy
 
-| Zestaw | Motyw | Data | Zrzuty |
-|---|---|---|---|
-| [DEFAULT](./DEFAULT/overview.png) | Baseline | 2026-10-03 | 22 |
-| [WARM-DEEP](./WARM-DEEP/overview.png) | Ciepły, pogłębiony | 2026-10-04 | 22 |
-| [NIGHT](./NIGHT/overview.png) | Ciemny | 2026-10-04 | 22 |
+| Zestaw | Motyw | Data | Zrzuty | Generowanie |
+|---|---|---|---|---|
+| [DEFAULT](./DEFAULT/overview.png) | Baseline | 2026-10-06 | 22 | rebuild, wersja 0.1.0 |
+| [WARM-DEEP](./WARM-DEEP/overview.png) | Ciepły, pogłębiony | 2026-10-06 | 22 | rebuild, wersja 0.1.0 |
+| [NIGHT](./NIGHT/overview.png) | Ciemny | 2026-10-06 | 22 | rebuild, wersja 0.1.0 |
 
 ### DEFAULT
 
@@ -121,6 +121,13 @@ Zestaw `DEFAULT` odtwarzaj tylko wtedy, gdy chcesz świadomie zmienić
 baseline. Nowe eksperymenty zapisuj w osobnym katalogu. Flow logowania
 otwierają bezpośrednio kolejne pola formularza — nie dodawaj `hideKeyboard`
 między nimi, bo na Androidzie może to zamknąć aplikację.
+
+> **Uwaga (2026-10-06):** poprzedni render zestawów (2026-10-03/04) powstał na
+> przed-runtime pipeline i nie obejmował nowych ekranów (WYGLĄD, OPCJE
+> DEWELOPERSKIE, stopka wersji). Obecny zestaw pochodzi z aplikacji **0.1.0**
+> (build-time pin palet, sekwencyjnie) — zgodny z tym, co dostali testerzy.
+> Gdy galeria zacznie się rozjeżdżać z apką, zregeneruj wszystkie trzy zestawy
+> jedną komendą na main (patrz `make-release` skill).
 
 ## Jak ponownie wyrenderować mapy SVG
 

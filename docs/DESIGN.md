@@ -737,3 +737,12 @@ npm run android:release:remote:test        # TEST build against dev backend
 
 The APK is named `kalba-<variant>-<backend>[-<theme>][-test]-<date>.apk`, so
 builds for different themes/flavours do not overwrite each other.
+
+### Screen-flow gallery freshness
+
+The three gallery sets (`DEFAULT/`, `WARM-DEEP/`, `NIGHT/`) were regenerated
+from the **0.1.0 release build** (2026-10-06), after the runtime pipeline
+migration and the appearance/developer-options screens existed. When the UI
+changes materially, regenerate all three sets from `main` — the `make-release`
+skill covers the build part, and Maestro capture flows live in
+`test/automated/maestro/flows/screen-flow/`.
