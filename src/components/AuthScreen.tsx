@@ -14,6 +14,7 @@ import {
   View,
 } from "react-native";
 import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Google from "expo-auth-session/providers/google";
 import { exchangeCodeAsync, makeRedirectUri } from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
@@ -152,6 +153,7 @@ export default function AuthScreen() {
   const router = useRouter();
   const { colors } = useTheme();
   const s = useThemedStyles(buildStyles);
+  const insets = useSafeAreaInsets();
   const token = useAuthStore((s) => s.token);
   const signIn = useAuthStore((s) => s.signIn);
   const { mode: modeParam } = useLocalSearchParams<{ mode?: string | string[] }>();
@@ -286,13 +288,13 @@ export default function AuthScreen() {
 
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={s.keyboardAvoidingView}
+        style={[s.keyboardAvoidingView, { paddingTop: insets.top + spacing.elementGap }]}
       >
         {/* Scrollable: register mode (name+email+password+social) exceeds
             small iPhone heights — content scrolls above the keyboard. */}
         <ScrollView
           style={s.scroll}
-          contentContainerStyle={s.scrollContent}
+          contentContainerStyle={{ paddingBottom: insets.bottom + spacing.elementGap }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
@@ -307,6 +309,7 @@ export default function AuthScreen() {
               onPress={() => setMode("login")}
               testID={AUTH_TEST_IDS.loginModeButton}
               style={[s.modeButton, mode === "login" && s.modeButtonActive]}
+              hitSlop={{ top: 6, bottom: 6 }}
             >
               <Text style={[s.modeButtonText, mode === "login" && s.modeButtonTextActive]}>
                 {t("login", "Log In")}
@@ -316,6 +319,7 @@ export default function AuthScreen() {
               onPress={() => setMode("register")}
               testID={AUTH_TEST_IDS.registerModeButton}
               style={[s.modeButton, mode === "register" && s.modeButtonActive]}
+              hitSlop={{ top: 6, bottom: 6 }}
             >
               <Text style={[s.modeButtonText, mode === "register" && s.modeButtonTextActive]}>
                 {t("signup", "Sign Up")}
@@ -480,17 +484,15 @@ function buildStyles(c: ThemeColors) {
     // screenshot time) and the keyboard would cover the form. Centering
     // pays off only on tall screens, which react-native handles by the
     // content offset itself (contentContainerStyle grows downward).
-    scrollContent: {
-      paddingBottom: spacing.sectionGap,
-    },
+    // Bottom padding is applied inline (depends on insets.bottom, which this
+    // stylesheet doesn't have access to) — see contentContainerStyle below.
     keyboardAvoidingView: {
       flex: 1,
       paddingHorizontal: spacing.screenPadding,
-      paddingVertical: spacing.sectionGap,
     },
     hero: {
       alignItems: "center",
-      marginBottom: 32,
+      marginBottom: spacing.elementGap,
     },
     brand: {
       color: c.ink,
@@ -512,7 +514,7 @@ function buildStyles(c: ThemeColors) {
       borderColor: c.lineWhisper,
       borderRadius: 28,
       borderWidth: 1,
-      padding: 24,
+      padding: spacing.cardPadding,
       shadowColor: "#000",
       shadowOffset: { width: 0, height: 14 },
       shadowOpacity: 0.08,
@@ -525,14 +527,14 @@ function buildStyles(c: ThemeColors) {
       borderRadius: radii.button,
       flexDirection: "row",
       gap: 8,
-      marginBottom: 24,
+      marginBottom: spacing.elementGap,
       padding: 6,
     },
     modeButton: {
       borderRadius: radii.button,
       minWidth: 112,
       paddingHorizontal: 20,
-      paddingVertical: 12,
+      paddingVertical: 10,
     },
     modeButtonActive: {
       backgroundColor: c.elevated,
@@ -562,10 +564,10 @@ function buildStyles(c: ThemeColors) {
     },
     form: {
       gap: spacing.elementGap,
-      marginTop: 24,
+      marginTop: spacing.elementGap,
     },
     inputGroup: {
-      gap: 8,
+      gap: 6,
     },
     label: {
       color: c.ink,
@@ -579,7 +581,7 @@ function buildStyles(c: ThemeColors) {
       borderWidth: 1,
       color: c.ink,
       fontSize: 16,
-      minHeight: 54,
+      minHeight: 48,
       paddingHorizontal: 16,
     },
     primaryButton: {
@@ -587,7 +589,7 @@ function buildStyles(c: ThemeColors) {
       backgroundColor: c.primary,
       borderRadius: radii.button,
       justifyContent: "center",
-      minHeight: 54,
+      minHeight: 48,
       marginTop: 8,
     },
     primaryButtonText: {
@@ -625,7 +627,7 @@ function buildStyles(c: ThemeColors) {
       alignItems: "center",
       flexDirection: "row",
       gap: 14,
-      marginVertical: 22,
+      marginVertical: spacing.elementGap,
     },
     separatorLine: {
       backgroundColor: c.line,
@@ -646,7 +648,7 @@ function buildStyles(c: ThemeColors) {
       borderRadius: radii.button,
       borderWidth: 1,
       justifyContent: "center",
-      minHeight: 54,
+      minHeight: 48,
     },
     secondaryButtonInner: {
       alignItems: "center",
@@ -667,7 +669,7 @@ function buildStyles(c: ThemeColors) {
       fontSize: 12,
       fontFamily: fonts.body,
       textAlign: "center",
-      marginTop: 24,
+      marginTop: spacing.elementGap,
     },
   });
 }

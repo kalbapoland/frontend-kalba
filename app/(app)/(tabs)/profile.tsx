@@ -284,24 +284,20 @@ export default function ProfileScreen() {
           testID="profile.signout.button"
         />
 
-        <Pressable
+        <Button
+          label={
+            deleting
+              ? t("profile_screen.deleting")
+              : t("profile_screen.delete_account")
+          }
           onPress={handleDeleteAccount}
           disabled={deleting}
-          accessibilityRole="button"
+          variant="dangerSolid"
+          icon="trash-outline"
+          fullWidth
           accessibilityLabel={t("profile_screen.delete_account")}
           testID="profile.deleteaccount.button"
-          style={({ pressed }) => [
-            s.deleteButton,
-            { opacity: deleting ? 0.5 : pressed ? 0.7 : 1 },
-          ]}
-        >
-          <Ionicons name="trash-outline" size={15} color={colors.inkMuted} />
-          <AppText variant="captionMedium" tone="muted">
-            {deleting
-              ? t("profile_screen.deleting")
-              : t("profile_screen.delete_account")}
-          </AppText>
-        </Pressable>
+        />
 
         <Pressable
           onPress={handleOpenPrivacy}
@@ -402,7 +398,7 @@ export function AppearanceSection() {
       <AppText variant="overline" tone="muted">
         {t("profile_screen.appearance_title")}
       </AppText>
-      <View style={styles.settingsRow}>
+      <View style={[styles.settingsRow, maskedByOverride && styles.settingsRowDisabled]}>
         <AppText variant="body">{t("profile_screen.appearance_option_system")}</AppText>
         <Switch
           value={followSystem}
@@ -530,7 +526,8 @@ function buildStyles(c: ThemeColors) {
       backgroundColor: c.primaryWash,
     },
     bottomGroup: {
-      gap: 14,
+      marginTop: spacing.elementGap,
+      gap: spacing.elementGap,
       alignItems: "stretch",
     },
     settingsStack: {
@@ -553,12 +550,8 @@ function buildStyles(c: ThemeColors) {
       justifyContent: "space-between",
       gap: 8,
     },
-    deleteButton: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 6,
-      paddingVertical: 6,
+    settingsRowDisabled: {
+      opacity: 0.5,
     },
     privacyText: {
       textAlign: "center",
