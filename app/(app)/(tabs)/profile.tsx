@@ -223,55 +223,6 @@ export default function ProfileScreen() {
         {isTestBuild && <DeveloperOptionsSection />}
       </View>
 
-      {/* Edit name modal */}
-      <Modal
-        visible={editNameVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setEditNameVisible(false)}
-      >
-        <View style={s.modalBackdrop}>
-          <View style={s.modalSheet}>
-            <AppText variant="title" style={s.modalTitle}>
-              {t("profile_screen.edit_name")}
-            </AppText>
-            <TextInput
-              value={nameInput}
-              onChangeText={setNameInput}
-              placeholder={t("profile_screen.edit_name_placeholder")}
-              placeholderTextColor={colors.inkMuted}
-              autoFocus
-              maxLength={100}
-              style={s.modalInput}
-              testID="profile.editname.input"
-            />
-            <View style={s.modalActions}>
-              <View style={s.modalActionButton}>
-                <Button
-                  label={t("cancel")}
-                  onPress={() => setEditNameVisible(false)}
-                  variant="ghost"
-                  fullWidth
-                />
-              </View>
-              <View style={s.modalActionButton}>
-                <Button
-                  label={
-                    updateUser.isPending
-                      ? t("profile_screen.save") + "…"
-                      : t("profile_screen.save")
-                  }
-                  onPress={handleSaveName}
-                  disabled={updateUser.isPending || !nameInput.trim()}
-                  fullWidth
-                  testID="profile.editname.save.button"
-                />
-              </View>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
       {/* Account actions */}
       <View style={s.bottomGroup}>
         <Button

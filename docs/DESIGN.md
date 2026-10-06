@@ -558,6 +558,12 @@ navigation, or business-logic changes.
   time-of-day greeting and the sign-out/delete-account dialogs.
 - **Scope cut:** the video call screens (`workshop/call.tsx`, `call.web.tsx`)
   keep their purpose-built dark in-call chrome.
+- **Danger button variants (2026-10-06):** `<Button>` gained a `dangerSolid`
+  variant (solid fill) alongside the existing `danger` (soft wash) — the
+  wash signals a reversible action (Sign Out), the solid fill signals an
+  irreversible/high-severity one (Delete account). Text colour follows
+  `elevated` on the solid fill so it stays legible against the stronger
+  background (see *Theme Switching* for the contrast fix this required).
 
 ### Current limitations
 
@@ -565,8 +571,6 @@ navigation, or business-logic changes.
   / release build — Expo Go and old dev clients won't run this branch.
 - `<Button>` exists but legacy bespoke buttons remain on detail/auth screens
   (tokenized, not yet migrated to the shared component).
-- No dark mode; the app is light-only at runtime. A `night` palette exists
-  (see *Theme Switching*) but is not wired to the OS setting.
 
 ### Future improvements
 
@@ -640,12 +644,13 @@ cleared. Production builds never render that section.
 
 #### Appearance policy — v2 settings model
 
-`SettingsSchema` v2: `themePreference` is always `"system"` (the only
-user-facing policy — Profile → Appearance) and `devThemeOverride`
-(`ThemeName | null`) is the test-build override managed under Profile →
-Developer options. Resolution order in `ThemeProvider`: build lock →
-dev override → system-following. A v1 blob (concrete palette in
-`themePreference`) migrates to system-following with the override cleared.
+`SettingsSchema` v2: `themePreference` is the user-facing policy set via
+Profile → Appearance (`"system"` follows the OS, `"light"` pins light mode)
+and `devThemeOverride` (`ThemeName | null`) is the test-build override
+managed under Profile → Developer options. Resolution order in
+`ThemeProvider`: build lock → dev override → `themePreference`. A v1 blob
+(concrete palette in `themePreference`) migrates to `"system"` with the
+override cleared.
 
 #### Test vs production builds — Metro-inlined flag
 
@@ -710,10 +715,39 @@ sources of truth for colour is exactly the drift this change exists to prevent.
 "starting soon" — the product's core moment had no colour of its own), and
 `deep` (immersive surfaces). All three are defined in every theme.
 
+#### Danger colour contrast (2026-10-06)
+
+`default.json`'s `danger` was `#C4836E`: white text on a solid fill of that
+colour (the new `dangerSolid` Button variant, see *UI Design System*)
+computed to ~3.1:1, below the 4.5:1 WCAG AA floor for normal text. Darkened
+to `#A15642` — reusing `warm-deep`'s existing value rather than inventing a
+new one — which raises solid-fill contrast to ~5.4:1 and, as a side effect,
+raises the pre-existing `danger`-wash text (Sign Out) from ~2.7:1 to
+~4.65:1.
+
+Checked across all three registered palettes (`dangerSolid` = `elevated`
+text on `danger` fill; `danger` wash = `danger` text on `dangerWash` fill —
+see `TEXT_COLOR_KEYS` in `Button.tsx`): `default` 5.35:1 / 4.65:1, `night`
+6.54:1 / 6.21:1 (its `elevated` is dark, not white), `warm-deep` 5.35:1 /
+4.55:1 — the last being the tightest margin above the 4.5 floor of the
+three. `call.tsx`'s own hardcoded `#C4836E` (mic-off icon, hang-up button)
+is deliberately unthemed — see *UI Design System* Scope cut. The hang-up
+button's white icon on its solid `#C4836E` fill is ~3.08:1, just above the
+3:1 icon/graphics floor (not the 4.5:1 text bar). The mic-off icon instead
+sits in the name pill's `rgba(0,0,0,0.45)` overlay on live video, so its
+contrast depends on what's behind it: ~6.2:1 over a dark tile, ~3.1:1 over
+mid-grey, only ~1.1:1 over a bright/white frame — unlike the hang-up
+button's fixed background, it can drop below the 3:1 floor depending on the
+video feed.
+
+Still caught by manual computation, not a CI test — see *Future
+improvements*.
+
 ### Current limitations
 
 - Developer options (palette override) exist only on test builds by design;
-  production users cannot pin a palette — appearance is system-following only.
+  production users cannot pin a palette beyond the Appearance switch's
+  system/light choice.
 - `workshop/call.tsx` keeps its purpose-built dark chrome, outside themes.
 - Splash screen colour is static (`#ffffff` in app.config.js) — visible
   briefly in dark mode before the first themed frame.
