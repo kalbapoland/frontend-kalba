@@ -187,6 +187,16 @@ function main() {
   const run = spawnSync("git", ["commit", "-m", message], { cwd: root, stdio: "inherit" });
   if (run.status !== 0) process.exit(run.status ?? 1);
 
+  // Release tag on the bump commit — the reference point for
+  // `node scripts/release-notes.js` comparisons at the NEXT release.
+  const tag = `v${nextStr}`;
+  const tagRun = spawnSync("git", ["tag", "-a", tag, "-m", `Release ${nextStr}`], { cwd: root, stdio: "inherit" });
+  if (tagRun.status !== 0) {
+    console.warn(`[version-bump] Tag ${tag} could not be created (exists?) — create it manually before the next release.`);
+  } else {
+    console.log(`[version-bump] Tagged: ${tag}`);
+  }
+
   console.log(`[version-bump] Committed: ${message}`);
 }
 
