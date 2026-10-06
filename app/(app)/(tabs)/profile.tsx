@@ -432,17 +432,10 @@ export function DeveloperOptionsSection() {
       <AppText variant="overline" tone="muted">
         {t("profile_screen.dev_options_title")}
       </AppText>
-      <AppText variant="caption" tone="muted">
-        {t("profile_screen.dev_options_hint")}
+      {/* colour schemes sub-header (review: replace hint text + build row) */}
+      <AppText variant="captionMedium">
+        {t("profile_screen.dev_options_schemes_header")}
       </AppText>
-      <View style={styles.settingsRow}>
-        <AppText variant="caption" tone="muted">
-          {t("profile_screen.dev_options_build_label")}
-        </AppText>
-        <AppText variant="captionMedium" testID="profile.devoptions.build">
-          {appVersionLabel(true)}
-        </AppText>
-      </View>
       {options.map(({ key, label }) => {
         // "None" is selected when the appearance follows the system (no
         // override); a concrete palette is selected when it is the resolved

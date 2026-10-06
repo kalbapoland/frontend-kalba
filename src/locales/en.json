@@ -261,7 +261,7 @@
         "version_label": "Kalba {{version}}",
         "dev_options_build_label": "Build",
         "dev_options_title": "Developer options",
-        "dev_options_hint": "Visible in test builds only. Overrides “Follow system”.",
+        "dev_options_schemes_header": "Colour schemes",
         "dev_option_palette_none": "Default (no override)",
         "dev_option_theme_default": "Default",
         "dev_option_theme_warm_deep": "Warm deep",
