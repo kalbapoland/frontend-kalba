@@ -4,9 +4,26 @@ Use this skill when the user wants to ship a new iOS build to TestFlight.
 
 ## Goal
 
-- Create an EAS iOS production build (EAS server bumps the build number automatically).
+- Create an EAS iOS **release** build (profile `release`: store distribution, **dev options enabled**).
+- EAS auto-increments the build number (remote source) — no local edits.
 - Submit it straight to TestFlight in "Ready to Test" state.
-- If a release note is provided, include it in TestFlight "What to Test".
+- Attach "What to Test" from the release notes tooling.
+
+## Version + release notes (before building)
+
+The release flow is documented in full in
+[docs/BUILDING_WITH_EAS.md](../../../docs/BUILDING_WITH_EAS.md) §3.0. Short
+version:
+
+```powershell
+npm run release:minor            # (or patch/major) — bump + commit + tag vX.Y.Z
+npm run release:notes:short      # "What to Test" copy (<=500 chars)
+```
+
+`release:*` syncs the **iOS native project** too (`ios/Kalba/Info.plist`,
+`ios/Kalba.xcodeproj/project.pbxproj`) — required, because EAS reads the
+version from native code (bare `ios/` directory) and ignores the manifest
+value. Missing this step makes TestFlight show the OLD version.
 
 ## Preconditions
 
@@ -30,12 +47,14 @@ Use this skill when the user wants to ship a new iOS build to TestFlight.
 
 ## Workflow
 
-1. Build iOS app for store distribution.
+1. Build iOS app for store distribution (dev options enabled).
 
 ```bash
-npx eas-cli build -p ios --profile production --non-interactive
+npx eas-cli build -p ios --profile release --non-interactive --no-wait
 ```
 
+- Profile `release` = store distribution + `EXPO_PUBLIC_APP_VARIANT=test`.
+- ONLY for the final store release (dev options OFF) use `--profile production`.
 - EAS reads the iOS buildNumber from its server (remote source), increments, and bakes the new value into the IPA. No source file edits needed.
 - Build typically takes 15-30 min. Print the build URL to the user immediately after the command returns; do not tail logs.
 - Capture the build ID from build output for submit step.
@@ -48,10 +67,11 @@ npx eas-cli submit -p ios --id <build-id>
 ```
 
 - Always pass `--id <build-id>` captured in step 1. Use `--latest` only if no build ID was captured.
-- If a release note argument is provided, include it in submission:
+- "What to Test" from the release notes (preferred):
   ```bash
-  npx eas-cli submit -p ios --id <build-id> --what-to-test "<release-note>"
+  npx eas-cli submit -p ios --id <build-id> --what-to-test "$(npm run --silent release:notes:short | tr -d '\n')"
   ```
+  Or paste the `--short` output manually when the shell mangles newline handling.
 - Keep submit interactive by default (do not force `--non-interactive`) because first-run ASC auth may require prompts.
 - ASC Export Compliance is pre-declared via `ITSAppUsesNonExemptEncryption: false` in `app.config.js`, so the build skips "Missing Compliance" and goes straight to "Ready to Test".
 

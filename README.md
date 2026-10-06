@@ -81,10 +81,29 @@ Android scripts use `platform:mode:backend` naming:
 | iOS real device | `npm run ios:device` | `npm run ios:dev:device` |
 | Android debug run | `npm run android` (or `android:debug:local`) | `npm run android:dev` (or `android:debug:remote`) |
 | Android release APK | `npm run android:release:local` | `npm run android:release:remote` |
+| Android **TEST** APK (dev options) | `npm run android:release:local:test` | `npm run android:release:remote:test` |
 | Android smoke tests | `npm run android:smoke:local` | `npm run android:smoke:remote` |
 | Web | `npm run web` | `npm run web:dev` |
 
 > **How env switching works:** The API URL is read from `Constants.expoConfig.extra` (set in `app.config.js`), which is evaluated by the Expo CLI process at startup — before the bundle is served. Remote variants copy `.env.dev` to `.env.development.local` (highest-priority dotenv file) so Expo's env loader picks up the remote URL. The file is auto-deleted when the script exits. Switching backends requires a **full Metro restart**.
+
+## Releasing a new version
+
+Full procedure (source of truth: [docs/BUILDING_WITH_EAS.md](docs/BUILDING_WITH_EAS.md) §3.0):
+
+```bash
+npm run release:minor        # bump version + commit + tag vX.Y.Z (patch/major also)
+npm run release:notes        # markdown changelog: last tag -> HEAD
+npm run release:notes:short  # <=500 chars for Google Console / TestFlight
+```
+
+Then build both stores (developer options included):
+
+```bash
+npx eas-cli build -p android --profile release --non-interactive --no-wait
+npx eas-cli build -p ios --profile release --non-interactive --no-wait
+npx eas-cli submit -p ios --id <build-id>   # Android AAB: manual upload to Google Console
+```
 
 ### Mobile (development build)
 

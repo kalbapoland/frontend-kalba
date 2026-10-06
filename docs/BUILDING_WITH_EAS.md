@@ -14,14 +14,16 @@ Konfiguracja profili build jest w:
 
 Aktualnie:
 - `development`: `developmentClient: true`, `distribution: internal`
-- `tester`: `distribution: internal`, Android `buildType: apk`
-- `production`: `distribution: store`
+- `tester`: `distribution: internal`, Android `buildType: apk`, iOS `simulator: false`; `EXPO_PUBLIC_APP_VARIANT=test` (DevO widoczne)
+- `release`: `distribution: store`, Android `buildType: app-bundle` (AAB), `EXPO_PUBLIC_APP_VARIANT=test` (DevO ON); build number/version podbija EAS dla obu platform
+- `production`: `distribution: store`, `EXPO_PUBLIC_APP_VARIANT=production` (DevO NIEISTNIEJE)
 
 Konfiguracja natywna Expo jest w:
 - [app.config.js](../app.config.js)
 
 Wazne:
-- iOS `buildNumber` jest kontrolowany lokalnie w `app.config.js`.
+- `cli.appVersionSource: "remote"` — **numery buildow** (Android versionCode, iOS buildNumber) zarzadza **serwer EAS** (auto-increment). Pliki natywne sa synchronizowane przez `npm run release:*` (scripts/version-bump.js), nie recznie.
+- **Wersja aplikacji** (marketing version, np. 1.2.0) jest w plikach natywnych; EAS czyta je przy bare `ios/` i `android/`. To wartosc widoczna w systemie i w aplikacji (`expo-application`).
 - Android wlacza Google Services tylko gdy plik jest dostepny:
   - `process.env.GOOGLE_SERVICES_JSON`
   - lokalnie: `./android/app/google-services.json`
@@ -31,17 +33,47 @@ Wazne:
 
 ## 2. Build matrix (co i po co)
 
-| Platform | Typ | Profil EAS | Artefakt | Lokalna instalacja na telefonie |
-|---|---|---|---|---|
-| iOS | Developerski | `development` | dev client (internal) | Tak (na zarejestrowanym urzadzeniu / dev flow) |
-| iOS | Produkcyjny | `production` | store/TestFlight | Przez TestFlight (nie bezposrednio z pliku jak APK) |
-| Android | Debug (remote) | `development` | dev client (internal) | Tak |
-| Android | Release APK (remote) | `tester` | standalone APK (internal) | Tak |
-| Android | Store release (remote) | `production` | AAB (store) | Do sklepu |
+| Platform | Typ | Profil EAS | Artefakt | DevO w Profilu | Lokalna instalacja |
+|---|---|---|---|---|---|
+| iOS | Developerski | `development` | dev client (internal) | — | Tak (zarejestrowane urzadzenie) |
+| iOS | Release (DevO ON) | `release` | IPA (store) | **TAK** | TestFlight |
+| iOS | Sklepowy | `production` | IPA (store) | nie | TestFlight (sklep) |
+| Android | Debug (remote) | `development` | dev client (internal) | — | Tak |
+| Android | Release APK (tester) | `tester` | standalone APK | **TAK** | Tak (adb/store-internal) |
+| Android | Store AAB (DevO ON) | `release` | **AAB** | **TAK** | Do Google Console |
+| Android | Store AAB (produkcja) | `production` | AAB | nie | Do Google Console |
 
 ## 3. Komendy EAS (podstawowe)
 
 Uruchamiaj z katalogu `frontend`.
+
+### 3.0 Release flow (PEŁNA PROCEDURA — wersjonowanie/tagi/opis zmian)
+
+```powershell
+# 1. (na main, po zmergowaniu feature'ów) Podbicie wersji: minor | major | patch
+npm run release:minor
+# -> commit `chore: bump version to X.Y.Z` + GIT TAG vX.Y.Z
+# -> synchronizuje: app.config.js, package.json,
+#    android/app/build.gradle (versionCode +1, versionName),
+#    ios/Kalba/Info.plist (CFBundleShortVersionString),
+#    ios/Kalba.xcodeproj/project.pbxproj (MARKETING_VERSION + CURRENT_PROJECT_VERSION +1)
+# -> czytaRemote EAS buildNumber, by lokalny licznik iOS go nie cofnal.
+
+# 2. Push main + tag
+git push origin main --follow-tags
+
+# 3. Zbuduj oba store artefakty (z dev options dla testerow!)
+npx eas-cli build -p android --profile release --non-interactive --no-wait
+npx eas-cli build -p ios --profile release --non-interactive --no-wait
+
+# 4. Opis zmian (wszystko co zaszlo od poprzedniego taga)
+npm run release:notes          # pelny markdown (PR-linked, per section)
+npm run release:notes:short    # <= 500 znakow — Google Console release notes
+```
+
+Punkty 1-4 sa obowiazkowe dla kazdego release. Wersja mija automatycznie
+(Android versionCode, iOS buildNumber — EAS auto-increment), wersja marketingowa
+przyjmuje wartosc z taga przez synchronizowane pliki natywne.
 
 ### 3.1 iOS developerski
 
@@ -49,15 +81,18 @@ Uruchamiaj z katalogu `frontend`.
 npx eas-cli build -p ios --profile development
 ```
 
-### 3.2 iOS produkcyjny (TestFlight)
+### 3.2 iOS release (TestFlight / sklep) — z dev options
 
 ```bash
-npx eas-cli build -p ios --profile production
-npx eas-cli submit -p ios --latest
+npx eas-cli build -p ios --profile release --non-interactive --no-wait
+npx eas-cli submit -p ios --id <build-id> --what-to-test "$(npm run --silent release:notes:short | tr -d '\n')"
 ```
 
 Uwaga:
-- `buildNumber` na iOS musi byc unikalny w App Store Connect dla danej wersji.
+- `buildNumber` iOS zarzadza **serwer EAS** (remote source); auto-increment
+  przy kazdym buildzie. Nie edytuj `ios.buildNumber` w app.config.js.
+- Profil `release` ma DevO wlaczone (`EXPO_PUBLIC_APP_VARIANT=test`).
+- Profil `production` ma DevO wylaczone — uzywaj tylko do finalnego sklepu.
 
 ### 3.3 Android developerski
 
@@ -65,16 +100,24 @@ Uwaga:
 npm run android:eas:debug:remote
 ```
 
-### 3.4 Android release APK (tester)
+### 3.4 Android release APK (tester, DevO ON)
 
 ```bash
 npm run android:eas:release:remote
 ```
 
-### 3.5 Android store release
+### 3.5 Android store AAB (DevO ON)
 
 ```bash
-npm run android:eas:store:remote
+npx eas-cli build -p android --profile release --non-interactive --no-wait
+```
+
+- Artefakt AAB wgrywasz recznie do Google Console (Play App Signing).
+
+### 3.6 Android store AAB (produkcja, bez DevO)
+
+```bash
+npx eas-cli build -p android --profile production --non-interactive --no-wait
 ```
 
 ## 4. Wymagane env vars
@@ -108,13 +151,29 @@ niego musza wtedy byc wylaczone albo dzialac bez niego.
 
 - Chcesz testowac appke na telefonie szybko (bez sklepu):
   - Android dev client: `android:eas:debug:remote`
-  - Android standalone APK: `android:eas:release:remote`
+  - Android standalone APK: `android:eas:release:remote` (DevO ON)
   - iOS: `development`
-- Chcesz wyslac iOS do testerow businessowych:
-  - iOS `production` + submit do TestFlight
-- Chcesz przygotowac release store:
+- Chcesz wyslac testerom build z opcjami dev (palety) — **release**:
+  - iOS `release` + submit do TestFlight (DevO widoczne)
+  - Android `release` AAB -> Google Console (manual)
+  - lub Android `tester` APK (adb)
+- Chcesz przygotowac finalny sklepowy build (bez DevO):
   - iOS `production`
-  - Android `android:eas:store:remote`
+  - Android `production` AAB
+- **Pelny procedure release** (z podbiciem wersji, tagiem i opisem zmian):
+  patrz sekcja 3.0 powyzej.
+
+## 5.1 Wersjonowanie i numeracja (kluczowe fakty)
+
+| Pole | Kto zarzadza | Gdzie widoczne |
+|---|---|---|
+| **App version** (np. `1.2.0`) | `npm run release:*` (scripts/version-bump.js) | Oba systemy (Ustawienia), `expo-application.nativeApplicationVersion`, footery w appce |
+| **Android versionCode** | **EAS remote** (auto-increment przy EAS build) + plik `build.gradle` (sync przy release) | Google Console, `nativeBuildVersion` |
+| **iOS buildNumber** | **EAS remote** (auto-increment) + `CURRENT_PROJECT_VERSION` w pbxproj (sync przy release) | App Store Connect, `nativeBuildVersion` |
+| **Tag** `vX.Y.Z` | `release:*` auto | `git tag`, punkt odniesienia dla release:notes |
+
+**Nigdy nie edytuj numeracji recznie** — pliki synchronizuje version-bump.js, a
+liczniki buildow trzyma serwer EAS. Ręczna edycja psuje kolejność.
 
 ## 6. Skills i dokumenty szczegolowe
 
