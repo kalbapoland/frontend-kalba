@@ -77,6 +77,12 @@ npm run android:release:remote
 npm run ios                  # run on iOS simulator/device
 npm run web                  # run in browser
 
+# release versioning (bump + commit + tag vX.Y.Z; then EAS builds)
+npm run release:patch        # 0.1.0 -> 0.1.1
+npm run release:minor        # 0.1.0 -> 0.2.0
+npm run release:major        # 0.1.0 -> 1.0.0
+npm run release:notes        # changelog from the last tag (or --short for stores)
+
 # dev environment (uses .env.dev)
 npm run start:dev
 npm run ios:dev
