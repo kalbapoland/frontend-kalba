@@ -475,8 +475,12 @@ function buildStyles(c: ThemeColors) {
     scroll: {
       flex: 1,
     },
+    // Align to TOP when content overflows: center-justify would move the
+    // mode switch while scrolling (Maestro taps by coordinates captured at
+    // screenshot time) and the keyboard would cover the form. Centering
+    // pays off only on tall screens, which react-native handles by the
+    // content offset itself (contentContainerStyle grows downward).
     scrollContent: {
-      justifyContent: "center",
       paddingBottom: spacing.sectionGap,
     },
     keyboardAvoidingView: {
