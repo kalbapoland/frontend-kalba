@@ -1,6 +1,6 @@
 {
   "name": "frontend-kalba",
-  "version": "1.2.0",
+  "version": "0.1.0",
   "main": "expo-router/entry",
   "scripts": {
     "start": "node -e \"try{require('fs').unlinkSync('.env.development.local')}catch(e){}\" && expo start",
@@ -32,7 +32,9 @@
     "android:debug:local:test": "node scripts/android-build.js debug local system test",
     "release:major": "node scripts/version-bump.js major --commit",
     "release:minor": "node scripts/version-bump.js minor --commit",
-    "release:patch": "node scripts/version-bump.js patch --commit"
+    "release:patch": "node scripts/version-bump.js patch --commit",
+    "release:notes": "node scripts/release-notes.js",
+    "release:notes:short": "node scripts/release-notes.js --short"
   },
   "jest": {
     "preset": "jest-expo",

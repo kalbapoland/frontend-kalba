@@ -20,13 +20,29 @@ in the native sources, not just the manifest. One command syncs all three:
 npm run release:patch   # 1.0.0 -> 1.0.1, versionCode +1
 npm run release:minor   # 1.0.0 -> 1.1.0, versionCode +1
 npm run release:major   # 1.0.0 -> 2.0.0, versionCode +1
+npm run release:major -- --set 0.1.0   # direct set (node scripts/version-bump.js --set X.Y.Z)
 ```
 
 `release:*` updates `app.config.js`, `package.json`, and
-`android/app/build.gradle` (`versionCode` + `versionName`) and creates a
-standalone `chore: bump version to X.Y.Z` commit. Without `--commit`
-(direct script call), files are updated only. Never bump inside a feature
-PR — the bump commit rides to `main` on its own or with a release PR.
+`android/app/build.gradle` (`versionCode` + `versionName`) **and the iOS
+native project** (`ios/Kalba/Info.plist`, `ios/Kalba.xcodeproj/project.pbxproj`
+— EAS reads the version from native code when a bare `ios/` directory exists),
+and creates a standalone `chore: bump version to X.Y.Z` commit **plus the
+`vX.Y.Z` release tag** (the comparison point for the next release's notes).
+Direct script call without `--commit` only touches files.
+
+## Release notes (what changed since the last release)
+
+```powershell
+npm run release:notes           # last tag -> HEAD, markdown (Features / Bug Fixes / Other)
+npm run release:notes:short     # Google Play budget (<=500 chars), features first
+node scripts/release-notes.js --since v0.1.0   # explicit start tag
+node scripts/release-notes.js --json           # machine-readable
+```
+
+Classification follows the repo commit convention (`feat:` / `fix:` / the
+rest). Paste the `--short` output into Google Console release notes and the
+full markdown into the PR description or TestFlight "What to test".
 
 ## Goal
 

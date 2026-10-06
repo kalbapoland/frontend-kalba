@@ -7,6 +7,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -287,6 +288,14 @@ export default function AuthScreen() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={s.keyboardAvoidingView}
       >
+        {/* Scrollable: register mode (name+email+password+social) exceeds
+            small iPhone heights — content scrolls above the keyboard. */}
+        <ScrollView
+          style={s.scroll}
+          contentContainerStyle={s.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
         <View style={s.hero}>
           <Text style={s.brand}>Kalba</Text>
           <Text style={s.tagline}>{t("tagline")}</Text>
@@ -451,6 +460,7 @@ export default function AuthScreen() {
         <Text style={s.versionFooter} testID="auth.version">
           {t("version_footer", { version: appVersionLabel() })}
         </Text>
+        </ScrollView>
       </KeyboardAvoidingView>
     </View>
   );
@@ -462,9 +472,15 @@ function buildStyles(c: ThemeColors) {
       flex: 1,
       backgroundColor: c.canvas,
     },
+    scroll: {
+      flex: 1,
+    },
+    scrollContent: {
+      justifyContent: "center",
+      paddingBottom: spacing.sectionGap,
+    },
     keyboardAvoidingView: {
       flex: 1,
-      justifyContent: "center",
       paddingHorizontal: spacing.screenPadding,
       paddingVertical: spacing.sectionGap,
     },

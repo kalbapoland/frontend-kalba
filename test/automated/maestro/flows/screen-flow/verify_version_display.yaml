@@ -30,8 +30,4 @@ appId: com.kalba.app
     visible:
       id: profile.devoptions.section
     timeout: 5000
-- extendedWaitUntil:
-    visible:
-      id: profile.devoptions.build
-    timeout: 5000
 - takeScreenshot: ver-03-dev-build

@@ -6,6 +6,7 @@ import {
   Linking,
   Modal,
   Platform,
+  ScrollView,
   StyleSheet,
   Switch,
   TextInput,
@@ -169,6 +170,14 @@ export default function ProfileScreen() {
         style={StyleSheet.absoluteFill}
       />
 
+      {/* The whole screen scrolls: with Appearance + dev options + account
+          rows the content can exceed the viewport (iOS small heights). */}
+      <ScrollView
+        style={s.scroll}
+        contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 16) + 80 }}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
       {/* Profile card */}
       <Animated.View entering={listItemEntering(0)} style={s.card}>
         {/* Avatar */}
@@ -213,8 +222,6 @@ export default function ProfileScreen() {
         <AppearanceSection />
         {isTestBuild && <DeveloperOptionsSection />}
       </View>
-
-      <View style={{ flex: 1 }} />
 
       {/* Edit name modal */}
       <Modal
@@ -266,11 +273,7 @@ export default function ProfileScreen() {
       </Modal>
 
       {/* Account actions */}
-      <View style={[s.bottomGroup, { marginBottom: Math.max(insets.bottom, 16) + 80 }]}>
-        <AppText variant="caption" tone="muted" style={s.versionText} testID="profile.version">
-          {t("profile_screen.version_label", { version: appVersionLabel() })}
-        </AppText>
-
+      <View style={s.bottomGroup}>
         <Button
           label={t("profile_screen.signout")}
           onPress={handleSignOut}
@@ -311,7 +314,61 @@ export default function ProfileScreen() {
             {t("profile_screen.privacy_policy")}
           </AppText>
         </Pressable>
+
+        <AppText variant="caption" tone="muted" style={s.versionText} testID="profile.version">
+          {t("profile_screen.version_label", { version: appVersionLabel() })}
+        </AppText>
       </View>
+      </ScrollView>
+
+      {/* Modal rendered OUTSIDE the ScrollView (fixed overlay). */}
+      <Modal
+        visible={editNameVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setEditNameVisible(false)}
+      >
+        <View style={s.modalBackdrop}>
+          <View style={s.modalSheet}>
+            <AppText variant="title" style={s.modalTitle}>
+              {t("profile_screen.edit_name")}
+            </AppText>
+            <TextInput
+              value={nameInput}
+              onChangeText={setNameInput}
+              placeholder={t("profile_screen.edit_name_placeholder")}
+              placeholderTextColor={colors.inkMuted}
+              autoFocus
+              maxLength={100}
+              style={s.modalInput}
+              testID="profile.editname.input"
+            />
+            <View style={s.modalActions}>
+              <View style={s.modalActionButton}>
+                <Button
+                  label={t("cancel")}
+                  onPress={() => setEditNameVisible(false)}
+                  variant="ghost"
+                  fullWidth
+                />
+              </View>
+              <View style={s.modalActionButton}>
+                <Button
+                  label={
+                    updateUser.isPending
+                      ? t("profile_screen.save") + "…"
+                      : t("profile_screen.save")
+                  }
+                  onPress={handleSaveName}
+                  disabled={updateUser.isPending || !nameInput.trim()}
+                  fullWidth
+                  testID="profile.editname.save.button"
+                />
+              </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -375,17 +432,10 @@ export function DeveloperOptionsSection() {
       <AppText variant="overline" tone="muted">
         {t("profile_screen.dev_options_title")}
       </AppText>
-      <AppText variant="caption" tone="muted">
-        {t("profile_screen.dev_options_hint")}
+      {/* colour schemes sub-header (review: replace hint text + build row) */}
+      <AppText variant="captionMedium">
+        {t("profile_screen.dev_options_schemes_header")}
       </AppText>
-      <View style={styles.settingsRow}>
-        <AppText variant="caption" tone="muted">
-          {t("profile_screen.dev_options_build_label")}
-        </AppText>
-        <AppText variant="captionMedium" testID="profile.devoptions.build">
-          {appVersionLabel(true)}
-        </AppText>
-      </View>
       {options.map(({ key, label }) => {
         // "None" is selected when the appearance follows the system (no
         // override); a concrete palette is selected when it is the resolved
@@ -421,6 +471,9 @@ function buildStyles(c: ThemeColors) {
     screen: {
       flex: 1,
       paddingHorizontal: spacing.screenPadding,
+    },
+    scroll: {
+      flex: 1,
     },
     card: {
       alignItems: "center",
