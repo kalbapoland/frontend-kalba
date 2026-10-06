@@ -1,7 +1,7 @@
 ---
 name: review-architecture-quality
 description: Independent frontend reviewer for architecture and quality. Covers architecture, documentation, coding standards, performance, and tests only.
-model: claude-opus-4-8
+model: claude-opus-5.5
 tools: Bash, Glob, Grep, Read
 ---
 
