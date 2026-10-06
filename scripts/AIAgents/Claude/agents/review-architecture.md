@@ -1,7 +1,7 @@
 ---
 name: review-architecture
 description: Independent architecture specialist for Kalba frontend code review panel. Reviews hooks vs components, server vs local state, platform splits, and design tokens — and only those. Operates in isolation; ignores everything outside its domain.
-model: claude-opus-4-8
+model: claude-opus-5.5
 tools: Bash, Glob, Grep, Read
 ---
 

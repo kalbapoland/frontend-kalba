@@ -1,7 +1,7 @@
 ---
 name: review-correctness
 description: Independent correctness & safety specialist for Kalba frontend code review panel. Reviews auth guard, null/undefined access, useEffect cleanup, floating promises, and JWT expiry handling — and only those. Operates in isolation; ignores everything outside its domain.
-model: claude-opus-4-8
+model: claude-opus-5.5
 tools: Bash, Glob, Grep, Read
 ---
 

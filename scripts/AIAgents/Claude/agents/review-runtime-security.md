@@ -1,7 +1,7 @@
 ---
 name: review-runtime-security
 description: Independent frontend reviewer for runtime and security. Covers correctness, security, and state management only.
-model: claude-opus-4-8
+model: claude-opus-5.5
 tools: Bash, Glob, Grep, Read
 ---
 
