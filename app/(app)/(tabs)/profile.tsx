@@ -379,7 +379,7 @@ export default function ProfileScreen() {
  */
 export function AppearanceSection() {
   const { t } = useTranslation();
-  const { themeName, appearancePolicy, systemScheme, setPreference, colors, systemFollowing } = useTheme();
+  const { themeName, appearancePolicy, systemScheme, setPreference, colors, systemFollowing, preference } = useTheme();
   const styles = useThemedStyles(buildStyles);
 
   // Switch reads the POLICY (store value), not the effective selection —
@@ -387,7 +387,7 @@ export function AppearanceSection() {
   // and `preference === "system"` would be permanently false, making the
   // switch a dead control (user-reported bug). When an override masks the
   // policy, the switch is shown disabled with a one-line pointer.
-  const maskedByOverride = !systemFollowing && !!appearancePolicy;
+  const maskedByOverride = !!preference && preference !== appearancePolicy;
   const followSystem = appearancePolicy === "system";
   const schemeLabel = maskedByOverride
     ? t("profile_screen.appearance_masked_hint")

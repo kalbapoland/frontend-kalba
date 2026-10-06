@@ -71,6 +71,29 @@ describe("PRODUCTION build (isTestBuild=false)", () => {
     // production APK by user_appearance_smoke.yaml in CI).
     expect(queryByTestId("profile.devoptions.section")).toBeNull();
   });
+
+  test("regression: pinning light never masks the switch (user bug — phantom 'Overridden by DEVELOPER OPTIONS')", async () => {
+    const { getByTestId, rerender } = render(
+      <ThemeProvider>
+        <AppearanceSection />
+      </ThemeProvider>,
+    );
+
+    fireEvent(getByTestId("profile.appearance.switch"), "valueChange", false);
+    await (async () => {}); // flush the store write
+
+    rerender(
+      <ThemeProvider>
+        <AppearanceSection />
+      </ThemeProvider>,
+    );
+    const sw = getByTestId("profile.appearance.switch");
+
+    // policy === "light" alone is NOT an override: the switch must stay
+    // interactive, otherwise production users brick their own preference.
+    expect(sw.props.value).toBe(false);
+    expect(sw.props.disabled).toBe(false);
+  });
 });
 
 describe("TEST build (isTestBuild=true)", () => {
