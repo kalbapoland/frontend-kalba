@@ -42,7 +42,11 @@ describe("PRODUCTION build (isTestBuild=false)", () => {
     );
 
     expect(getByTestId("profile.appearance.section")).toBeTruthy();
-    expect(getByTestId("profile.appearance.switch").props.value).toBe(true);
+    const sw = getByTestId("profile.appearance.switch");
+    expect(sw.props.value).toBe(true);
+    // Guards the masking test below: without this, a bug that disables the
+    // switch unconditionally (not just when overridden) would still pass.
+    expect(sw.props.disabled).toBe(false);
   });
 
   test("switch OFF pins light; Developer options never appear", async () => {
@@ -114,5 +118,29 @@ describe("TEST build (isTestBuild=true)", () => {
     expect(getByTestId("profile.theme.option.none")).toBeTruthy();
     expect(getByTestId("profile.theme.option.night")).toBeTruthy();
     expect(getByTestId("profile.theme.option.warm-deep")).toBeTruthy();
+  });
+
+  test("Appearance switch is disabled when masked by a DevO override", () => {
+    // A DevO palette pin (devThemeOverride) takes priority over the user's
+    // own themePreference — the switch must reflect that it is not the
+    // thing currently driving the theme (review follow-up on PR #126).
+    useSettingsStore.setState({
+      hydrated: true,
+      settings: { ...defaultSettings(), themePreference: "system", devThemeOverride: "night" },
+    });
+
+    const { getByTestId } = render(
+      <ThemeProvider>
+        <AppearanceSection />
+      </ThemeProvider>,
+    );
+
+    const sw = getByTestId("profile.appearance.switch");
+    expect(sw.props.disabled).toBe(true);
+    // `value` must keep reflecting the stored themePreference ("system"),
+    // not the override's effective theme — without this assertion, a
+    // regression where `value` followed the override instead would go
+    // uncaught here.
+    expect(sw.props.value).toBe(true);
   });
 });
