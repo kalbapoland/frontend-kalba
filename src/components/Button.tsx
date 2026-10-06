@@ -8,7 +8,7 @@ import { useTheme } from "@/theme/ThemeProvider";
 import { useThemedStyles } from "@/theme/useThemedStyles";
 import type { ThemeColors } from "@/theme/themes";
 
-type Variant = "primary" | "secondary" | "ghost" | "danger";
+type Variant = "primary" | "secondary" | "ghost" | "danger" | "dangerSolid";
 
 /** Zero-allocation variant lookup (palette key, not value) — see AppText. */
 const TEXT_COLOR_KEYS: Record<Variant, keyof ThemeColors> = {
@@ -16,6 +16,7 @@ const TEXT_COLOR_KEYS: Record<Variant, keyof ThemeColors> = {
   secondary: "primary",
   ghost: "inkBody",
   danger: "danger",
+  dangerSolid: "elevated",
 };
 
 interface ButtonProps {
@@ -67,6 +68,9 @@ function buildStyles(c: ThemeColors) {
     danger: {
       backgroundColor: c.dangerWash,
     },
+    dangerSolid: {
+      backgroundColor: c.danger,
+    },
     inactive: {
       opacity: 0.5,
     },
@@ -76,7 +80,8 @@ function buildStyles(c: ThemeColors) {
 /**
  * Pill button with pressed-scale + light haptic. Variants:
  * primary (filled sage), secondary (sage outline), ghost (borderless),
- * danger (terracotta outline).
+ * danger (terracotta wash — soft warning), dangerSolid (filled terracotta —
+ * irreversible/high-severity actions).
  */
 export function Button({
   label,
