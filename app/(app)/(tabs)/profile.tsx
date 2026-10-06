@@ -379,18 +379,23 @@ export default function ProfileScreen() {
  */
 export function AppearanceSection() {
   const { t } = useTranslation();
-  const { themeName, preference, systemScheme, setPreference, colors } = useTheme();
+  const { themeName, appearancePolicy, systemScheme, setPreference, colors, systemFollowing } = useTheme();
   const styles = useThemedStyles(buildStyles);
 
-  // Appearance switch (review: user wants ON/OFF, not a dead radio):
-  // ON = follow the OS light/dark toggle; OFF = always light. On a locked
-  // build the switch follows the lock state and refuses writes via context.
-  const followSystem = preference === "system";
-  const schemeLabel = followSystem
-    ? systemScheme === "dark"
-      ? t("profile_screen.system_scheme_dark")
-      : t("profile_screen.system_scheme_light")
-    : t("profile_screen.appearance_hint_light_fixed");
+  // Switch reads the POLICY (store value), not the effective selection —
+  // with a dev override active, the effective theme comes from the override
+  // and `preference === "system"` would be permanently false, making the
+  // switch a dead control (user-reported bug). When an override masks the
+  // policy, the switch is shown disabled with a one-line pointer.
+  const maskedByOverride = !systemFollowing && !!appearancePolicy;
+  const followSystem = appearancePolicy === "system";
+  const schemeLabel = maskedByOverride
+    ? t("profile_screen.appearance_masked_hint")
+    : followSystem
+      ? systemScheme === "dark"
+        ? t("profile_screen.system_scheme_dark")
+        : t("profile_screen.system_scheme_light")
+      : t("profile_screen.appearance_hint_light_fixed");
 
   return (
     <View style={styles.settingsGroup} testID="profile.appearance.section">
@@ -401,6 +406,9 @@ export function AppearanceSection() {
         <AppText variant="body">{t("profile_screen.appearance_option_system")}</AppText>
         <Switch
           value={followSystem}
+          // Locked builds refuse writes via setPreference; disabled when the
+          // policy is masked by a dev override (test builds only).
+          disabled={maskedByOverride}
           onValueChange={(on) => setPreference(on ? "system" : "light")}
           trackColor={{ false: colors.line, true: colors.primarySoft }}
           thumbColor={colors.elevated}

@@ -256,6 +256,7 @@
         "appearance_title": "Appearance",
         "appearance_option_system": "Follow system",
         "appearance_hint_light_fixed": "Always light, regardless of the system setting",
+        "appearance_masked_hint": "Overridden by DEVELOPER OPTIONS",
         "system_scheme_light": "following the system (now: light)",
         "system_scheme_dark": "following the system (now: dark)",
         "version_label": "Kalba {{version}}",

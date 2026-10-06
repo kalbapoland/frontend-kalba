@@ -8,12 +8,20 @@ appId: com.kalba.app
     timeout: 15000
 - takeScreenshot: 01-sign-in
 
+# Register switch: wait for the button to be stable before tapping, then
+# require the name input with a generous window — the first render after a
+# cold start may re-layout (runtime theme pipeline) and a bare tap can land
+# before the Pressable's handler is attached.
+- extendedWaitUntil:
+    visible:
+      id: signin.mode.register.button
+    timeout: 5000
 - tapOn:
     id: signin.mode.register.button
 - extendedWaitUntil:
     visible:
       id: signin.name.input
-    timeout: 5000
+    timeout: 10000
 - takeScreenshot: 02-sign-up
 
 - tapOn:
