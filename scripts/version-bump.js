@@ -2,7 +2,9 @@
 /**
  * Version bump — single source of truth sync.
  *
- * Usage: node scripts/version-bump.js <major|minor|patch| current-version> [--commit]
+ * Usage:
+ *   node scripts/version-bump.js <major|minor|patch> [--commit]
+ *   node scripts/version-bump.js --set X.Y.Z [--commit]   (direct set)
  *
  * Updates, in one pass:
  *   - app.config.js  `version: "X.Y.Z"`    (read by expo-constants / the app UI)
@@ -24,11 +26,26 @@ const fs = require("fs");
 const path = require("path");
 const { spawnSync } = require("child_process");
 
-const [bumpArg, ...rest] = process.argv.slice(2);
+const [firstArg, ...rest] = process.argv.slice(2);
 const doCommit = rest.includes("--commit");
 
-if (!bumpArg || !["major", "minor", "patch"].includes(bumpArg)) {
+// --set X.Y.Z: direct version set (pre-release resets, e.g. 1.2.0 -> 0.1.0).
+let bumpArg;
+const setMatch = firstArg === "--set" ? rest[0] : null;
+if (setMatch) {
+  if (!/^\d+\.\d+\.\d+$/.test(setMatch)) {
+    console.error("[version-bump] --set expects X.Y.Z, got:", setMatch);
+    process.exit(1);
+  }
+  bumpArg = setMatch;
+} else {
+  bumpArg = firstArg;
+}
+const directSet = Boolean(setMatch);
+
+if (!bumpArg || !(["major", "minor", "patch"].includes(bumpArg) || directSet)) {
   console.error("Usage: node scripts/version-bump.js <major|minor|patch> [--commit]");
+  console.error("       node scripts/version-bump.js --set X.Y.Z [--commit]");
   process.exit(1);
 }
 
@@ -99,7 +116,10 @@ function replaceLast(content, regex, replacement) {
 function main() {
   const current = readCurrentVersion();
   const previous = format(current);
-  const next = bump(current, bumpArg);
+  const next = directSet
+    ? (bumpArg.match(/(\d+)\.(\d+)\.(\d+)/).slice(1).map(Number))
+      .reduce((acc, n, i) => ({ ...acc, [["major", "minor", "patch"][i]]: n }), {})
+    : bump(current, bumpArg);
   const nextStr = format(next);
   const gradleMatch = fs.readFileSync(buildGradlePath, "utf8").match(/versionCode\s+(\d+)/);
   const nextVersionCode = gradleMatch ? Number(gradleMatch[1]) + 1 : 1;
