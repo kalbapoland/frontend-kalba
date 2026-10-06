@@ -262,6 +262,7 @@
         "appearance_title": "Wygląd",
         "appearance_option_system": "Podążaj za systemem",
         "appearance_hint_light_fixed": "Zawsze jasny motyw, niezależnie od systemu",
+        "appearance_masked_hint": "Nadpisane przez OPCJE DEWELOPERSKIE",
         "system_scheme_light": "podąża za systemem (teraz: jasny)",
         "system_scheme_dark": "podąża za systemem (teraz: ciemny)",
         "version_label": "Kalba {{version}}",
