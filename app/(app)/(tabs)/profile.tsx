@@ -274,10 +274,6 @@ export default function ProfileScreen() {
 
       {/* Account actions */}
       <View style={s.bottomGroup}>
-        <AppText variant="caption" tone="muted" style={s.versionText} testID="profile.version">
-          {t("profile_screen.version_label", { version: appVersionLabel() })}
-        </AppText>
-
         <Button
           label={t("profile_screen.signout")}
           onPress={handleSignOut}
@@ -318,6 +314,10 @@ export default function ProfileScreen() {
             {t("profile_screen.privacy_policy")}
           </AppText>
         </Pressable>
+
+        <AppText variant="caption" tone="muted" style={s.versionText} testID="profile.version">
+          {t("profile_screen.version_label", { version: appVersionLabel() })}
+        </AppText>
       </View>
       </ScrollView>
 
