@@ -4,6 +4,11 @@
     <item name="android:editTextBackground">@drawable/rn_edit_text_material</item>
     <item name="colorPrimary">@color/colorPrimary</item>
     <item name="android:statusBarColor">#ffffff</item>
+    <!-- Theme pipeline is JS-driven: Android 10/11 force-dark (and MIUI's
+         variant) would still invert the light palettes whenever the OS is in
+         dark mode — the reported "system dark overlays any in-app choice"
+         defect — unless the view-level auto-invert is disabled here. -->
+    <item name="android:forceDarkAllowed" tools:targetApi="29">false</item>
   </style>
   <style name="Theme.App.SplashScreen" parent="AppTheme">
     <item name="android:windowBackground">@drawable/ic_launcher_background</item>
