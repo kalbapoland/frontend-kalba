@@ -1,0 +1,10 @@
+appId: com.kalba.app
+---
+# Appearance E2E phase chunk — toggle the Appearance switch back ON
+# (follow system). Runs on the Profile screen.
+- tapOn:
+    id: profile.appearance.switch
+- extendedWaitUntil:
+    visible:
+      id: profile.appearance.section
+    timeout: 5000

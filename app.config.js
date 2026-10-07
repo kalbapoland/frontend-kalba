@@ -148,6 +148,18 @@ module.exports = {
           defaultChannel: "default",
         },
       ],
+      // Android night-mode pin: the theme resolution is JS-side, but native
+      // chrome (Alert/DatePicker, root window under edge-to-edge) follows
+      // AppCompat's default night mode. Follow the system instead of letting
+      // an AppCompat default (MODE_NIGHT_NO from a stale strings.xml) hard-
+      // pin light chrome on top of our dark palette — the "Android overlap"
+      // report. Keep the manifest-side strings.xml in sync on re-prebuild.
+      [
+        "expo-system-ui",
+        {
+          android: { userInterfaceStyle: "automatic" },
+        },
+      ],
     ],
     extra: {
       apiUrlWeb:

@@ -1,0 +1,12 @@
+appId: com.kalba.app
+---
+# Appearance E2E navigation chunk — tap a card by testID and verify the
+# destination screen's stable element is visible. Parameterised via env:
+# CARD_ID = card testID (e.g. home.workshop.card.e2e-workshop-free),
+# WAIT_ID = destination screen's stable element testID.
+- tapOn:
+    id: ${CARD_ID}
+- extendedWaitUntil:
+    visible:
+      id: ${WAIT_ID}
+    timeout: 15000

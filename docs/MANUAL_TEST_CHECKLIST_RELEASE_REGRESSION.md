@@ -93,6 +93,12 @@ Zakres: frontend Kalba (web + mobile), role `user` i `trainer`.
 - [ ] P1-23: Po wyjsciu z Call (leave / back / blad) aplikacja wraca do orientacji portrait.
 - [ ] P1-24: Pozostale ekrany (Home, Groups, Workshop detail, Profile) NIE obracaja sie - zostaja w portrait mimo obracania telefonu.
 
+- [ ] P1-25: Appearance ON (follow system): zmiana ciemnego/jasnego trybu W USTAWIENIACH SYSTEMU (appka w tle lub na ekranie) natychmiast zmienia palete aplikacji - na iOS i Android - przy powrocie do aplikacji bez restartu. ** pokryte automatycznie:** `test/automated/run_appearance_e2e.py` (fazy 1-5, wired w smoke runnerach).
+- [ ] P1-26: Appearance OFF (pin light) przy systemowym ciemnym trybie: NATYWNE elementy (dialogi Alert, DatePicker/TimePicker przy tworzeniu warsztatu) rowniez pozostaja jasne - nie naklada sie systemowy dark mode (Android AppCompat sync).
+- [ ] P1-27: Przelaczenie Appearance OFF->ON przy ciemnym systemie: natywne dialogi tez przechodza w ciemny motyw (spojnie z paleta nocna). ** pokryte automatycznie** (canvas): fazy 6-8 run_appearance_e2e.py (piny JS); natywne dialogi recznie.
+- [ ] P1-28: Status bar i kolor pod systemowymi paskami podazaja za paleta w obu trybach (bez bialych pasow w nocy / czarnych w dzien).
+- [ ] P1-29: Tour kolorow per ekran: kazdy glowny ekran (Home, Groups, Calendar, My Kalba, Profile, Workshop detail) renduje aktywna palete w OBUDU schematach systemowych — ** pokryte automatycznie:** fazy 9-10 (`--phase tour`, 12 asercji; wpiete w smoke runnery).
+
 ## P2 - Uzupelniajace / Edge Cases
 
 ### UX / Copy / Navigation

@@ -30,6 +30,8 @@
     "android:release:local:test": "adb reverse tcp:8000 tcp:8000 && node scripts/android-build.js release local system test",
     "android:release:remote:test": "node scripts/android-build.js release remote system test",
     "android:debug:local:test": "node scripts/android-build.js debug local system test",
+    "android:release:local:system": "adb reverse tcp:8000 tcp:8000 && node scripts/android-build.js release local system",
+    "android:release:remote:system": "node scripts/android-build.js release remote system",
     "release:major": "node scripts/version-bump.js major --commit",
     "release:minor": "node scripts/version-bump.js minor --commit",
     "release:patch": "node scripts/version-bump.js patch --commit",

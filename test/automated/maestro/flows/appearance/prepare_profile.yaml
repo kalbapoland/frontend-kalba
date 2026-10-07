@@ -1,0 +1,19 @@
+appId: com.kalba.app
+---
+# Appearance E2E phase chunk — a clearState cold launch resets the
+# appearance policy to its default (follow system = switch ON). Signed in,
+# on the Profile screen, appearance section visible.
+# Orchestrated by run_appearance_e2e.py between adb night-mode toggles.
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: signin.email.input
+    timeout: 15000
+- runFlow: ../common/login_user.yaml
+- tapOn:
+    id: tab.profile.button
+- extendedWaitUntil:
+    visible:
+      id: profile.appearance.section
+    timeout: 10000

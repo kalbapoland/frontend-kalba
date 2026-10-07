@@ -687,6 +687,39 @@ that predicate, and every consumer flips together. `userInterfaceStyle` is
 palette functions (`cardShadow(c)` / `raisedShadow(c)`) in `tokens.ts` — the
 last colour token joined the runtime pipeline.
 
+#### System scheme delivery (`useSystemScheme`, 2026-10-07)
+
+`Appearance.addChangeListener` alone does not deliver every OS toggle:
+Android drops the emit while the react context is inactive (and its dedupe
+cache swallows the resend on return), and iOS suppresses the trait-change
+notification while backgrounded. `src/theme/useSystemScheme.ts` re-reads
+`Appearance.getColorScheme()` on every `AppState` foreground transition, so
+a toggle made in system settings while the app was backgrounded applies on
+return — the iOS "settings change needs an app restart" report.
+
+Android additionally pins AppCompat's process-wide day/night mode
+(`Appearance.setColorScheme`) to the **selection-derived** appearance while
+a concrete palette is selected: native chrome (Alert dialogs, the system
+DateTimePicker, `values-night` resources under the `DayNight` activity
+theme) re-themes with the app instead of the raw OS toggle — the "system
+dark overlays our in-app choice" report. When the policy is `"system"` the
+pin releases to `FOLLOW_SYSTEM` and re-reads synchronously, because
+`Appearance.getColorScheme` reports the pin back rather than the OS switch.
+iOS never pins (trait-driven; a window-level override would freeze the
+pipeline). The Info.plist `UIUserInterfaceStyle` is `Automatic` — a stale
+`Light` there hard-pinned the whole iOS app light regardless of the OS.
+
+**Automated regression coverage** (2026-10): `test/automated/run_appearance_e2e.py`
+drives a live Android build (adb `cmd uimode night` toggles + Maestro sign-in
++ pixel-probed screenshots) through the full matrix — cold start, foreground
+and backgrounded toggles, the pin-light vs system-dark hand-off, and the
+per-screen tour (6 screens × 2 schemes) so a screen that leaves the theme
+pipeline fails on its own tour step. Wired into all three Android smoke
+runners (`run_android_smoke.py`, `run_android_smoke_local.py`,
+`run_android_smoke_remote.py`); needs the follow-system build variant
+(`node scripts/android-build.js release local system`) and the seeded E2E
+fixtures the smoke run already provides.
+
 #### One JSON file per theme, identical key sets
 
 `src/theme/themes/registry.json` is the shared name-to-file registry read by

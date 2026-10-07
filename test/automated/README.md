@@ -36,6 +36,50 @@ Because the database is always brand new, E2E accounts created during a test run
 
 ## Quick start
 
+### Appearance pipeline E2E (dark-mode regression)
+
+`test/automated/run_appearance_e2e.py` verifies the runtime appearance
+pipeline against a **live app build on the emulator** (installed APK + adb +
+Maestro login; pixel-probes the rendered canvas — no mocks). It covers the
+2026-10 defect class (iOS ignored system toggles; Android overlaid the OS
+setting on the in-app choice):
+
+| Phase | Scenario | Expected canvas |
+|---|---|---|
+| 1 | cold start, system light | light |
+| 2 | foreground toggle → dark | dark |
+| 3 | foreground toggle → light | light |
+| 4 | toggle backgrounded → return | dark |
+| 5 | toggle backgrounded → return | light |
+| 6 | system dark, follow ON | dark |
+| 7 | switch OFF (pin light), system still dark | **light** (pin wins) |
+| 8 | switch ON again, system dark | dark |
+| 9 | tour: system dark | dark on all 6 screens |
+| 10 | tour: system light | light on all 6 screens |
+
+Fazy 9-10 to "tour" głównych ekranów (Home, Groups, Calendar, My Kalba,
+Profile, Workshop detail) w OBU schematach systemowych — 12 asercji koloru
+per ekran. Ekran, który wypadł z pipeline'u motywów (zahardcodowany kolor,
+pominięta migracja), failuje na swoim konkretnym kroku tour i zostawia PNG
+w artifacts. Nawigacja + asercje widoczności idą przez Maestro (raw
+uiautomator dump nie działa tutaj: animacja BreathingCircle nigdy nie
+"idluje", więc dump serwuje stary stan); do tour są potrzebne seeded
+fixtures (`e2e-workshop-free`, `e2e-trainer-group`), które smoke runner
+seeduje zanim odpala fazy appearance.
+
+Wired into all smoke runners (runs last, after the destructive flows).
+Standalone:
+
+```powershell
+adb reverse tcp:8000 tcp:8000          # backend reachable (local builds)
+python test/automated/run_appearance_e2e.py --phase all   # or: system | pin | tour
+```
+
+Requires the follow-system build variant (`node scripts/android-build.js
+release local system` — the plain `android:release:local` pins the palette
+by design and would fail phases 2-5). Screenshots land in
+`test/automated/artifacts/appearance/`. OS night mode is restored on exit.
+
 ### Required environment variables (mandatory)
 
 The local one-shot Android smoke runner requires both variables below:

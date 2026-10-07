@@ -1,0 +1,28 @@
+appId: com.kalba.app
+---
+# Appearance E2E navigation chunk — tap a tab by testID and verify the
+# destination screen's stable element is visible. The tab bar exists only on
+# tab screens: if it is missing (a stacked detail screen is on top), press
+# BACK until it reappears. Parameterised via env: TAB_ID (full tab testID),
+# WAIT_ID (destination testID).
+- extendedWaitUntil:
+    visible:
+      id: ${TAB_ID}
+    timeout: 4000
+    optional: true
+- runFlow:
+    when:
+      notVisible:
+        id: ${TAB_ID}
+    commands:
+      - pressKey: BACK
+      - extendedWaitUntil:
+          visible:
+            id: ${TAB_ID}
+          timeout: 8000
+- tapOn:
+    id: ${TAB_ID}
+- extendedWaitUntil:
+    visible:
+      id: ${WAIT_ID}
+    timeout: 15000
