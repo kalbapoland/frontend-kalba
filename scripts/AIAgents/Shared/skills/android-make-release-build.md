@@ -6,43 +6,42 @@ For a TEST build with the developer-options section visible, use
 `android-make-test-build` instead — its npm scripts are the ones containing
 `:test`.
 
+The APK reflects the current local branch and is not a tag-pinned store build.
+Do not upload it as a store release; use `/make-release` for tagged store
+artifacts.
+
 Use script naming convention `platform:mode:backend` for Android:
 - `android:release:local`
 - `android:release:remote`
 
-## Version bump (before a real release)
+## Version bump
 
-The app version is displayed in-app (Profile footer, sign-in footer, dev
-options build row) and read from the **native binary** — so it must be bumped
-in the native sources, not just the manifest. One command syncs all three:
-
-```powershell
-npm run release:patch   # 1.0.0 -> 1.0.1, versionCode +1
-npm run release:minor   # 1.0.0 -> 1.1.0, versionCode +1
-npm run release:major   # 1.0.0 -> 2.0.0, versionCode +1
-npm run release:major -- --set 0.1.0   # direct set (node scripts/version-bump.js --set X.Y.Z)
-```
-
-`release:*` updates `app.config.js`, `package.json`, and
-`android/app/build.gradle` (`versionCode` + `versionName`) **and the iOS
-native project** (`ios/Kalba/Info.plist`, `ios/Kalba.xcodeproj/project.pbxproj`
-— EAS reads the version from native code when a bare `ios/` directory exists),
-and creates a standalone `chore: bump version to X.Y.Z` commit **plus the
-`vX.Y.Z` release tag** (the comparison point for the next release's notes).
-Direct script call without `--commit` only touches files.
+This skill only builds an APK from an existing release and never bumps versions
+or creates tags. For a real release, use `/make-release` and
+[docs/BUILDING_WITH_EAS.md](../../../../docs/BUILDING_WITH_EAS.md) §3.0. Only
+that release flow may run `version-bump.js`, on the guarded
+`release/<version>` branch with a PR to `main`.
 
 ## Release notes (what changed since the last release)
 
 ```powershell
-npm run release:notes           # last tag -> HEAD, markdown (Features / Bug Fixes / Other)
-npm run release:notes:short     # Google Play budget (<=500 chars), features first
-node scripts/release-notes.js --since v0.1.0   # explicit start tag
-node scripts/release-notes.js --json           # machine-readable
+$targetTag = "vX.Y.Z" # exact release tag from the runbook
+npm run release:notes -- --release $targetTag --commits # priority-sorted list
+npm run release:notes -- --release $targetTag           # PR-linked markdown
+npm run release:notes:short -- --release $targetTag     # max 500 chars
+node scripts/release-notes.js --release $targetTag --json # machine-readable
 ```
 
-Classification follows the repo commit convention (`feat:` / `fix:` / the
-rest). Paste the `--short` output into Google Console release notes and the
-full markdown into the PR description or TestFlight "What to test".
+Release notes always compare two version tags, never `HEAD`. Calculate
+`$targetTag` as in [docs/BUILDING_WITH_EAS.md](../../../../docs/BUILDING_WITH_EAS.md)
+§3.0; the script resolves its previous tag. Check the range in the
+`--commits` heading or stderr (the `--short` body has no header). `--short`
+includes feature and bug-fix commits only and reports
+explicitly if neither exists. This local APK skill does not publish store
+notes. If the build is part of a later store release, use the user/tester
+summary from `/make-release`; `--short` is raw commit text and must be reviewed
+and rewritten under the public-summary rules before sharing. Full markdown is
+suitable for the PR description.
 
 ## Goal
 

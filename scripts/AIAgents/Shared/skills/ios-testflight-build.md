@@ -7,30 +7,26 @@ Use this skill when the user wants to ship a new iOS build to TestFlight.
 - Create an EAS iOS **release** build (profile `release`: store distribution, **dev options enabled**).
 - EAS auto-increments the build number (remote source) — no local edits.
 - Submit it straight to TestFlight in "Ready to Test" state.
-- Attach "What to Test" from the release notes tooling.
+- Prefer the user/tester summary from `/make-release` for "What to Test";
+  `release:notes:short` is only a raw draft and must be reviewed and rewritten
+  under the public-summary rules before sharing.
 
 ## Version + release notes (before building)
 
-The release flow is documented in full in
-[docs/BUILDING_WITH_EAS.md](../../../docs/BUILDING_WITH_EAS.md) §3.0. Short
-version:
-
-```powershell
-npm run release:minor            # (or patch/major) — bump + commit + tag vX.Y.Z
-npm run release:notes:short      # "What to Test" copy (<=500 chars)
-```
-
-`release:*` syncs the **iOS native project** too (`ios/Kalba/Info.plist`,
-`ios/Kalba.xcodeproj/project.pbxproj`) — required, because EAS reads the
-version from native code (bare `ios/` directory) and ignores the manifest
-value. Missing this step makes TestFlight show the OLD version.
+This skill is build/submit-only. For a new release, use `/make-release` or
+follow [docs/BUILDING_WITH_EAS.md](../../../../docs/BUILDING_WITH_EAS.md) §3.0
+through the version bump, release-branch push, and release-PR merge; the tag
+is pushed only after merge. Never run
+`version-bump.js` or create tags here. On a re-entry, use the existing pushed
+tag and release PR URL, and skip all version-changing steps. If either is
+unknown, ask the user; do not guess.
 
 ## Preconditions
 
-1. Run in `frontend` repository root and verify `eas.json` exists.
-   - If `eas.json` is missing, instruct user to `cd frontend` and stop.
-2. Verify git working tree is clean and on the intended release branch (usually `main`).
-   - If not clean or on a different branch, confirm with the user before building.
+1. Run in the `frontend` repository root.
+2. The worktree must be clean. Workflow step 0 fetches the target tag from
+   `origin` and switches to its detached commit. If any check fails, stop; do
+   not ask the user to override it.
 3. User is logged into Expo account (`npx eas-cli whoami`).
    - If no user is returned, instruct user to run `npx eas-cli login` in their own terminal and stop.
 4. EAS `production` environment contains required variables:
@@ -38,14 +34,23 @@ value. Missing this step makes TestFlight show the OLD version.
    - `EXPO_PUBLIC_API_URL_WEB`
    - `EXPO_PUBLIC_EAS_PROJECT_ID`
    - Google OAuth client IDs if the app uses Google sign-in.
-5. `eas.json` already has:
-   - `cli.appVersionSource: "remote"`
-   - `build.production.autoIncrement: true`
-   - `build.production.distribution: "store"`
-
-   If any of these are missing, set them before running this skill - see the "Initial setup" section below.
-
 ## Workflow
+
+0. Use the already released `$targetTag` and merged `$releasePrUrl`. If either
+   is unavailable, ask the user instead of bumping another version. Execute
+   the gate-only procedure in [docs/BUILDING_WITH_EAS.md](../../../../docs/BUILDING_WITH_EAS.md)
+   §3.0 step 4a; it verifies origin, PR state, clean checkout and EAS release
+   configuration, then leaves HEAD detached at the tag. Do not copy a second
+   gate implementation here.
+
+```powershell
+npm run release:notes -- --release $targetTag --commits
+npm run release:notes:short -- --release $targetTag
+```
+
+Verify the printed range is previous-tag → `$targetTag`. Inspect and rewrite the
+`--short` raw draft under the public-summary rules before showing it to the
+user; never publish commit subjects as-is.
 
 1. Build iOS app for store distribution (dev options enabled).
 
@@ -66,12 +71,16 @@ npx eas-cli build -p ios --profile release --non-interactive --no-wait
 npx eas-cli submit -p ios --id <build-id>
 ```
 
-- Always pass `--id <build-id>` captured in step 1. Use `--latest` only if no build ID was captured.
-- "What to Test" from the release notes (preferred):
-  ```bash
-  npx eas-cli submit -p ios --id <build-id> --what-to-test "$(npm run --silent release:notes:short | tr -d '\n')"
-  ```
-  Or paste the `--short` output manually when the shell mangles newline handling.
+- Always pass the explicit `--id <build-id>` captured for this tagged build.
+  Never use `--latest`. If the ID is missing, run
+  `npx eas-cli build:list -p ios --limit 5`, match the build's commit/version
+  to `$targetTag`, and ask the user if the match is ambiguous.
+- After processing, paste the user/tester summary from `/make-release` into
+  App Store Connect's "What to Test" field and ask the user to confirm it was
+  saved. If using this skill alone, review and rewrite `--short` under the
+  public-summary rules before asking the user to paste it. Never publish raw
+  commit subjects. Do not pass free-form summary text as a native command-line
+  argument.
 - Keep submit interactive by default (do not force `--non-interactive`) because first-run ASC auth may require prompts.
 - ASC Export Compliance is pre-declared via `ITSAppUsesNonExemptEncryption: false` in `app.config.js`, so the build skips "Missing Compliance" and goes straight to "Ready to Test".
 
@@ -84,21 +93,28 @@ npx eas-cli submit -p ios --id <build-id>
 
 ## Common Failure Fixes
 
+Restart from workflow step 0 before every new build. Never resume a failed build
+by editing or building from the tagged checkout.
+
 1. `Build number N has already been used` (during submit)
 - Means EAS's remote counter is behind App Store Connect (e.g. someone uploaded N from another machine, or the seeding value was wrong). Bump the server counter past whatever ASC saw:
   ```bash
   npx eas-cli build:version:set -p ios
   ```
-  Enter a value higher than the last used build number, then rebuild and resubmit.
+  Ask the user to enter a value higher than the last used build number. This
+  changes only EAS's remote counter. Restart from workflow step 0, rebuild, and
+  submit the new build ID.
 
 2. `This project is not configured for using remote version source`
-- `eas.json` reverted or wasn't updated. Set `cli.appVersionSource: "remote"` and re-run.
+- Stop. Do not edit `eas.json` or rebuild from the current tag. Fix
+  `cli.appVersionSource: "remote"` in a release PR, create and push a new
+  release tag through `/make-release`, then restart this skill from step 0.
 
 3. `No environment variables found for production`
-- Add the missing variable:
-  ```bash
-  npx eas-cli env:create production --name <VAR> --value <VALUE> --visibility plaintext --scope project --force --non-interactive
-  ```
+- Stop the build and ask the user to add the missing variable in the EAS
+  dashboard with the appropriate visibility. Never put secret values in
+  command lines or logs, and do not overwrite variables with `--force`.
+  Restart from workflow step 0 before building again.
 
 4. Submit fails with "Apple ID prompt: Input is required, but stdin is not readable"
 - The shell cannot answer interactive prompts. Run the command from a local terminal that has stdin.
@@ -115,30 +131,15 @@ npx eas-cli submit -p ios --id <build-id>
   npx eas-cli submission:view <submission-id>
   ```
 
-## Initial setup (one-time, only if eas.json doesn't already have remote + autoIncrement)
+## Release configuration
 
-1. In `eas.json`, set:
-   ```json
-   {
-     "cli": { "appVersionSource": "remote" },
-     "build": {
-       "production": {
-         "distribution": "store",
-         "autoIncrement": true
-       }
-     }
-   }
-   ```
-2. Seed the EAS server counter to the last build number already on App Store Connect (interactive, must run from user's terminal):
-   ```bash
-   npx eas-cli build:version:set -p ios
-   ```
-3. Drop any `ios.buildNumber` set in `app.config.js` - it's ignored with remote source and leaks into the manifest via expo-constants.
-4. Ensure `app.config.js` has `ios.infoPlist.ITSAppUsesNonExemptEncryption: false` so submitted builds skip ASC's Missing Compliance flow.
+This build/submit-only skill never edits `eas.json`, `app.config.js`, or the
+native iOS project. If release configuration is missing, stop and fix it in a
+release PR; create and push a new release tag before building.
 
 ## Done Criteria
 
 - Build finished successfully (EAS reports finished state).
 - `eas submit` returned a submission ID and succeeded.
-- If release note was provided, it was passed as TestFlight "What to Test".
+- User confirmed the final text was saved in TestFlight "What to Test".
 - User receives direct links (build, IPA, TestFlight) and a note on Apple processing time.

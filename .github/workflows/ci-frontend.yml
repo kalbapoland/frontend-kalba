@@ -6,6 +6,10 @@ on:
     paths:
       - "app/**"
       - "src/**"
+      - "scripts/*.js"
+      - "scripts/__tests__/**"
+      - "eas.json"
+      - "jest.setup.ts"
       - "package.json"
       - "package-lock.json"
       - "tsconfig.json"
@@ -21,6 +25,10 @@ on:
     paths:
       - "app/**"
       - "src/**"
+      - "scripts/*.js"
+      - "scripts/__tests__/**"
+      - "eas.json"
+      - "jest.setup.ts"
       - "package.json"
       - "package-lock.json"
       - "tsconfig.json"
