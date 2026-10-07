@@ -1,6 +1,7 @@
 ---
 agent: 'agent'
 description: 'Independent frontend reviewer for runtime and security — correctness, security, state management'
+model: 'gpt-6.1-sol'
 ---
 
 This file is a thin wrapper.

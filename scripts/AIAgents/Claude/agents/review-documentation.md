@@ -1,7 +1,6 @@
 ---
 name: review-documentation
 description: Independent documentation specialist for Kalba frontend code review panel. Reviews non-obvious hook docs, query-key rationale, type-cast explanations, and comment noise — and only those. Operates in isolation; ignores everything outside its domain.
-model: claude-opus-5.5
 tools: Bash, Glob, Grep, Read
 ---
 

@@ -1,6 +1,7 @@
 ---
 agent: 'agent'
 description: 'Independent correctness reviewer for Kalba frontend — null safety, effect cleanup, floating promises, auth guard'
+model: 'gpt-6.1-sol'
 ---
 
 This file is a thin wrapper.
