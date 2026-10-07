@@ -77,11 +77,12 @@ npm run android:release:remote
 npm run ios                  # run on iOS simulator/device
 npm run web                  # run in browser
 
-# release versioning (bump + commit + tag vX.Y.Z; then EAS builds)
-npm run release:patch        # 0.1.0 -> 0.1.1
-npm run release:minor        # 0.1.0 -> 0.2.0
-npm run release:major        # 0.1.0 -> 1.0.0
-npm run release:notes        # changelog from the last tag (or --short for stores)
+# For releases, use /make-release or docs/BUILDING_WITH_EAS.md §3.0.
+# Do not run release:* outside its guarded branch/PR/tag flow.
+$targetTag = "vX.Y.Z" # existing pushed release tag
+npm run release:notes -- --release $targetTag --commits # feat > task > fix > other
+npm run release:notes -- --release $targetTag           # PR-linked changelog
+npm run release:notes:short -- --release $targetTag     # raw draft; review before sharing
 
 # dev environment (uses .env.dev)
 npm run start:dev
@@ -139,5 +140,7 @@ decision is made or a feature ships.** Keep entries concise and dated.
 - **Always create a new branch for every new feature or fix** — never commit directly to `main`
 - Branch protection is enabled on `main` — direct pushes are blocked
 - Never push directly to `main` — all changes via pull request
+- Release note commit categories follow Conventional Commit types: `feat`/`feature`,
+  `task`/`tasks`, `fix`/`bugfix`/`bug`, then all other types.
 - PR requires approval from the other developer before merge
 - CI (TypeScript check) must pass before merge is allowed

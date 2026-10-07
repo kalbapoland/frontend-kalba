@@ -1,7 +1,7 @@
 ---
 name: make-release
 description: 'Full two-platform release procedure: version bump + tag + release notes + EAS store builds (AAB/IPA, dev options) + TestFlight submit + Google Console hand-off.'
-argument-hint: 'release scope: patch | minor | major (and optional release note text)'
+argument-hint: 'release scope: patch | minor | major (and optional user/tester-summary hint)'
 user-invocable: true
 ---
 

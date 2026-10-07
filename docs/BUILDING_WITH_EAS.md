@@ -50,26 +50,214 @@ Uruchamiaj z katalogu `frontend`.
 ### 3.0 Release flow (PEŁNA PROCEDURA — wersjonowanie/tagi/opis zmian)
 
 ```powershell
-# 1. (na main, po zmergowaniu feature'ów) Podbicie wersji: minor | major | patch
-npm run release:minor
+# 1. Preflight na czystym main, wylicz wersje i utworz release branch
+$workingTree = git status --porcelain
+if ($LASTEXITCODE -ne 0) { throw "Could not inspect the working tree." }
+if ($workingTree) { throw "Start from a clean working tree." }
+$currentBranch = git branch --show-current
+if ($LASTEXITCODE -ne 0 -or $currentBranch -ne "main") { throw "Start from main." }
+git pull --ff-only origin main
+if ($LASTEXITCODE -ne 0) { throw "Could not fast-forward main." }
+$headCommit = (git rev-parse HEAD).Trim()
+if ($LASTEXITCODE -ne 0) { throw "Could not resolve local main." }
+$originMainCommit = (git rev-parse origin/main).Trim()
+if ($LASTEXITCODE -ne 0 -or $headCommit -ne $originMainCommit) {
+  throw "Local main must exactly match origin/main before release."
+}
+$releaseScope = "minor" # set from request: patch | minor | major
+$currentVersionText = (node -p "require('./package.json').version").Trim()
+if ($LASTEXITCODE -ne 0 -or $currentVersionText -notmatch '^\d+\.\d+\.\d+$') {
+  throw "Could not read a valid current package version."
+}
+$versionParts = @($currentVersionText.Split('.') | ForEach-Object { [int]$_ })
+$targetParts = @($versionParts)
+switch ($releaseScope) {
+  "major" {
+    $targetParts[0] = $targetParts[0] + 1
+    $targetParts[1] = 0
+    $targetParts[2] = 0
+  }
+  "minor" {
+    $targetParts[1] = $targetParts[1] + 1
+    $targetParts[2] = 0
+  }
+  "patch" { $targetParts[2] = $targetParts[2] + 1 }
+  default { throw "Release scope must be patch, minor, or major." }
+}
+$targetVersion = $targetParts -join '.'
+$releaseBranch = "release/$targetVersion"
+$targetTag = "v$targetVersion"
+$localBranches = @(git branch --list $releaseBranch)
+if ($LASTEXITCODE -ne 0) { throw "Could not check local branches." }
+if ($localBranches) { throw "Release branch already exists; resume it instead of bumping again." }
+$remoteBranch = git ls-remote --heads origin "refs/heads/$releaseBranch"
+if ($LASTEXITCODE -ne 0) { throw "Could not check remote release branches." }
+if ($remoteBranch) { throw "Remote release branch already exists; resume it instead." }
+$localTag = @(git tag --list $targetTag)
+if ($LASTEXITCODE -ne 0) { throw "Could not check local release tags." }
+if ($localTag) { throw "Release tag already exists; do not bump it again." }
+$remoteTag = git ls-remote --tags origin "refs/tags/$targetTag"
+if ($LASTEXITCODE -ne 0) { throw "Could not check remote release tags." }
+if ($remoteTag) { throw "Remote release tag already exists; resume that release instead." }
+git switch -c $releaseBranch
+if ($LASTEXITCODE -ne 0) { throw "Could not create the release branch." }
+node scripts/version-bump.js --set $targetVersion --commit
+if ($LASTEXITCODE -ne 0) { throw "Version bump failed." }
+$headTags = @(git tag --points-at HEAD)
+if ($LASTEXITCODE -ne 0 -or $headTags -notcontains $targetTag) {
+  throw "Version bump did not create $targetTag at HEAD."
+}
+$workingTree = git status --porcelain
+if ($LASTEXITCODE -ne 0) { throw "Could not inspect the bumped working tree." }
+if ($workingTree) { throw "Version bump left uncommitted changes; stop before pushing." }
 # -> commit `chore: bump version to X.Y.Z` + GIT TAG vX.Y.Z
 # -> synchronizuje: app.config.js, package.json,
 #    android/app/build.gradle (versionCode +1, versionName),
 #    ios/Kalba/Info.plist (CFBundleShortVersionString),
 #    ios/Kalba.xcodeproj/project.pbxproj (MARKETING_VERSION + CURRENT_PROJECT_VERSION +1)
 # -> czytaRemote EAS buildNumber, by lokalny licznik iOS go nie cofnal.
-
-# 2. Push main + tag
-git push origin main --follow-tags
-
-# 3. Zbuduj oba store artefakty (z dev options dla testerow!)
-npx eas-cli build -p android --profile release --non-interactive --no-wait
-npx eas-cli build -p ios --profile release --non-interactive --no-wait
-
-# 4. Opis zmian (wszystko co zaszlo od poprzedniego taga)
-npm run release:notes          # pelny markdown (PR-linked, per section)
-npm run release:notes:short    # <= 500 znakow — Google Console release notes
 ```
+
+```powershell
+# 2. Push release branch only and open a PR to main; keep the tag local
+$targetVersion = "X.Y.Z" # use the target calculated in step 1
+$releaseBranch = "release/$targetVersion"
+$targetTag = "v$targetVersion"
+git push --set-upstream --no-follow-tags origin $releaseBranch
+if ($LASTEXITCODE -ne 0) { throw "Could not push the release branch." }
+$releasePrUrl = gh pr create --base main --head $releaseBranch --title "Release $targetTag" --body "Release $targetTag."
+if ($LASTEXITCODE -ne 0) { throw "Could not create the release PR." }
+```
+
+Zatrzymaj sie po utworzeniu PR. Poczekaj na review i merge do `main`; tag
+pozostaje lokalny do tego momentu. Jesli PR zostanie porzucony, nie wypychaj
+taga. Po potwierdzeniu porzucenia usun tylko te local refs:
+
+```powershell
+$targetVersion = "X.Y.Z" # version of the abandoned release
+$releaseBranch = "release/$targetVersion"
+$targetTag = "v$targetVersion"
+$currentBranch = git branch --show-current
+if ($LASTEXITCODE -ne 0 -or $currentBranch -ne $releaseBranch) {
+  throw "Switch to the abandoned release branch before cleanup."
+}
+$workingTree = git status --porcelain
+if ($LASTEXITCODE -ne 0) { throw "Could not inspect the abandoned release tree." }
+if ($workingTree) { throw "Clean the abandoned release tree before cleanup." }
+git switch main
+if ($LASTEXITCODE -ne 0) { throw "Could not switch to main before cleanup." }
+git push --no-follow-tags origin --delete $releaseBranch
+if ($LASTEXITCODE -ne 0) { throw "Could not delete the abandoned remote branch." }
+git tag -d $targetTag
+if ($LASTEXITCODE -ne 0) { throw "Could not delete the abandoned local tag." }
+git branch -D $releaseBranch
+if ($LASTEXITCODE -ne 0) { throw "Could not delete the abandoned local branch." }
+```
+
+Potem przygotuj release ponownie z czystego `main`.
+
+```powershell
+# 3. Po merge: sprawdz PR i wygeneruj oba podsumowania z tych samych tagow
+$targetVersion = "X.Y.Z"
+$targetTag = "v$targetVersion"
+$releasePrUrl = "<release PR URL>"
+$prInfo = gh pr view $releasePrUrl --json state,baseRefName,headRefOid | ConvertFrom-Json
+if ($LASTEXITCODE -ne 0) { throw "Could not verify the release PR." }
+$targetCommit = (git rev-parse "${targetTag}^{commit}").Trim()
+if ($LASTEXITCODE -ne 0) { throw "Could not resolve $targetTag." }
+if ($prInfo.state -ne "MERGED" -or $prInfo.baseRefName -ne "main" -or $prInfo.headRefOid -ne $targetCommit) {
+  throw "The release PR must be merged to main with no post-tag commits."
+}
+git push --no-follow-tags origin $targetTag
+if ($LASTEXITCODE -ne 0) { throw "Could not publish the release tag after PR merge." }
+git fetch --tags origin
+if ($LASTEXITCODE -ne 0) { throw "Could not fetch release tags." }
+npm run release:notes -- --release $targetTag --commits # feat > task > fix > other
+if ($LASTEXITCODE -ne 0) { throw "Could not generate the commit summary." }
+npm run release:notes -- --release $targetTag # pelny markdown (PR-linked)
+if ($LASTEXITCODE -ne 0) { throw "Could not generate the full changelog." }
+npm run release:notes:short -- --release $targetTag # max 500 znakow
+if ($LASTEXITCODE -ne 0) { throw "Could not generate the short draft." }
+```
+
+```powershell
+# 4a. Gate only: verify PR, remote tag, clean tree and EAS config
+$targetVersion = "X.Y.Z"
+$targetTag = "v$targetVersion"
+$releasePrUrl = "<release PR URL>"
+$workingTree = git status --porcelain
+if ($LASTEXITCODE -ne 0) { throw "Could not inspect the working tree." }
+if ($workingTree) { throw "Working tree must be clean before building a release." }
+$tagRef = "refs/tags/$targetTag"
+$tagRefSpec = "${tagRef}:${tagRef}"
+git fetch origin $tagRefSpec
+if ($LASTEXITCODE -ne 0) { throw "$targetTag is missing on origin or differs locally." }
+$targetCommit = (git rev-parse "${targetTag}^{commit}").Trim()
+if ($LASTEXITCODE -ne 0) { throw "Could not resolve $targetTag." }
+$prInfo = gh pr view $releasePrUrl --json state,baseRefName,headRefOid | ConvertFrom-Json
+if ($LASTEXITCODE -ne 0) { throw "Could not verify the release PR." }
+if ($prInfo.state -ne "MERGED" -or $prInfo.baseRefName -ne "main" -or $prInfo.headRefOid -ne $targetCommit) {
+  throw "The release PR must be merged to main with no post-tag commits."
+}
+git switch --detach $targetTag
+if ($LASTEXITCODE -ne 0) { throw "Could not check out $targetTag." }
+$headTags = @(git tag --points-at HEAD)
+if ($LASTEXITCODE -ne 0 -or $headTags -notcontains $targetTag) {
+  throw "HEAD must be exactly the pushed tag $targetTag."
+}
+$workingTree = git status --porcelain
+if ($LASTEXITCODE -ne 0) { throw "Could not inspect the tagged working tree." }
+if ($workingTree) { throw "The tagged working tree must be clean." }
+if (-not (Test-Path -LiteralPath "eas.json")) {
+  throw "eas.json is missing at the target release tag."
+}
+$easConfig = Get-Content -LiteralPath "eas.json" -Raw | ConvertFrom-Json
+if (
+  $easConfig.cli.appVersionSource -ne "remote" -or
+  $easConfig.build.release.autoIncrement -ne $true -or
+  $easConfig.build.release.distribution -ne "store" -or
+  $easConfig.build.release.environment -ne "production" -or
+  $easConfig.build.release.android.buildType -ne "app-bundle" -or
+  $easConfig.build.release.env.EXPO_PUBLIC_APP_VARIANT -ne "test"
+) {
+  throw "Release EAS configuration is invalid at the target tag. Fix it in a release PR with a new tag."
+}
+```
+
+Krok 4a tylko weryfikuje release i konczy sie detached HEAD na `$targetTag`;
+nie uruchamia buildow. Jesli gate zawiedzie, zatrzymaj sie.
+
+```powershell
+# 4b. Build exactly once from the gated release tag
+npx eas-cli build -p android --profile release --non-interactive --no-wait
+if ($LASTEXITCODE -ne 0) { throw "Android EAS build failed." }
+npx eas-cli build -p ios --profile release --non-interactive --no-wait
+if ($LASTEXITCODE -ne 0) { throw "iOS EAS build failed." }
+git switch main
+if ($LASTEXITCODE -ne 0) { throw "Could not return to main after uploading builds." }
+git pull --ff-only origin main
+if ($LASTEXITCODE -ne 0) { throw "Could not update main after uploading builds." }
+```
+
+Po kroku 3 skill `/make-release` tworzy tez druga, user/tester-friendly liste:
+naturalny jezyk, tylko zmiany widoczne dla uzytkownika i wskazowki co sprawdzic.
+Uzywa tego samego zakresu tagow co lista commitow; ten tekst wklej do Google
+Play i TestFlight. Przy recznym flow przejrzyj diff w tym zakresie i przygotuj
+takie podsumowanie przed publikacja.
+
+Zakres release zawsze sklada sie z dwoch wersjonowanych tagow:
+`vPREVIOUS..vCURRENT`. Jesli `HEAD` jest tagiem, skrypt wybiera ten tag i jego
+poprzednika; w przeciwnym razie wybiera dwa najnowsze tagi. Zakres jawny i
+`--since` rowniez musza wskazywac wersjonowane tagi — `HEAD` nie jest
+dozwolonym koncem zakresu. Commit `chore: bump version` jest pomijany.
+Uzywaj jawnego `$targetTag` dla obu podsumowan; skrypt dobiera jego poprzedni
+tag i nigdy nie uzywa `HEAD` jako konca zakresu.
+
+`release:notes:short` liczy znaki razem z nowymi liniami i fallbackiem; gdy
+zakres nie ma commitow `feat`/`fix`, wypisuje jawny komunikat zamiast pustej
+notatki. To surowy draft z tematow commitow: przed publikacja sprawdz diff i
+przeredaguj tekst wedlug zasad podsumowania user/tester z `/make-release`.
+Nigdy nie wklejaj surowego outputu jako notatki sklepowej.
 
 Punkty 1-4 sa obowiazkowe dla kazdego release. Wersja mija automatycznie
 (Android versionCode, iOS buildNumber — EAS auto-increment), wersja marketingowa
@@ -83,10 +271,18 @@ npx eas-cli build -p ios --profile development
 
 ### 3.2 iOS release (TestFlight / sklep) — z dev options
 
-```bash
+Uruchamiaj ponizsze komendy tylko po gate z kroku 4a §3.0: czysty checkout
+dokladnie na wypchnietym release tagu. Nie buduj z aktualnego tipa `main`.
+
+```powershell
 npx eas-cli build -p ios --profile release --non-interactive --no-wait
-npx eas-cli submit -p ios --id <build-id> --what-to-test "$(npm run --silent release:notes:short | tr -d '\n')"
+npx eas-cli submit -p ios --id <build-id>
 ```
+
+Po przetworzeniu buildu popros uzytkownika o wklejenie user/tester-friendly
+podsumowania z kroku 3 do pola "What to Test" w App Store Connect; poczekaj na
+potwierdzenie, ze tekst zostal zapisany. Nie przekazuj wolnego tekstu jako
+argumentu natywnego polecenia.
 
 Uwaga:
 - `buildNumber` iOS zarzadza **serwer EAS** (remote source); auto-increment
@@ -108,6 +304,9 @@ npm run android:eas:release:remote
 
 ### 3.5 Android store AAB (DevO ON)
 
+Najpierw wykonaj gate z kroku 4a §3.0; build musi isc z czystego checkoutu
+dokladnie na wypchnietym release tagu.
+
 ```bash
 npx eas-cli build -p android --profile release --non-interactive --no-wait
 ```
@@ -115,6 +314,9 @@ npx eas-cli build -p android --profile release --non-interactive --no-wait
 - Artefakt AAB wgrywasz recznie do Google Console (Play App Signing).
 
 ### 3.6 Android store AAB (produkcja, bez DevO)
+
+Najpierw wykonaj gate z kroku 4a §3.0; build musi isc z czystego checkoutu
+dokladnie na wypchnietym release tagu.
 
 ```bash
 npx eas-cli build -p android --profile production --non-interactive --no-wait
@@ -216,7 +418,10 @@ Zasada: nie kopiujemy 1:1 szczegolowych checklist do tego pliku. Tutaj trzymamy 
 - Sprawdz `android.googleServicesFile` w `app.config.js`.
 
 2. iOS submit odrzucony przez duplikat build number:
-- Podnies `ios.buildNumber` w `app.config.js` i zrob nowy build.
+- Nie edytuj `ios.buildNumber` w `app.config.js`; EAS zarzadza nim zdalnie.
+- Popros uzytkownika o ustawienie wyzszego licznika przez
+  `npx eas-cli build:version:set -p ios`, a potem ponownie uruchom krok 4 z
+  tym samym release tagiem.
 
 3. Brak zmiennych w buildzie production:
 - Dodaj zmienne przez `eas env:create` dla `production`.

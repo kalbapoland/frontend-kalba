@@ -91,19 +91,38 @@ Android scripts use `platform:mode:backend` naming:
 
 Full procedure (source of truth: [docs/BUILDING_WITH_EAS.md](docs/BUILDING_WITH_EAS.md) §3.0):
 
-```bash
-npm run release:minor        # bump version + commit + tag vX.Y.Z (patch/major also)
-npm run release:notes        # markdown changelog: last tag -> HEAD
-npm run release:notes:short  # <=500 chars for Google Console / TestFlight
+```powershell
+# Use the existing pushed release tag, after its release PR is merged.
+$targetTag = "vX.Y.Z"
+git fetch --tags origin
+npm run release:notes -- --release $targetTag --commits # priority-sorted list
+npm run release:notes -- --release $targetTag           # PR-linked markdown
+npm run release:notes:short -- --release $targetTag     # <=500-character draft
 ```
 
-Then build both stores (developer options included):
+`$targetTag` must be the already-pushed `vX.Y.Z` release tag; the script
+resolves its previous tag and never uses `HEAD`. Version bump, branch, PR, and
+post-merge tag push are only covered by the full procedure in
+[docs/BUILDING_WITH_EAS.md](docs/BUILDING_WITH_EAS.md) §3.0. `/make-release`
+also creates a plain-language user/tester summary from that same range.
+`release:notes:short` is raw commit text; review and rewrite it under the
+public-summary rules before sharing, never paste it as-is.
 
-```bash
+After the release PR is merged, run the gate-only step 4a in §3.0. Then build
+from the detached release tag (developer options included):
+
+Step 4a only validates and checks out the tag; it does not start EAS builds.
+
+```powershell
 npx eas-cli build -p android --profile release --non-interactive --no-wait
 npx eas-cli build -p ios --profile release --non-interactive --no-wait
-npx eas-cli submit -p ios --id <build-id>   # Android AAB: manual upload to Google Console
+npx eas-cli submit -p ios --id <build-id>
+# Android AAB: manual upload to Google Console
 ```
+
+Ask the user to paste the final user/tester summary into App Store Connect's
+"What to Test" field and Google Play's release notes, then confirm it was saved.
+Do not pass free-form text as a command-line argument.
 
 ### Mobile (development build)
 
