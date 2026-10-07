@@ -1,6 +1,6 @@
 {
   "name": "frontend-kalba",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "main": "expo-router/entry",
   "scripts": {
     "start": "node -e \"try{require('fs').unlinkSync('.env.development.local')}catch(e){}\" && expo start",
