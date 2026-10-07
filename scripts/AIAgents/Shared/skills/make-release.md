@@ -109,10 +109,12 @@ npm run release:notes -- --release $targetTag
 npm run release:notes:short -- --release $targetTag
 ```
 
-The short output is a raw draft containing `feat` and `fix` commit subjects.
-Review and rewrite it under the user/tester-summary rules before publishing;
-never paste it as-is into a store. The agent presents the final text and asks
-the user to paste and confirm it in App Store Connect and Google Play.
+Ogłoszenie na Discord (wysyłane po distribucji) wymaga webhooka:
+`DISCORD_RELEASE_WEBHOOK_URL` w środowisku (`.env.local` — dodaj linię
+`DISCORD_RELEASE_WEBHOOK_URL=https://discord.com/api/webhooks/...`; URL
+dostępny u właściciela kanału `#releases`). **Bez tej zmiennej ogłoszenie
+pominiesz** — powiadom o tym użytkownika i dokończ resztę procesu (to nie
+jest błąd release'u).
 
 ### Step 3 — Build both platforms (developer options ON)
 
@@ -190,6 +192,20 @@ npx eas-cli submit -p android --profile release --id <android-build-id> --non-in
   ("Testy wewnętrzne")** (submitted via `eas-cli submit`, track `internal`);
   the user/tester summary is saved in the release notes. TestFlight shows
   the new version with a "What to Test" note.
+- **Ogłoszenie na Discord** wysłane na `#releases` (PO wypchnięciu builda
+  do obu sklepów) przez `npm run release:notes -- --release $targetTag
+  --discord --summary-file <plik-z-podsumowaniem-PL>`; wymaga zmiennej
+  środowiskowej `DISCORD_RELEASE_WEBHOOK_URL` (nie commitujemy jej do repo —
+  ładowana z `.env.local` / magazynu sekretów).
+  **Jeśli `DISCORD_RELEASE_WEBHOOK_URL` nie jest ustawione, ogłoszenie NIE
+  zostanie wysłane** — poinformuj o tym użytkownika ("brak webhooka Discord,
+  pomiń ogłoszenie; ustaw DISCORD_RELEASE_WEBHOOK_URL w `.env.local`, aby
+  włączyć") i kontynuuj zakończenie procesu — brak powiadomienia nie jest
+  błędem release'u. Zmienna `--summary-file` to tekst podsumowania PL z
+  Kroku 2 (ten sam, co do stores). Skrypt przerywa pracę przy błędzie wysyłki
+  — nie powtarzaj w ciemno; sprawdź kanał pod kątem wcześniejszej częściowej
+  wysyłki.
+- `npm run release:notes` next time will start from the new tag.
 - `npm run release:notes` next time will start from the new tag.
 
 ## Common failure fixes

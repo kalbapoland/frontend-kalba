@@ -9,6 +9,7 @@
  *   node scripts/release-notes.js --since v0.1.0     # start tag -> current release tag
  *   node scripts/release-notes.js --commits          # commits grouped by priority
  *   node scripts/release-notes.js --short            # mechanical draft (max 500 chars)
+ *   node scripts/release-notes.js --discord          # post the release embed to Discord webhook
  *   node scripts/release-notes.js --json             # machine-readable
  *
  * Source of data: git commit titles between two tags. Classification follows
@@ -23,32 +24,72 @@
  */
 const { spawnSync } = require("child_process");
 const path = require("path");
+const https = require("https");
 
 const root = path.join(__dirname, "..");
 const args = process.argv.slice(2);
 const wantJson = args.includes("--json");
 const wantCommits = args.includes("--commits");
 const wantShort = args.includes("--short");
-const rangeArg = args.find((a) => !a.startsWith("--") && a.includes(".."));
+const wantDiscord = args.includes("--discord");
+// Value-taking options — their values are consumed FIRST so a value that
+// happens to contain ".." (e.g. a parent-relative summary path) is never
+// mistaken for an explicit git range (review finding, 2026-10).
+function readValueOption(argv, flag) {
+  const index = argv.indexOf(flag);
+  if (index === -1) return null;
+  const value = argv[index + 1];
+  if (value === undefined || value.startsWith("--")) return null;
+  return value;
+}
+const summaryFile = readValueOption(args, "--summary-file");
+const summaryFileIdx = summaryFile !== null ? args.indexOf("--summary-file") : -1;
+const positionalCandidates = args.filter(
+  (arg, index) =>
+    !arg.startsWith("--")
+    // Skip values that belong to known value-taking flags.
+    && args[index - 1] !== "--summary-file"
+    && args[index - 1] !== "--since"
+    && args[index - 1] !== "--release",
+);
+const rangeArg = positionalCandidates.find((a) => a.includes(".."));
 const SHORT_LIMIT = 500;
 const SHORT_OVERFLOW_LINE = "- More improvements in the full changelog.";
 
 function validateArgs() {
   const flags = args.filter((arg) => arg.startsWith("--"));
-  const knownFlags = new Set(["--json", "--commits", "--short", "--since", "--release"]);
-  const outputModes = ["--json", "--commits", "--short"].filter((flag) => args.includes(flag));
+  const knownFlags = new Set(["--json", "--commits", "--short", "--since", "--release", "--discord", "--summary-file"]);
+  const outputModes = ["--json", "--commits", "--short", "--discord"].filter((flag) => args.includes(flag));
+  if (outputModes.length > 1) {
+    die("Choose only one output mode: --commits, --short, --discord, or --json.");
+  }
+  if (wantDiscord && !process.env.DISCORD_RELEASE_WEBHOOK_URL) {
+    die(
+      "--discord requires DISCORD_RELEASE_WEBHOOK_URL in the environment."
+      + " The script does not auto-load .env.local — export it or pass it inline.",
+    );
+  }
+  if (summaryFileIdx !== -1 && (!summaryFile || summaryFile.startsWith("--"))) {
+    die("--summary-file requires a path to the PL user/tester summary text.");
+  }
+  if (summaryFileIdx !== -1 && !wantDiscord) {
+    die("--summary-file only makes sense with --discord.");
+  }
   const sinceIndexes = args.flatMap((arg, index) => (arg === "--since" ? [index] : []));
   const releaseIndexes = args.flatMap((arg, index) => (arg === "--release" ? [index] : []));
-  const ranges = args.filter((arg) => !arg.startsWith("--") && arg.includes(".."));
+  // Positional candidates already exclude named-option values (see above).
+  const ranges = positionalCandidates.filter((arg) => arg.includes(".."));
   const sinceValue = sinceIndexes.length === 1 ? args[sinceIndexes[0] + 1] : null;
   const releaseValue = releaseIndexes.length === 1 ? args[releaseIndexes[0] + 1] : null;
-  const allowedValues = new Set([rangeArg, sinceValue, releaseValue].filter(Boolean));
+  const allowedValues = new Set(
+    [rangeArg, sinceValue, releaseValue, summaryFile].filter(Boolean),
+  );
 
   if (flags.some((flag) => !knownFlags.has(flag))) {
     die(`Unknown option: ${flags.find((flag) => !knownFlags.has(flag))}`);
   }
   if (outputModes.length > 1) {
-    die("Choose only one output mode: --commits, --short, or --json.");
+    die("Choose only one output mode: --commits, --short, --discord, or --json.");
   }
   if (sinceIndexes.length > 1 || releaseIndexes.length > 1) {
     die("Use --since or --release at most once.");
@@ -231,6 +272,12 @@ function formatMarkdownEntry({ subject }) {
   return pr ? `${text} ([#${pr}](https://github.com/kalbapoland/frontend-kalba/pull/${pr}))` : text;
 }
 
+function formatDiscordEntry(commit) {
+  const text = capitalize(commit.subject);
+  const pr = extractPr(commit.subject);
+  return pr ? `${text} [\#${pr}](${DISCORD_PR_URL_BASE}/${pr})` : text;
+}
+
 function formatShortNotes(bulletLines) {
   if (bulletLines.length === 0) {
     return "- No feature or bug-fix commits in this release.\n";
@@ -253,6 +300,85 @@ function formatShortNotes(bulletLines) {
   }
 
   return [...selected, SHORT_OVERFLOW_LINE].join("\n") + "\n";
+}
+
+/** Post the release embed to the configured Discord webhook (fire-and-report).
+ *
+ * Embed content policy (2026-10, review): the Discord audience is non-technical
+ * — post the POLISH user/tester summary (the same text pasted into TestFlight
+ * and Play release notes) rather than raw English commit subjects. The summary
+ * is supplied via `--summary-file <path>` (UTF-8 text, already reviewed by the
+ * user per the runbook's Step 2). When the file is missing, the script falls
+ * back to commit subjects grouped in Polish sections — clearly marked as a
+ * draft. */
+const DISCORD_PR_URL_BASE = "https://github.com/kalbapoland/frontend-kalba/pull";
+const DISCORD_SECTIONS = [
+  { key: "feat", title: "Nowości" },
+  { key: "task", title: "Zadania" },
+  { key: "fix", title: "Poprawki błędów" },
+  { key: "other", title: "Pozostałe zmiany" },
+];
+
+function readSummaryFile(summaryPath) {
+  const { readFileSync } = require("fs");
+  try {
+    return readFileSync(summaryPath, "utf8").trim();
+  } catch {
+    die(`--summary-file: cannot read ${summaryPath}`);
+  }
+  return null;
+}
+
+function postToDiscord(range, buckets, summaryPath) {
+  const webhookUrl = process.env.DISCORD_RELEASE_WEBHOOK_URL;
+  const targetTag = range.split("..")[1];
+
+  const summary = summaryPath ? readSummaryFile(summaryPath) : null;
+
+  const embeds = [];
+  const mainEmbed = {
+    title: `Wydanie ${targetTag}`,
+    url: `https://github.com/kalbapoland/frontend-kalba/releases/tag/${targetTag}`,
+    description: summary ?? `Zakres: \`${range}\` — ${commitsCount(buckets)} commitów (draft — dodaj --summary-file, aby dołączyć podsumowanie po polsku)`,
+    color: 0x4a5d46, // Kalba primary green
+  };
+  embeds.push(mainEmbed);
+
+  // The summary already carries the description — sections add the commit
+  // detail; no duplication of the summary text (user-reported duplication).
+  const embedFields = [];
+  for (const section of DISCORD_SECTIONS) {
+    if (buckets[section.key].length === 0) continue;
+    embedFields.push({
+      name: section.title,
+      value: buckets[section.key].map((c) => formatDiscordEntry(c)).join("\n").slice(0, 1024),
+    });
+  }
+  mainEmbed.fields = embedFields;
+
+  const payload = JSON.stringify({
+    username: "Kalba Releases",
+    content: `🚀 **Kalba ${targetTag}** wydany`,
+    embeds,
+  });
+
+  return new Promise((resolve, reject) => {
+    const request = https.request(
+      webhookUrl,
+      { method: "POST", headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(payload) } },
+      (response) => {
+        response.resume();
+        const ok = response.statusCode >= 200 && response.statusCode < 300;
+        response.on("end", () => (ok ? resolve() : reject(new Error(`Discord webhook HTTP ${response.statusCode}`))));
+      },
+    );
+    request.on("error", reject);
+    request.end(payload);
+  });
+}
+
+function commitsCount(buckets) {
+  return Object.values(buckets).reduce((sum, list) => sum + list.length, 0);
 }
 
 function main() {
@@ -278,6 +404,13 @@ function main() {
   const buckets = { feat: [], task: [], fix: [], other: [] };
   for (const commit of commits) {
     buckets[classify(commit.subject)].push(commit);
+  }
+
+  if (wantDiscord) {
+    postToDiscord(range, buckets, summaryFile)
+      .then(() => console.log(`[release-notes] Discord message posted for ${range}.`))
+      .catch((error) => die(`Discord post failed: ${error.message}`));
+    return;
   }
 
   if (wantJson) {

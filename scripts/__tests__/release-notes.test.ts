@@ -75,6 +75,20 @@ function runReleaseNotes(repository: string, args: string[]): string {
   return result.stdout;
 }
 
+function runReleaseNotesExpectingFailure(repository: string, args: string[]): string {
+  const result = spawnSync(
+    process.execPath,
+    [join(repository, "scripts", "release-notes.js"), ...args],
+    { cwd: repository, encoding: "utf8", env: gitEnvironment(repository) },
+  );
+
+  if (result.status === 0) {
+    throw new Error(`release-notes.js unexpectedly succeeded: ${result.stdout}`);
+  }
+
+  return result.stderr;
+}
+
 function withRepository(run: (repository: string) => void): void {
   const repository = createRepository();
   try {
@@ -352,6 +366,92 @@ describe("release notes", () => {
         commits: { feat: [], task: [], fix: [], other: [] },
       });
       expect(short).toBe("- No feature or bug-fix commits in this release.\n");
+    });
+  });
+
+  describe("--discord with --summary-file", () => {
+    test("value-taking option values never become explicit release ranges (review regression)", () => {
+      withRepository((repository) => {
+        commit(repository, "feat: previous release");
+        tagRelease(repository, "v0.1.0");
+        commit(repository, "feat: current release");
+        tagRelease(repository, "v0.2.0");
+
+        // A parent-relative summary path contains ".."; before the fix the
+        // path was treated as a second range and the run died with
+        // "Use only one of an explicit range, --since, or --release."
+        // Parsing consumes option values first, so the run proceeds past
+        // arg validation (webhook guard fires first — env not set), never
+        // complaining about ranges. Network-free: no webhook configured.
+        const environment = gitEnvironment(repository);
+        delete environment.DISCORD_RELEASE_WEBHOOK_URL;
+
+        const result = spawnSync(
+          process.execPath,
+          [
+            join(repository, "scripts", "release-notes.js"),
+            "--discord",
+            "--release",
+            "v0.2.0",
+            "--summary-file",
+            join("..", "summary.txt"),
+          ],
+          { cwd: repository, encoding: "utf8", env: environment },
+        );
+
+        expect(result.status).not.toBe(0);
+        expect(result.stderr).toContain("DISCORD_RELEASE_WEBHOOK_URL");
+        expect(result.stderr).not.toContain("explicit range");
+      });
+    });
+
+    test("explicit range + parent-relative summary path reaches the webhook guard", () => {
+      withRepository((repository) => {
+        commit(repository, "feat: previous release");
+        tagRelease(repository, "v0.1.0");
+        commit(repository, "feat: current release");
+        tagRelease(repository, "v0.2.0");
+
+        const environment = gitEnvironment(repository);
+        delete environment.DISCORD_RELEASE_WEBHOOK_URL;
+
+        const result = spawnSync(
+          process.execPath,
+          [
+            join(repository, "scripts", "release-notes.js"),
+            "--discord",
+            "v0.1.0..v0.2.0",
+            "--summary-file",
+            join("..", "..", "summary.txt"),
+          ],
+          { cwd: repository, encoding: "utf8", env: environment },
+        );
+
+        expect(result.status).not.toBe(0);
+        expect(result.stderr).toContain("DISCORD_RELEASE_WEBHOOK_URL");
+        expect(result.stderr).not.toContain("only one explicit release-tag range");
+      });
+    });
+
+    test("fails fast without the webhook env var and without reading files", () => {
+      withRepository((repository) => {
+        commit(repository, "feat: previous release");
+        tagRelease(repository, "v0.1.0");
+        commit(repository, "feat: current release");
+        tagRelease(repository, "v0.2.0");
+
+        const environment = gitEnvironment(repository);
+        delete environment.DISCORD_RELEASE_WEBHOOK_URL;
+
+        const result = spawnSync(
+          process.execPath,
+          [join(repository, "scripts", "release-notes.js"), "--discord", "--release", "v0.2.0"],
+          { cwd: repository, encoding: "utf8", env: environment },
+        );
+
+        expect(result.status).not.toBe(0);
+        expect(result.stderr).toContain("DISCORD_RELEASE_WEBHOOK_URL");
+      });
     });
   });
 });
