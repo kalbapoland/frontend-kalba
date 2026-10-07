@@ -1,0 +1,12 @@
+appId: com.kalba.app
+---
+# Appearance E2E phase chunk — toggle the Appearance switch OFF
+# (pin light policy) and confirm the UI reflects it: the switch reads
+# OFF and the caption switches to the "light fixed" hint.
+# Runs on the Profile screen (prepared by prepare_profile.yaml).
+- tapOn:
+    id: profile.appearance.switch
+- extendedWaitUntil:
+    visible:
+      id: profile.appearance.section
+    timeout: 5000

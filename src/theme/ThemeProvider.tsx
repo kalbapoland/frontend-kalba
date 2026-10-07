@@ -6,7 +6,7 @@ import {
   useMemo,
   type ReactNode,
 } from "react";
-import { useColorScheme } from "react-native";
+import { Appearance, Platform } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import * as SystemUI from "expo-system-ui";
 import { makeMutable, type SharedValue } from "react-native-reanimated";
@@ -19,6 +19,7 @@ import {
   type ThemeSelection,
   type SystemScheme,
 } from "@/theme/preference";
+import { useSystemScheme } from "@/theme/useSystemScheme";
 import type { ThemeName } from "@/theme/themes";
 import {
   THEMES,
@@ -101,12 +102,34 @@ function useThemeState(): ThemeContextValue {
   const settings = useSettingsStore((s) => s.settings);
   const setFollowSystem = useSettingsStore((s) => s.setFollowSystem);
   const setDevThemeOverride = useSettingsStore((s) => s.setDevThemeOverride);
-  const systemScheme = useColorScheme() as SystemScheme;
 
   // Lock (build-time) > dev override (test builds) > appearance switch.
   const appearancePolicy: ThemePreference = settings.themePreference;
   const activeOverride: ThemeName | null = locked ?? settings.devThemeOverride;
   const preference: ThemeSelection = activeOverride ?? appearancePolicy;
+
+  /**
+   * Android pin for AppCompat day/night (native chrome re-themes from it).
+   * Derived from the SELECTION, not the resolved theme — resolving from a
+   * scheme that is itself affected by the pin would create a feedback loop.
+   * Only a pinned-concrete selection produces a pin; "system" releases the
+   * pin so the OS toggle drives both the JS palette AND native chrome, and
+   * the raw system scheme stays readable for the resolver above.
+   * iOS stays null always: it is trait-driven, a window-level pin there
+   * would freeze the pipeline.
+   */
+  const androidAppearancePin: "dark" | "light" | null =
+    Platform.OS === "android" && preference !== "system"
+      ? preference === "night"
+        ? "dark"
+        : "light"
+      : null;
+
+  // Re-syncs on every foreground transition — native change events can be
+  // dropped for toggles made while the app is backgrounded (Android caches
+  // the missed value in its dedupe state, iOS suppresses the notification).
+  const systemScheme = useSystemScheme(androidAppearancePin);
+
   const themeName = resolveTheme(preference, systemScheme);
   const colors = THEMES[themeName];
 

@@ -184,7 +184,12 @@ def main() -> None:
 
         run([adb, "shell", "pm", "clear", APP_ID], cwd=frontend_root)
         run(
-            [maestro, "test", "test/automated/maestro/flows/smoke/user_appearance_smoke.yaml"],
+            [maestro, "test", "test/automated/maestro/flows/smoke/user_delete_account_smoke.yaml"],
+            cwd=frontend_root,
+        )
+
+        run(
+            [sys.executable, "test/automated/run_appearance_e2e.py", "--phase", "all"],
             cwd=frontend_root,
         )
 

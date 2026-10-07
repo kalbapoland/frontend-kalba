@@ -300,6 +300,11 @@ def main() -> None:
         flow("test/automated/maestro/flows/smoke/user_signout_smoke.yaml")
         print("[smoke] running Android user delete account Maestro flow")
         flow("test/automated/maestro/flows/smoke/user_delete_account_smoke.yaml")
+        print("[smoke] running Android appearance pipeline E2E (dark mode round trips)")
+        run(
+            [sys.executable, "test/automated/run_appearance_e2e.py", "--phase", "all"],
+            cwd=frontend_root,
+        )
     except BaseException as err:
         primary_error = err
     finally:
