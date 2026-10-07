@@ -1,6 +1,7 @@
 ---
 agent: 'agent'
 description: 'Independent coding standards reviewer for Kalba frontend — TS strictness, types from src/types/api.ts, NativeWind discipline'
+model: 'gpt-6.1-sol'
 ---
 
 This file is a thin wrapper.

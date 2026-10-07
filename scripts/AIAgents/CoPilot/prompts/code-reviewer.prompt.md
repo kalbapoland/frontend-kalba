@@ -1,6 +1,7 @@
 ---
 agent: 'agent'
 description: 'Code review manager for Kalba frontend — routes to either one single-pass reviewer or max 2 independent composite reviewers and merges their reports'
+model: 'gpt-6.1-sol'
 ---
 
 This file is a thin wrapper.

@@ -1,6 +1,7 @@
 ---
 agent: 'agent'
 description: 'Independent state management reviewer for Kalba frontend — TanStack Query cache, query keys, Zustand discipline'
+model: 'gpt-6.1-sol'
 ---
 
 This file is a thin wrapper.

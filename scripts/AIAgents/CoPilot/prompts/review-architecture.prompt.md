@@ -1,6 +1,7 @@
 ---
 agent: 'agent'
 description: 'Independent architecture reviewer for Kalba frontend — hooks vs components, server vs local state, platform splits'
+model: 'gpt-6.1-sol'
 ---
 
 This file is a thin wrapper.

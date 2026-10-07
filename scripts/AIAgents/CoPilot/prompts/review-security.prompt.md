@@ -1,6 +1,7 @@
 ---
 agent: 'agent'
 description: 'Independent security reviewer for Kalba frontend — token storage, sensitive logging, env vars, role gating, Daily.co token scope'
+model: 'gpt-6.1-sol'
 ---
 
 This file is a thin wrapper.
