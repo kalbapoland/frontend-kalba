@@ -11,6 +11,10 @@
 /.github/prompts
 /.github/skills
 
+# Google Play service account keys (manual submit / local fallback; the
+# canonical key lives in EAS credentials — never commit it)
+/secrets/
+
 # dependencies
 node_modules/
 
