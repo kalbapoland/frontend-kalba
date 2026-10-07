@@ -15,8 +15,21 @@ Konfiguracja profili build jest w:
 Aktualnie:
 - `development`: `developmentClient: true`, `distribution: internal`
 - `tester`: `distribution: internal`, Android `buildType: apk`, iOS `simulator: false`; `EXPO_PUBLIC_APP_VARIANT=test` (DevO widoczne)
-- `release`: `distribution: store`, Android `buildType: app-bundle` (AAB), `EXPO_PUBLIC_APP_VARIANT=test` (DevO ON); build number/version podbija EAS dla obu platform
+- `release`: `distribution: store`, Android `buildType: app-bundle` (AAB), `EXPO_PUBLIC_APP_VARIANT=test` (DevO ON); build number/version podbija EAS dla obu platform; submit Android → **Google Console, track `internal`**
 - `production`: `distribution: store`, `EXPO_PUBLIC_APP_VARIANT=production` (DevO NIEISTNIEJE)
+
+Konfiguracja submitow jest w `eas.json` (`submit`):
+- `production`: iOS `ascAppId` (App Store Connect) → TestFlight
+- `release`: Android `track: internal` (Testy wewnetrzne / Internal testing
+  w Google Console)
+  - Autoryzacja przez **Google Service Account Key w EAS Credentials**
+    (klucz jest przypisany do projektu, nie do profilu builda: wgrywasz go
+    raz, np. przez `eas credentials -p android`) — brak pliku w repo;
+    `serviceAccountKeyPath` w `eas.json` NIE jest ustawione.
+  - Jednorazowa konfiguracja konta uslugi:
+    [expo.fyi/creating-google-service-account](https://expo.fyi/creating-google-service-account)
+    (klucz JSON wygenerowany lokalnie wgrywa sie wylacznie do EAS;
+    Play Console → Users and permissions → prawa `Releases` dla konta uslugi).
 
 Konfiguracja natywna Expo jest w:
 - [app.config.js](../app.config.js)
@@ -40,8 +53,8 @@ Wazne:
 | iOS | Sklepowy | `production` | IPA (store) | nie | TestFlight (sklep) |
 | Android | Debug (remote) | `development` | dev client (internal) | — | Tak |
 | Android | Release APK (tester) | `tester` | standalone APK | **TAK** | Tak (adb/store-internal) |
-| Android | Store AAB (DevO ON) | `release` | **AAB** | **TAK** | Do Google Console |
-| Android | Store AAB (produkcja) | `production` | AAB | nie | Do Google Console |
+| Android | Store AAB (DevO ON) | `release` | **AAB** | **TAK** | Do Google Console (auto, track `internal`) |
+| Android | Store AAB (produkcja) | `production` | AAB | nie | Do Google Console (manual) |
 
 ## 3. Komendy EAS (podstawowe)
 
@@ -311,7 +324,33 @@ dokladnie na wypchnietym release tagu.
 npx eas-cli build -p android --profile release --non-interactive --no-wait
 ```
 
-- Artefakt AAB wgrywasz recznie do Google Console (Play App Signing).
+- Podobnie jak dla iOS: po **FINISHED** buildzie (sprawdz `npx eas-cli build:list`)
+  wgrywasz AAB do Google Console automatycznie:
+
+```bash
+npx eas-cli submit -p android --profile release --id <android-build-id> --non-interactive
+# Alternatywa: buduj i wgrywaj jednym krokiem przy kolejnych buildach
+# npx eas-cli build -p android --profile release --auto-submit --non-interactive --no-wait
+```
+
+- Submit uzywa profilu `release` z `eas.json` (`submit.release.android.track=internal`),
+  klucza wgranego do **EAS Credentials** (Google Service Account) i laduje
+  na **Testy wewnetrzne (Internal testing)** w Google Console. Wersja i
+  versionCode pochodza z builda (EAS remote) — nic nie edytujesz w konsoli Google.
+- Przy automatyzacji agentowej zawsze podawaj `--id` i `--non-interactive`
+  (stdin jest niedostepny w nieinteraktywnych sesjach). Interaktywnie
+  (`eas submit -p android` bez flag) mozna uruchamiac z wlasnego terminala —
+  wtedy EAS CLI sam zaproponuje wybor buildu i profilu.
+- Wymagana jednorazowa konfiguracja: Google Service Account Key wgrany
+  do EAS Credentials (patrz §1 wyzej). Bez tego submit odmowi z
+  "Google Service Account key not found".
+- Release notes (user/tester summary z `/make-release`) po submit wklej
+  w Google Console w opisie wydania na **Testach wewnetrznych** i potwierdz,
+  ze zostal zapisany (EAS Submit nie ustawia notek wydania).
+- Jesli kiedys zechcesz wrzucac AAB takze na inne sciezki (beta/production),
+  dodaj w `eas.json` `submit.<profil>.android.track` — bez zmian w buildzie.
+- Reczny pozostaje upload na `production` (docelowy sklep) — ten build
+  nadal tworzy AAB i wgrywasz go wrecz w Play Console (Production → Releases).
 
 ### 3.6 Android store AAB (produkcja, bez DevO)
 
@@ -357,7 +396,8 @@ niego musza wtedy byc wylaczone albo dzialac bez niego.
   - iOS: `development`
 - Chcesz wyslac testerom build z opcjami dev (palety) — **release**:
   - iOS `release` + submit do TestFlight (DevO widoczne)
-  - Android `release` AAB -> Google Console (manual)
+  - Android `release` AAB -> `eas-cli submit` -> Testy wewnetrzne (Google
+    Console, klucz Google Service Account w EAS Credentials)
   - lub Android `tester` APK (adb)
 - Chcesz przygotowac finalny sklepowy build (bez DevO):
   - iOS `production`

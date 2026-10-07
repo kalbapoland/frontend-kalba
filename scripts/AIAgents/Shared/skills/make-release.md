@@ -1,8 +1,8 @@
-# Make Release (both platforms, full procedure)
+# Kalba Make Release (both platforms, full procedure)
 
 Use this skill when the user wants to **ship a release** — the complete
 two-platform procedure: version bump, tag, changelog, store artefacts, iOS
-TestFlight submit and the Android AAB hand-off.
+TestFlight submit and the Android Google Play (internal track) submit.
 
 Single entrypoint for the whole flow. Per-step skills stay available for
 re-running one stage only:
@@ -157,13 +157,27 @@ free-form summary text as a native command-line argument.
   testers** group (auto-distribution may handle this), and once it is the
   active build, **Expire/Delete** previous builds so testers see one version.
 
-**Android — Google Console (manual):**
+**Android — Google Console (internal track, after the build reaches FINISHED):**
 
-- Download the AAB artifact URL from the build page
-  (`expo.dev/artifacts/...aab`).
-- Upload in Google Console (Play App Signing); version/versionCode come from
-  the build. Ask the user to paste the final summary into Play release notes
-  and confirm it was saved.
+```powershell
+npx eas-cli submit -p android --profile release --id <android-build-id> --non-interactive
+```
+
+- Key: **Google Service Account Key uploaded to EAS Credentials** — one-time
+  setup per
+  [expo.fyi/creating-google-service-account](https://expo.fyi/creating-google-service-account);
+  if it was not uploaded, submit fails with "Google Service Account key not
+  found". In that case ask the user for a manual AAB upload of the
+  `expo.dev/artifacts/...aab` artifact in Play Console and do not retry the
+  submit automatically.
+- The submit lands in **Internal testing ("Testy wewnętrzne")** — track
+  `internal` from the `release` profile in eas.json. Version and versionCode
+  come from the build; nothing is typed in the Google Console.
+- After the submit, ask the user to paste the user/tester summary from this
+  procedure into the release notes of the internal testing release (EAS
+  Submit does not set release notes) and wait for confirmation it was saved.
+- Free tier: queues happen; check `npx eas-cli build:list` rather than
+  tailing build logs.
 
 ## Done criteria
 
@@ -172,7 +186,10 @@ free-form summary text as a native command-line argument.
 - Both summaries cover the same previous-tag → current-tag range; the
   user/tester summary is used for store and TestFlight notes.
 - The user confirms the user/tester summary was saved in the store consoles.
-- Android AAB uploaded; TestFlight shows the new version with a "What to Test" note.
+- Google Console: the new version is visible in **Internal testing
+  ("Testy wewnętrzne")** (submitted via `eas-cli submit`, track `internal`);
+  the user/tester summary is saved in the release notes. TestFlight shows
+  the new version with a "What to Test" note.
 - `npm run release:notes` next time will start from the new tag.
 
 ## Common failure fixes
