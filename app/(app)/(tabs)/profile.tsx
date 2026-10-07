@@ -374,6 +374,11 @@ export function DeveloperOptionsSection() {
   const { preference, systemFollowing, setDevOverride, colors } = useTheme();
   const styles = useThemedStyles(buildStyles);
 
+  // "Podążaj za systemem" (switch ON) hands the colour decision to the OS —
+  // the dev palette list is locked while it is active; the palette override
+  // only makes sense when the system does not drive the appearance.
+  const appearanceLocked = systemFollowing;
+
   const options: Array<{ key: ThemeName | null; label: string }> = [
     { key: null, label: t("profile_screen.dev_option_palette_none") },
     ...THEME_NAMES.map((name) => ({
@@ -400,15 +405,17 @@ export function DeveloperOptionsSection() {
           <Pressable
             key={String(key)}
             onPress={() => setDevOverride(key)}
+            disabled={appearanceLocked}
             accessibilityRole="radio"
-            accessibilityState={{ selected }}
+            accessibilityState={{ selected, disabled: appearanceLocked }}
             testID={`profile.theme.option.${key ?? "none"}`}
             style={({ pressed }) => [
               styles.settingsRow,
               { opacity: pressed ? 0.7 : 1 },
+              appearanceLocked && styles.settingsRowDisabled,
             ]}
           >
-            <AppText variant="body" tone={selected ? "primary" : "body"}>
+            <AppText variant="body" tone={selected ? "primary" : appearanceLocked ? "muted" : "body"}>
               {label}
             </AppText>
             {selected && (
