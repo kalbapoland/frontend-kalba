@@ -344,17 +344,21 @@ function postToDiscord(range, buckets, summaryPath) {
   };
   embeds.push(mainEmbed);
 
-  // The summary already carries the description — sections add the commit
-  // detail; no duplication of the summary text (user-reported duplication).
-  const embedFields = [];
-  for (const section of DISCORD_SECTIONS) {
-    if (buckets[section.key].length === 0) continue;
-    embedFields.push({
-      name: section.title,
-      value: buckets[section.key].map((c) => formatDiscordEntry(c)).join("\n").slice(0, 1024),
-    });
+  // Language policy (user-flagged 2026-10-08): a PL announcement must never
+  // mix PL section titles with EN commit subjects. When a PL summary is
+  // provided, the summary IS the announcement — no raw-commit sections.
+  // Section lists (PL titles + subjects) appear only in the draft fallback.
+  if (!summary) {
+    const embedFields = [];
+    for (const section of DISCORD_SECTIONS) {
+      if (buckets[section.key].length === 0) continue;
+      embedFields.push({
+        name: section.title,
+        value: buckets[section.key].map((c) => formatDiscordEntry(c)).join("\n").slice(0, 1024),
+      });
+    }
+    mainEmbed.fields = embedFields;
   }
-  mainEmbed.fields = embedFields;
 
   const payload = JSON.stringify({
     username: "Kalba Releases",
