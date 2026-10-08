@@ -197,15 +197,18 @@ npx eas-cli submit -p android --profile release --id <android-build-id> --non-in
   --discord --summary-file <plik-z-podsumowaniem-PL>`; wymaga zmiennej
   środowiskowej `DISCORD_RELEASE_WEBHOOK_URL` (nie commitujemy jej do repo —
   ładowana z `.env.local` / magazynu sekretów).
+  **Zasada języka (2026-10-08): ogłoszenie jest W CAŁOŚCI po polsku.**
+  Wysyłamy TYLKO treść `--summary-file` (polskie podsumowanie user/tester
+  z Kroku 2) — bez dodatkowych sekcji z surowymi angielskimi commitami
+  (pomieszanie PL-tytułów z EN-wpisami w jednym embed = błąd formatu).
+  Sekcje z commitami to wyłącznie fallback-draft, gdy podsumowania nie ma.
   **Jeśli `DISCORD_RELEASE_WEBHOOK_URL` nie jest ustawione, ogłoszenie NIE
   zostanie wysłane** — poinformuj o tym użytkownika ("brak webhooka Discord,
   pomiń ogłoszenie; ustaw DISCORD_RELEASE_WEBHOOK_URL w `.env.local`, aby
   włączyć") i kontynuuj zakończenie procesu — brak powiadomienia nie jest
-  błędem release'u. Zmienna `--summary-file` to tekst podsumowania PL z
-  Kroku 2 (ten sam, co do stores). Skrypt przerywa pracę przy błędzie wysyłki
-  — nie powtarzaj w ciemno; sprawdź kanał pod kątem wcześniejszej częściowej
+  błędem release'u. Skrypt przerywa pracę przy błędzie wysyłki — nie
+  powtarzaj w ciemno; sprawdź kanał pod kątem wcześniejszej częściowej
   wysyłki.
-- `npm run release:notes` next time will start from the new tag.
 - `npm run release:notes` next time will start from the new tag.
 
 ## Common failure fixes
